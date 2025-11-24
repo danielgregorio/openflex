@@ -1,0 +1,102 @@
+# OpenFlex Neo Project Configuration
+# This is a template showing all available options
+
+[package]
+name = "openflex"
+version = "0.1.0"
+authors = ["OpenFlex Contributors"]
+license = "MIT"
+description = "ActionScript 4 + MXML → Modern Multi-Platform"
+homepage = "https://openflex.dev"
+repository = "https://github.com/danielgregorio/openflex"
+keywords = ["actionscript", "mxml", "compiler", "neo", "cross-platform"]
+
+[build]
+entry = "examples/hello-world/App.mxml"
+output = "dist"
+source = "src"
+
+# Web target (default for development)
+[[build.target]]
+name = "web"
+platform = "web"
+output = "dist/web"
+defines = ["WEB", "DEBUG"]
+renderer = "dom"
+
+# Mobile targets (future)
+[[build.target]]
+name = "mobile-ios"
+platform = "mobile"
+os = "ios"
+output = "dist/ios"
+defines = ["MOBILE", "IOS", "PRODUCTION"]
+
+[[build.target]]
+name = "mobile-android"
+platform = "mobile"
+os = "android"
+output = "dist/android"
+defines = ["MOBILE", "ANDROID", "PRODUCTION"]
+
+# Desktop targets (future)
+[[build.target]]
+name = "desktop-mac"
+platform = "desktop"
+os = "macos"
+output = "dist/desktop-mac"
+defines = ["DESKTOP", "MACOS", "PRODUCTION"]
+
+[[build.target]]
+name = "desktop-windows"
+platform = "desktop"
+os = "windows"
+output = "dist/desktop-windows"
+defines = ["DESKTOP", "WINDOWS", "PRODUCTION"]
+
+[[build.target]]
+name = "desktop-linux"
+platform = "desktop"
+os = "linux"
+output = "dist/desktop-linux"
+defines = ["DESKTOP", "LINUX", "PRODUCTION"]
+
+[dependencies]
+# Future: When package manager is implemented
+# openflex-core = "^1.0.0"
+
+[dev-dependencies]
+# Future: Testing framework
+# openflex-test = "^1.0.0"
+
+[compiler]
+strict-null-checks = false       # Enable when type checker is ready
+strict-mode = false
+optimization-level = 0           # 0 for now (not implemented yet)
+source-maps = true
+target = "es2022"
+module-system = "esm"
+tree-shaking = false             # Enable when optimizer is ready
+minify = false
+
+[runtime]
+renderer = "dom"                 # dom, canvas, webgl
+reactive-mode = "fine-grained"   # fine-grained, coarse-grained
+enable-hmr = true
+
+[dev]
+port = 3000
+host = "localhost"
+open = false
+hmr = true
+https = false
+
+[test]
+framework = "vitest"
+coverage = false
+watch = false
+
+[style]
+preprocessor = "css"             # css, scss, less
+scope = "component"              # component, global
+postcss = false
