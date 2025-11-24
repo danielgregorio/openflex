@@ -8,6 +8,7 @@ for ActionScript 4, converting tree-sitter parse trees into our AST.
 from typing import Optional, List, Any
 from pathlib import Path
 import os
+import ctypes
 
 try:
     from tree_sitter import Language, Parser as TSParser
@@ -49,35 +50,34 @@ class AS4Parser:
         grammar_path = Path(__file__).parent / "tree-sitter-as4"
         lib_path = grammar_path / "build" / "as4.so"
 
-        # Build language if not exists
+        # Check if grammar is built
         if not lib_path.exists():
-            print("Building tree-sitter grammar...")
-            self._build_grammar(grammar_path, lib_path)
+            raise RuntimeError(
+                f"Tree-sitter grammar not built. Please run:\n"
+                f"  cd {grammar_path}\n"
+                f"  tree-sitter generate\n"
+                f"  tree-sitter build\n"
+                f"Or use the build script: bash {grammar_path.parent}/build_grammar.sh"
+            )
 
         # Load language
         try:
-            self.language = Language(str(lib_path), "actionscript4")
+            # Load the shared library
+            lib = ctypes.cdll.LoadLibrary(str(lib_path))
+
+            # Get the language function (tree_sitter_actionscript4)
+            lang_func = lib.tree_sitter_actionscript4
+            lang_func.restype = ctypes.c_void_p
+
+            # Create Language object
+            self.language = Language(lang_func())
             self.parser = TSParser()
-            self.parser.set_language(self.language)
+            self.parser.language = self.language
         except Exception as e:
             raise RuntimeError(
                 f"Failed to load tree-sitter grammar: {e}\n"
+                f"Grammar path: {lib_path}\n"
                 f"Try running: cd {grammar_path} && tree-sitter generate && tree-sitter build"
-            )
-
-    def _build_grammar(self, grammar_path: Path, output_path: Path):
-        """Build tree-sitter grammar"""
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-
-        try:
-            Language.build_library(
-                str(output_path),
-                [str(grammar_path)]
-            )
-        except Exception as e:
-            raise RuntimeError(
-                f"Failed to build grammar: {e}\n"
-                f"Make sure tree-sitter CLI is installed: npm install -g tree-sitter-cli"
             )
 
     def parse(self, source: str, filename: str = "<input>") -> Program:

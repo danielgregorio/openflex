@@ -24,10 +24,9 @@ class SourceLocation:
     end_column: int
 
 
-@dataclass
 class ASTNode:
     """Base class for all AST nodes"""
-    loc: Optional[SourceLocation] = None
+    pass
 
 
 # ============================================================================
@@ -39,6 +38,7 @@ class Decorator(ASTNode):
     """Decorator: @reactive, @computed, @effect, etc"""
     name: str
     arguments: List['Expression'] = field(default_factory=list)
+    loc: Optional[SourceLocation] = None
 
 
 # ============================================================================
@@ -52,6 +52,7 @@ class ConditionalCompilation(ASTNode):
     then_block: List['Statement']
     elif_blocks: List['ElifBlock'] = field(default_factory=list)
     else_block: Optional[List['Statement']] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -59,38 +60,43 @@ class ElifBlock(ASTNode):
     """#elif block"""
     condition: 'ConditionExpression'
     block: List['Statement']
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
 class ConditionExpression(ASTNode):
     """Condition expression for #if: FLAG, !FLAG, (A && B), etc"""
-    pass
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
-class ConditionIdentifier(ConditionExpression):
+class ConditionIdentifier:
     """Simple flag: WEB, MOBILE, DEBUG"""
     name: str
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
-class ConditionNot(ConditionExpression):
+class ConditionNot:
     """NOT condition: !FLAG"""
-    operand: ConditionExpression
+    operand: 'ConditionExpression'
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
-class ConditionAnd(ConditionExpression):
+class ConditionAnd:
     """AND condition: A && B"""
-    left: ConditionExpression
-    right: ConditionExpression
+    left: 'ConditionExpression'
+    right: 'ConditionExpression'
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
-class ConditionOr(ConditionExpression):
+class ConditionOr:
     """OR condition: A || B"""
-    left: ConditionExpression
-    right: ConditionExpression
+    left: 'ConditionExpression'
+    right: 'ConditionExpression'
+    loc: Optional[SourceLocation] = None
 
 
 # ============================================================================
@@ -114,8 +120,9 @@ class TypeKind(Enum):
 @dataclass
 class Type(ASTNode):
     """Base type class"""
-    kind: TypeKind
-    name: str
+    kind: TypeKind = None
+    name: str = ""
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -127,18 +134,19 @@ class PrimitiveType(Type):
 @dataclass
 class ArrayType(Type):
     """Array<T> type"""
-    element_type: Type
+    element_type: Optional[Type] = None
 
     def __post_init__(self):
-        self.kind = TypeKind.ARRAY
-        self.name = f"Array<{self.element_type.name}>"
+        if self.element_type:
+            self.kind = TypeKind.ARRAY
+            self.name = f"Array<{self.element_type.name}>"
 
 
 @dataclass
 class FunctionType(Type):
     """Function type: (params) => return_type"""
-    param_types: List[Type]
-    return_type: Type
+    param_types: List[Type] = field(default_factory=list)
+    return_type: Optional[Type] = None
 
     def __post_init__(self):
         self.kind = TypeKind.FUNCTION
@@ -147,28 +155,30 @@ class FunctionType(Type):
 @dataclass
 class UnionType(Type):
     """Union type: T | U"""
-    types: List[Type]
+    types: List[Type] = field(default_factory=list)
 
     def __post_init__(self):
         self.kind = TypeKind.UNION
-        self.name = " | ".join(t.name for t in self.types)
+        if self.types:
+            self.name = " | ".join(t.name for t in self.types)
 
 
 @dataclass
 class NullableType(Type):
     """Nullable type: T?"""
-    base_type: Type
+    base_type: Optional[Type] = None
 
     def __post_init__(self):
         self.kind = TypeKind.NULLABLE
-        self.name = f"{self.base_type.name}?"
+        if self.base_type:
+            self.name = f"{self.base_type.name}?"
 
 
 @dataclass
 class GenericType(Type):
     """Generic type: Map<K, V>"""
-    base: Type
-    type_params: List[Type]
+    base: Optional[Type] = None
+    type_params: List[Type] = field(default_factory=list)
 
     def __post_init__(self):
         self.kind = TypeKind.GENERIC
@@ -183,13 +193,15 @@ class GenericType(Type):
 @dataclass
 class Expression(ASTNode):
     """Base expression class"""
-    type: Optional[Type] = None  # Filled by type checker
+    pass
 
 
 @dataclass
 class Identifier(Expression):
     """Variable/function name"""
     name: str
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -197,6 +209,8 @@ class Literal(Expression):
     """Literal value"""
     value: Any
     raw: str
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -324,12 +338,14 @@ class Statement(ASTNode):
 class BlockStatement(Statement):
     """Block: { ... }"""
     body: List[Statement]
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
 class ExpressionStatement(Statement):
     """Expression as statement"""
     expression: Expression
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -343,6 +359,7 @@ class VariableDeclaration(Statement):
     decorators: List[Decorator] = field(default_factory=list)  # @reactive, @computed, etc
     visibility: str = "public"  # public, private, protected
     is_static: bool = False
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -356,6 +373,7 @@ class FunctionDeclaration(Statement):
     visibility: str = "public"  # public, private, protected
     is_static: bool = False
     decorators: List[Decorator] = field(default_factory=list)  # @effect, etc
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -548,3 +566,4 @@ class Program(ASTNode):
     imports: List[ImportDeclaration]
     declarations: List[Statement]
     source_file: str
+    loc: Optional[SourceLocation] = None

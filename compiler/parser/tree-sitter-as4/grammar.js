@@ -11,6 +11,21 @@ module.exports = grammar({
 
   word: $ => $.identifier,
 
+  conflicts: $ => [
+    [$.block, $.object_literal],
+    [$.parameter, $.expression],
+    [$.type, $.generic_type],
+    [$.await_expression, $.call_expression],
+    [$.arrow_function, $.call_expression],
+    [$.arrow_function, $.ternary_expression],
+    [$.nullable_type, $.union_type],
+    [$.nullable_type, $.function_type],
+    [$.union_type, $.function_type],
+    [$.union_type],
+    [$.match_expression, $.match_statement],
+    [$.if_statement],
+  ],
+
   rules: {
     // Entry point
     source_file: $ => repeat($._statement),
@@ -168,31 +183,21 @@ module.exports = grammar({
     ),
 
     // Conditional compilation
-    conditional_compilation_block: $ => choice(
-      $.if_directive,
-      $.elif_directive,
-      $.else_directive,
-      $.endif_directive
-    ),
-
-    if_directive: $ => seq(
+    conditional_compilation_block: $ => seq(
       '#if',
       $.condition_expression,
-      repeat($._statement)
+      repeat($._statement),
+      repeat(seq(
+        '#elif',
+        $.condition_expression,
+        repeat($._statement)
+      )),
+      optional(seq(
+        '#else',
+        repeat($._statement)
+      )),
+      '#endif'
     ),
-
-    elif_directive: $ => seq(
-      '#elif',
-      $.condition_expression,
-      repeat($._statement)
-    ),
-
-    else_directive: $ => seq(
-      '#else',
-      repeat($._statement)
-    ),
-
-    endif_directive: $ => '#endif',
 
     condition_expression: $ => choice(
       $.identifier,  // WEB, MOBILE, etc.
@@ -214,10 +219,10 @@ module.exports = grammar({
 
     nullable_type: $ => seq($.type, '?'),
 
-    union_type: $ => seq(
+    union_type: $ => prec.left(seq(
       $.type,
       repeat1(seq('|', $.type))
-    ),
+    )),
 
     array_type: $ => seq('Array', '<', $.type, '>'),
 
@@ -320,14 +325,14 @@ module.exports = grammar({
       prec.right(1, seq($.expression, '=', $.expression)),
     ),
 
-    unary_expression: $ => choice(
+    unary_expression: $ => prec.left(13, choice(
       seq('-', $.expression),
       seq('!', $.expression),
       seq('++', $.expression),
       seq('--', $.expression),
       seq($.expression, '++'),
       seq($.expression, '--'),
-    ),
+    )),
 
     call_expression: $ => seq(
       $.expression,
@@ -340,16 +345,16 @@ module.exports = grammar({
       ')'
     ),
 
-    member_expression: $ => choice(
+    member_expression: $ => prec.left(16, choice(
       seq($.expression, '.', $.identifier),
       seq($.expression, '[', $.expression, ']'),
       seq($.expression, '?.', $.identifier),  // Optional chaining
-    ),
+    )),
 
     new_expression: $ => seq(
       'new',
       $.type,
-      optional($.argument_list)
+      $.argument_list
     ),
 
     array_literal: $ => seq(
@@ -386,10 +391,10 @@ module.exports = grammar({
       )
     ),
 
-    await_expression: $ => seq(
+    await_expression: $ => prec.right(12, seq(
       'await',
       $.expression
-    ),
+    )),
 
     ternary_expression: $ => prec.right(seq(
       $.expression,
