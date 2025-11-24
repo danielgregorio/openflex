@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark">
+
+    <fx:Script>
+        // Using signals for reactivity (AS4 feature)
+        import { signal, computed } from "openflex/reactive";
+
+        const count = signal(0);
+        const doubled = computed(() => count() * 2);
+        const isEven = computed(() => count() % 2 === 0);
+
+        function increment(): void {
+            count.set(count() + 1);
+        }
+
+        function decrement(): void {
+            count.set(count() - 1);
+        }
+
+        function reset(): void {
+            count.set(0);
+        }
+    </fx:Script>
+
+    <s:VBox gap="24" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%">
+
+        <s:Panel title="Counter Demo" width="400">
+            <s:VBox gap="16" padding="20">
+
+                <!-- Display -->
+                <s:HBox gap="8" horizontalAlign="center">
+                    <s:Label text="Count:" fontSize="18" />
+                    <s:Label text="{count()}" fontSize="24" fontWeight="bold" color="#0066cc" />
+                </s:HBox>
+
+                <!-- Computed values -->
+                <s:VBox gap="4">
+                    <s:Label text="Doubled: {doubled()}" fontSize="14" color="#666" />
+                    <s:Label text="Is Even: {isEven()}" fontSize="14" color="#666" />
+                </s:VBox>
+
+                <!-- Controls -->
+                <s:HBox gap="8" horizontalAlign="center">
+                    <s:Button label="-" click="decrement()" width="60" />
+                    <s:Button label="Reset" click="reset()" width="80" />
+                    <s:Button label="+" click="increment()" width="60" />
+                </s:HBox>
+
+            </s:VBox>
+        </s:Panel>
+
+    </s:VBox>
+
+</s:Application>
