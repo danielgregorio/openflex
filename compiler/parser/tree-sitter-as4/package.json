@@ -1,0 +1,32 @@
+{
+  "name": "tree-sitter-actionscript4",
+  "version": "0.1.0",
+  "description": "Tree-sitter grammar for ActionScript 4 (OpenFlex Neo)",
+  "main": "bindings/node",
+  "keywords": [
+    "parser",
+    "tree-sitter",
+    "actionscript",
+    "as4",
+    "openflex"
+  ],
+  "author": "OpenFlex Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "nan": "^2.14.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.20.0"
+  },
+  "scripts": {
+    "build": "tree-sitter generate && node-gyp build",
+    "test": "tree-sitter test"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.as4",
+      "file-types": ["as4", "as"],
+      "highlights": "queries/highlights.scm"
+    }
+  ]
+}

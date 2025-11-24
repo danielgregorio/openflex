@@ -43,8 +43,12 @@ dist/
 output/
 *.js.map
 
-# Tree-sitter
-parser/
+# Tree-sitter generated files
+compiler/parser/tree-sitter-as4/src/*.c
+compiler/parser/tree-sitter-as4/src/*.h
+compiler/parser/tree-sitter-as4/src/tree_sitter/
+compiler/parser/tree-sitter-as4/build/
+compiler/parser/tree-sitter-as4/node_modules/
 *.so
 *.dylib
 
