@@ -487,8 +487,287 @@ class ASTVisitor:
         elif node.type == 'null':
             return NullLiteral(value=None, raw='null', loc=self._make_location(node))
 
-        # More expression types to implement...
+        elif node.type == 'binary_expression':
+            return self.visit_binary_expression(node)
+
+        elif node.type == 'unary_expression':
+            return self.visit_unary_expression(node)
+
+        elif node.type == 'call_expression':
+            return self.visit_call_expression(node)
+
+        elif node.type == 'member_expression':
+            return self.visit_member_expression(node)
+
+        elif node.type == 'array_literal':
+            return self.visit_array_literal(node)
+
+        elif node.type == 'object_literal':
+            return self.visit_object_literal(node)
+
+        elif node.type == 'arrow_function':
+            return self.visit_arrow_function(node)
+
+        elif node.type == 'await_expression':
+            return self.visit_await_expression(node)
+
+        elif node.type == 'new_expression':
+            return self.visit_new_expression(node)
+
+        elif node.type == 'ternary_expression':
+            return self.visit_ternary_expression(node)
+
+        elif node.type == 'parenthesized_expression':
+            # Unwrap parentheses
+            for child in node.children:
+                if child.type != '(' and child.type != ')':
+                    return self.visit_expression(child)
+
+        # Unknown expression type
         return None
+
+    def visit_binary_expression(self, node) -> BinaryExpression:
+        """Visit binary_expression node"""
+        left = None
+        operator = None
+        right = None
+
+        for child in node.children:
+            if child.type == 'expression' or child.type in ('identifier', 'number', 'string'):
+                if left is None:
+                    left = self.visit_expression(child)
+                else:
+                    right = self.visit_expression(child)
+            elif self._get_text(child) in ('+', '-', '*', '/', '%', '==', '!=', '<', '>', '<=', '>=', '&&', '||', '='):
+                operator = self._get_text(child)
+
+        return BinaryExpression(
+            operator=operator or '+',
+            left=left or Identifier(name="unknown"),
+            right=right or Identifier(name="unknown"),
+            loc=self._make_location(node)
+        )
+
+    def visit_unary_expression(self, node) -> UnaryExpression:
+        """Visit unary_expression node"""
+        operator = None
+        operand = None
+        is_prefix = True
+
+        for i, child in enumerate(node.children):
+            text = self._get_text(child)
+            if text in ('-', '!', '++', '--'):
+                operator = text
+                is_prefix = (i == 0)
+            elif child.type in ('expression', 'identifier', 'number'):
+                operand = self.visit_expression(child)
+
+        return UnaryExpression(
+            operator=operator or '-',
+            operand=operand or Identifier(name="unknown"),
+            is_prefix=is_prefix,
+            loc=self._make_location(node)
+        )
+
+    def visit_call_expression(self, node) -> CallExpression:
+        """Visit call_expression node"""
+        callee = None
+        arguments = []
+
+        for child in node.children:
+            if child.type in ('identifier', 'member_expression', 'expression'):
+                if callee is None:
+                    callee = self.visit_expression(child)
+            elif child.type == 'argument_list':
+                arguments = self.visit_argument_list(child)
+
+        return CallExpression(
+            callee=callee or Identifier(name="unknown"),
+            arguments=arguments,
+            loc=self._make_location(node)
+        )
+
+    def visit_argument_list(self, node) -> List[Expression]:
+        """Visit argument_list node"""
+        arguments = []
+        for child in node.children:
+            if child.type != '(' and child.type != ')' and child.type != ',':
+                expr = self.visit_expression(child)
+                if expr:
+                    arguments.append(expr)
+        return arguments
+
+    def visit_member_expression(self, node) -> MemberExpression:
+        """Visit member_expression node"""
+        object_expr = None
+        property_expr = None
+        is_computed = False
+
+        for child in node.children:
+            text = self._get_text(child)
+            if text == '.':
+                continue
+            elif text == '[':
+                is_computed = True
+            elif text == ']':
+                continue
+            elif object_expr is None:
+                object_expr = self.visit_expression(child)
+            else:
+                if is_computed:
+                    property_expr = self.visit_expression(child)
+                else:
+                    property_expr = Identifier(name=text)
+
+        return MemberExpression(
+            object=object_expr or Identifier(name="unknown"),
+            property=property_expr or Identifier(name="unknown"),
+            is_computed=is_computed,
+            loc=self._make_location(node)
+        )
+
+    def visit_array_literal(self, node) -> 'ArrayLiteral':
+        """Visit array_literal node"""
+        from .ast import ArrayLiteral
+        elements = []
+        for child in node.children:
+            if child.type != '[' and child.type != ']' and child.type != ',':
+                expr = self.visit_expression(child)
+                if expr:
+                    elements.append(expr)
+
+        return ArrayLiteral(elements=elements, loc=self._make_location(node))
+
+    def visit_object_literal(self, node) -> 'ObjectLiteral':
+        """Visit object_literal node"""
+        from .ast import ObjectLiteral, Property
+        properties = []
+        for child in node.children:
+            if child.type == 'property':
+                prop = self.visit_property(child)
+                if prop:
+                    properties.append(prop)
+
+        return ObjectLiteral(properties=properties, loc=self._make_location(node))
+
+    def visit_property(self, node) -> 'Property':
+        """Visit property node"""
+        from .ast import Property
+        key = None
+        value = None
+        is_computed = False
+
+        for child in node.children:
+            if child.type == ':':
+                continue
+            elif child.type == '[':
+                is_computed = True
+            elif child.type == ']':
+                continue
+            elif key is None:
+                if child.type == 'identifier':
+                    key = Identifier(name=self._get_text(child))
+                elif child.type == 'string':
+                    key = self.visit_expression(child)
+                else:
+                    key = self.visit_expression(child)
+            else:
+                value = self.visit_expression(child)
+
+        return Property(
+            key=key or Identifier(name="unknown"),
+            value=value or Identifier(name="unknown"),
+            is_computed=is_computed,
+            loc=self._make_location(node)
+        )
+
+    def visit_arrow_function(self, node) -> 'ArrowFunction':
+        """Visit arrow_function node"""
+        from .ast import ArrowFunction
+        params = []
+        body = None
+
+        for child in node.children:
+            if child.type == 'parameter_list':
+                params = self.visit_parameter_list(child)
+            elif child.type == 'identifier':
+                # Single parameter without parens
+                params = [Parameter(name=self._get_text(child), param_type=None)]
+            elif child.type == '=>':
+                continue
+            elif child.type == 'block':
+                body = self.visit_block(child)
+            else:
+                # Expression body
+                body = self.visit_expression(child)
+
+        return ArrowFunction(
+            params=params,
+            body=body or BlockStatement(body=[]),
+            is_async=False,
+            loc=self._make_location(node)
+        )
+
+    def visit_await_expression(self, node) -> 'AwaitExpression':
+        """Visit await_expression node"""
+        from .ast import AwaitExpression
+        argument = None
+        for child in node.children:
+            if self._get_text(child) != 'await':
+                argument = self.visit_expression(child)
+                break
+
+        return AwaitExpression(
+            argument=argument or Identifier(name="unknown"),
+            loc=self._make_location(node)
+        )
+
+    def visit_new_expression(self, node) -> 'NewExpression':
+        """Visit new_expression node"""
+        from .ast import NewExpression
+        callee = None
+        arguments = []
+
+        for child in node.children:
+            if self._get_text(child) == 'new':
+                continue
+            elif child.type == 'type' or child.type == 'identifier':
+                if callee is None:
+                    callee = self.visit_expression(child) if child.type != 'type' else Identifier(name=self._get_text(child))
+            elif child.type == 'argument_list':
+                arguments = self.visit_argument_list(child)
+
+        return NewExpression(
+            callee=callee or Identifier(name="unknown"),
+            arguments=arguments,
+            loc=self._make_location(node)
+        )
+
+    def visit_ternary_expression(self, node) -> 'ConditionalExpression':
+        """Visit ternary_expression node"""
+        from .ast import ConditionalExpression
+        test = None
+        consequent = None
+        alternate = None
+
+        parts = []
+        for child in node.children:
+            if child.type not in ('?', ':'):
+                expr = self.visit_expression(child)
+                if expr:
+                    parts.append(expr)
+
+        if len(parts) >= 3:
+            test = parts[0]
+            consequent = parts[1]
+            alternate = parts[2]
+
+        return ConditionalExpression(
+            test=test or Identifier(name="true"),
+            consequent=consequent or Identifier(name="unknown"),
+            alternate=alternate or Identifier(name="unknown"),
+            loc=self._make_location(node)
+        )
 
     def visit_block(self, node) -> BlockStatement:
         """Visit block node"""
