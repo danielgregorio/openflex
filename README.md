@@ -1,19 +1,23 @@
-# 🚀 OpenFlex
+# 🆕 OpenFlex Neo
 
-**ActionScript 4 + MXML → Modern Web Platform**
+**ActionScript 4 + MXML → Modern Multi-Platform**
 
-OpenFlex is a modern compiler and runtime that brings ActionScript/Flex concepts into 2025 with contemporary features like signals, pattern matching, null safety, and WebAssembly support.
+OpenFlex Neo is a modern compiler and runtime that brings ActionScript/Flex concepts into 2025. Write once in AS4/MXML, deploy everywhere: Web, Mobile, Desktop.
+
+**"Neo. Reborn for 2025."**
 
 ## 🎯 Vision
 
-ActionScript 3 was ahead of its time with strong typing, MXML declarative UI, and data binding. Flash died, but the ideas were brilliant. OpenFlex evolves these concepts with modern features:
+ActionScript 3 was ahead of its time with strong typing, MXML declarative UI, and data binding. Flash died, but the ideas were brilliant. OpenFlex Neo evolves these concepts with 2025 features:
 
-- **ActionScript 4**: Modern language features (null safety, pattern matching, async/await, signals)
-- **MXML 2.0**: Declarative UI with reactive data binding
-- **Multiple Targets**: JavaScript, TypeScript, WebAssembly
-- **Modern Runtime**: Reactive signals (à la Solid.js), Virtual DOM
-- **Type Safety**: Full type inference and checking
-- **Developer Experience**: Fast builds, hot reload, excellent errors
+- **ActionScript 4**: Null safety, pattern matching, traits, conditional compilation, built-in reactivity
+- **MXML Neo**: Declarative UI with reactive data binding, conditional rendering, list iteration
+- **Multi-Platform**: One codebase → Web, Mobile, Desktop (conditional compilation prevents bloat)
+- **Neo Components**: Platform-agnostic component library
+- **Zero Bloat**: Conditional compilation eliminates unused platform code
+- **Clean Imports**: AS3-style imports (`import package.Class`), no JS destructuring
+- **Type Safety**: Gradual typing with strict mode available
+- **Developer Experience**: Fast builds, hot reload, excellent error messages
 
 ## 🏗️ Architecture
 
@@ -66,55 +70,139 @@ match result {
     Error(msg) => trace("Error: " + msg)
 }
 
-// Union Types
+// Union Types (Tagged Unions)
 type Result<T, E> = Success<T> | Error<E>;
 
 // Async/Await
-async function fetchUser(id: String): Promise<User> {
-    const response = await fetch(`/api/users/${id}`);
-    return await response.json();
+async function fetchUser(id: String): Result<User, String> {
+    const response = await http.get(`/api/users/${id}`);
+    if (response.ok) {
+        return Success(response.data);
+    }
+    return Error("Failed to fetch user");
 }
 ```
 
-### Reactive Programming
+### Clean Imports (AS3-style, no destructuring!)
 
 ```actionscript
-import { signal, computed, effect } from "openflex/reactive";
+// AS4 Neo - Clean, explicit imports
+import openflex.reactive.Signal;
+import openflex.reactive.Computed;
+import openflex.components.Button;
 
-// Signals (reactive state)
-const count = signal(0);
-const doubled = computed(() => count() * 2);
+// Or import entire package
+import openflex.reactive.*;
 
-// Effects (side effects)
-effect(() => {
-    trace("Count changed: " + count());
-});
-
-count.set(5);  // Automatically triggers effect
+// Usage
+const count = new Signal(0);
+const doubled = new Computed(() => count.value * 2);
 ```
 
-### MXML 2.0 - Declarative UI
+### Built-in Reactivity
+
+```actionscript
+// Built into the language!
+@reactive var count: Number = 0;
+@reactive var message: String = "Hello";
+
+// Automatically reactive - updates UI
+count++;  // Triggers re-render
+
+// Computed values
+@computed var doubled: Number {
+    return count * 2;
+}
+
+// Effects (side effects)
+@effect
+function logCount() {
+    trace("Count: " + count);
+}
+```
+
+### Conditional Compilation (Zero Bloat!)
+
+```actionscript
+// Platform-specific code is compiled out
+#if WEB
+import openflex.web.Canvas;
+
+function useWebGL(): void {
+    // This code doesn't exist in mobile builds!
+}
+#endif
+
+#if MOBILE
+import openflex.mobile.Camera;
+
+function useCamera(): void {
+    // This code doesn't exist in web builds!
+}
+#endif
+
+// Build flags
+const API_URL = #if DEBUG
+    "http://localhost:3000"
+#else
+    "https://api.production.com"
+#endif;
+```
+
+### MXML Neo - Declarative UI
 
 ```xml
-<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
-               xmlns:s="library://ns.adobe.com/flex/spark">
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo">
 
     <fx:Script>
-        import { signal } from "openflex/reactive";
+        import openflex.reactive.Signal;
 
-        const count = signal(0);
+        // Built-in reactivity
+        @reactive var count: Number = 0;
 
         function increment(): void {
-            count.set(count() + 1);
+            count++;  // Automatically updates UI!
         }
     </fx:Script>
 
-    <s:VBox gap={16}>
-        <s:Label text="Count: {count()}" fontSize={24} />
-        <s:Button label="Increment" click={increment} />
-    </s:VBox>
+    <!-- Neo components (no prefix needed!) -->
+    <VBox gap={16}>
+        <Label text="Count: {count}" fontSize={24} />
+        <Button label="Increment" click={increment} />
+    </VBox>
 
-</s:Application>
+</Application>
+```
+
+### MXML Neo Advanced Features
+
+```xml
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo">
+
+    <fx:Script>
+        @reactive var users: Array<User> = [];
+        @reactive var loading: Boolean = false;
+    </fx:Script>
+
+    <VBox>
+        <!-- Conditional rendering -->
+        <if test={loading}>
+            <Spinner />
+        </if>
+        <else>
+            <!-- List rendering with key -->
+            <for each={users} as="user" key="id">
+                <UserCard user={user} />
+            </for>
+        </else>
+    </VBox>
+
+</Application>
 ```
 
 ## 🚀 Getting Started
@@ -153,16 +241,20 @@ openflex check src/App.mxml
 ```
 my-app/
 ├── src/
-│   ├── App.mxml           # Main application
-│   ├── components/        # UI components
+│   ├── app/
+│   │   └── App.mxml       # Main application
+│   ├── components/        # Reusable components
 │   │   ├── Button.mxml
 │   │   └── Card.mxml
-│   └── lib/               # AS4 libraries
-│       └── utils.as4
+│   ├── lib/               # AS4 libraries
+│   │   └── utils.as4
+│   ├── styles/            # CSS styles
+│   │   └── theme.css
+│   └── assets/            # Images, fonts, etc
+│       └── logo.png
 ├── public/
 │   └── index.html
-├── openflex.config.json
-└── package.json
+└── openflex.toml          # Project configuration (Maven-like)
 ```
 
 ## 📚 Documentation
@@ -182,33 +274,58 @@ my-app/
 - **Union**: `T | U` (sum types)
 - **Generics**: `Box<T>`, `Result<T, E>`
 
-### Component Library
+### Neo Component Library
 
-OpenFlex includes Flex Spark components modernized for 2025:
+OpenFlex Neo includes platform-agnostic components (works on Web, Mobile, Desktop):
 
-- **Layout**: `VBox`, `HBox`, `Grid`, `Spacer`
-- **Controls**: `Button`, `TextInput`, `CheckBox`, `RadioButton`
-- **Display**: `Label`, `Image`, `Panel`
-- **Data**: `DataGrid`, `List`, `Tree`
+- **Layout**: `VBox`, `HBox`, `Grid`, `Spacer`, `Stack`
+- **Controls**: `Button`, `TextInput`, `CheckBox`, `RadioButton`, `Slider`
+- **Display**: `Label`, `Image`, `Panel`, `Card`
+- **Data**: `DataGrid`, `List`, `Tree`, `VirtualList`
+- **Navigation**: `TabBar`, `TabNavigator`, `Accordion`
+- **Feedback**: `Spinner`, `ProgressBar`, `Toast`, `Modal`
+
+All components are:
+- ✅ Platform-agnostic (same code, all platforms)
+- ✅ Reactive (built-in signal support)
+- ✅ Styled with CSS
+- ✅ Accessible (ARIA support)
 
 ## 🛠️ Development Status
 
-**Current Phase**: Foundation (0.1.0-alpha)
+**Current Phase**: Design & Foundation (0.1.0-alpha)
 
+**Completed**:
+- [x] Architecture design (multi-platform ready)
+- [x] Language features defined (AS4 with modern features)
+- [x] Neo namespace and branding
 - [x] Project structure
-- [x] AST definitions
+- [x] AST definitions (60+ node types)
 - [x] Type system foundation
-- [x] CLI interface
-- [ ] Tree-sitter grammar for AS4
-- [ ] MXML parser
-- [ ] Type checker
-- [ ] JavaScript code generator
-- [ ] Reactive runtime
-- [ ] Component library
-- [ ] Hot reload
-- [ ] Source maps
+- [x] CLI interface skeleton
+- [x] Import system design (AS3-style)
+- [x] Conditional compilation design
+- [x] Built-in reactivity design
 
-See [ROADMAP.md](docs/ROADMAP.md) for detailed plans.
+**In Progress**:
+- [ ] Tree-sitter grammar for AS4
+- [ ] MXML Neo parser
+- [ ] Type checker with null safety
+- [ ] JavaScript code generator
+- [ ] Conditional compilation implementation
+- [ ] Reactive runtime (@reactive, @computed, @effect)
+- [ ] Neo component library
+- [ ] Platform abstraction layer
+
+**Planned**:
+- [ ] Hot reload / HMR
+- [ ] Source maps
+- [ ] Mobile target (React Native)
+- [ ] Desktop target (Tauri)
+- [ ] Package manager (OPM)
+- [ ] WebAssembly backend
+
+See [docs/](docs/) for detailed specifications.
 
 ## 🤝 Contributing
 
@@ -237,12 +354,14 @@ OpenFlex is inspired by:
 - **Solid.js**: Reactive signals without Virtual DOM overhead
 - **Svelte**: Compile-time optimization
 
-### Why "OpenFlex"?
+### Why "OpenFlex Neo"?
 
-Flex was closed when Adobe killed Flash. OpenFlex is:
+Flex was closed when Adobe killed Flash. OpenFlex Neo is the evolution:
 - **Open**: MIT licensed, community-driven
-- **Flex**ible: Multiple targets (JS/TS/WASM), modern features
-- **Evolutionary**: Not just preserving the past, evolving it
+- **Flex**ible: Multiple targets (Web/Mobile/Desktop), modern features
+- **Neo**: Reborn for 2025 with modern language features
+- **Zero Bloat**: Conditional compilation means you only ship code for your target platform
+- **Clean**: AS3-style imports, no JS ecosystem baggage
 
 ## 📜 License
 

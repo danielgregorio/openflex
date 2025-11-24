@@ -1,55 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
-               xmlns:s="library://ns.adobe.com/flex/spark">
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Counter - OpenFlex Neo">
 
     <fx:Script>
-        // Using signals for reactivity (AS4 feature)
-        import { signal, computed } from "openflex/reactive";
+        // Built-in reactivity - no imports needed!
+        @reactive var count: Number = 0;
 
-        const count = signal(0);
-        const doubled = computed(() => count() * 2);
-        const isEven = computed(() => count() % 2 === 0);
+        // Computed values (automatically reactive)
+        @computed var doubled: Number {
+            return count * 2;
+        }
 
+        @computed var isEven: Boolean {
+            return count % 2 === 0;
+        }
+
+        // Simple, clean functions
         function increment(): void {
-            count.set(count() + 1);
+            count++;  // Just increment - automatically updates UI!
         }
 
         function decrement(): void {
-            count.set(count() - 1);
+            count--;
         }
 
         function reset(): void {
-            count.set(0);
+            count = 0;
         }
     </fx:Script>
 
-    <s:VBox gap="24" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%">
+    <fx:Style>
+        .counter-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+        }
 
-        <s:Panel title="Counter Demo" width="400">
-            <s:VBox gap="16" padding="20">
+        .info-text {
+            font-size: 14px;
+            color: #666;
+        }
+    </fx:Style>
+
+    <!-- Neo components (no prefix!) -->
+    <VBox gap={24} horizontalAlign="center" verticalAlign="middle" width="100%" height="100%">
+
+        <Panel title="Counter Demo - OpenFlex Neo" width={400}>
+            <VBox gap={16} padding={20}>
 
                 <!-- Display -->
-                <s:HBox gap="8" horizontalAlign="center">
-                    <s:Label text="Count:" fontSize="18" />
-                    <s:Label text="{count()}" fontSize="24" fontWeight="bold" color="#0066cc" />
-                </s:HBox>
+                <HBox gap={8} horizontalAlign="center">
+                    <Label text="Count:" fontSize={18} />
+                    <Label text={count} styleClass="counter-display" />
+                </HBox>
 
                 <!-- Computed values -->
-                <s:VBox gap="4">
-                    <s:Label text="Doubled: {doubled()}" fontSize="14" color="#666" />
-                    <s:Label text="Is Even: {isEven()}" fontSize="14" color="#666" />
-                </s:VBox>
+                <VBox gap={4}>
+                    <Label text="Doubled: {doubled}" styleClass="info-text" />
+                    <Label text="Is Even: {isEven}" styleClass="info-text" />
+                </VBox>
 
                 <!-- Controls -->
-                <s:HBox gap="8" horizontalAlign="center">
-                    <s:Button label="-" click="decrement()" width="60" />
-                    <s:Button label="Reset" click="reset()" width="80" />
-                    <s:Button label="+" click="increment()" width="60" />
-                </s:HBox>
+                <HBox gap={8} horizontalAlign="center">
+                    <Button label="−" click={decrement} width={60} />
+                    <Button label="Reset" click={reset} width={80} />
+                    <Button label="+" click={increment} width={60} />
+                </HBox>
 
-            </s:VBox>
-        </s:Panel>
+                <!-- Footer -->
+                <Label text="Built with Neo 🆕" fontSize={12} color="#999" />
 
-    </s:VBox>
+            </VBox>
+        </Panel>
 
-</s:Application>
+    </VBox>
+
+</Application>
