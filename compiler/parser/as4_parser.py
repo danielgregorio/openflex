@@ -175,6 +175,7 @@ class ASTVisitor:
             'return_statement': self.visit_return_statement,
             'expression_statement': self.visit_expression_statement,
             'block': self.visit_block,
+            'block_statement': self.visit_block,  # Alias for block
         }
 
         handler = handlers.get(node.type)
@@ -836,21 +837,58 @@ class ASTVisitor:
 
     def visit_if_statement(self, node) -> IfStatement:
         """Visit if_statement node"""
+        # DEBUG: Log children
+        #print(f"DEBUG if_statement children:")
+        #for i, child in enumerate(node.children):
+        #    print(f"  {i}: {child.type} = {self._get_text(child)[:30]}")
+
         # Extract test condition
         test = None
         test_node = node.child_by_field_name('condition')
+        if not test_node:
+            # Fallback: find expression between parentheses
+            in_parens = False
+            for child in node.children:
+                if child.type == '(':
+                    in_parens = True
+                elif child.type == ')':
+                    in_parens = False
+                elif in_parens and child.type not in ('(', ')'):
+                    test_node = child
+                    break
+
         if test_node:
             test = self.visit_expression(test_node)
 
         # Extract consequent
         consequent = None
         then_node = node.child_by_field_name('consequence')
+        if not then_node:
+            # Fallback: find first statement-like node after closing paren
+            found_closing_paren = False
+            for child in node.children:
+                if child.type == ')':
+                    found_closing_paren = True
+                elif found_closing_paren and child.type not in ('if', '(', ')', 'else'):
+                    then_node = child
+                    break
+
         if then_node:
             consequent = self.visit_statement(then_node)
 
         # Extract alternate (else)
         alternate = None
         else_node = node.child_by_field_name('alternative')
+        if not else_node:
+            # Fallback: find statement after 'else' keyword
+            found_else = False
+            for child in node.children:
+                if self._get_text(child) == 'else':
+                    found_else = True
+                elif found_else and child.type not in ('else',):
+                    else_node = child
+                    break
+
         if else_node:
             alternate = self.visit_statement(else_node)
 
@@ -1016,6 +1054,14 @@ class ASTVisitor:
         """Visit return_statement node"""
         argument = None
         arg_node = node.child_by_field_name('argument')
+
+        if not arg_node:
+            # Fallback: find first expression child (skip 'return' keyword and ';')
+            for child in node.children:
+                if child.type not in ('return', ';'):
+                    arg_node = child
+                    break
+
         if arg_node:
             argument = self.visit_expression(arg_node)
 
