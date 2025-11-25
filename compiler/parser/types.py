@@ -51,6 +51,8 @@ TYPE_MAP = {
     "Boolean": BuiltinTypes.BOOLEAN,
     "void": BuiltinTypes.VOID,
     "any": BuiltinTypes.ANY,
+    "null": BuiltinTypes.NULL,
+    "undefined": BuiltinTypes.UNDEFINED,
     "Object": BuiltinTypes.OBJECT,
     "Array": BuiltinTypes.ARRAY,
     "Function": BuiltinTypes.FUNCTION,
