@@ -24,6 +24,7 @@ module.exports = grammar({
     [$.union_type],
     [$.match_expression, $.match_statement],
     [$.if_statement],
+    [$.variable_declaration, $.variable_declarator],
   ],
 
   rules: {
@@ -39,6 +40,7 @@ module.exports = grammar({
     // Statements
     _statement: $ => choice(
       $.import_statement,
+      $.for_statement,  // Try for_statement before variable_declaration
       $.variable_declaration,
       $.function_declaration,
       $.class_declaration,
@@ -48,7 +50,6 @@ module.exports = grammar({
       $.conditional_compilation_block,
       $.expression_statement,
       $.if_statement,
-      $.for_statement,
       // $.for_in_statement,
       // $.for_of_statement,
       $.while_statement,
@@ -471,7 +472,18 @@ module.exports = grammar({
     for_statement: $ => seq(
       'for',
       '(',
-      optional(choice($.variable_declarator, $.expression)),
+      optional(choice(
+        alias(
+          seq(
+            choice('var', 'const'),
+            $.identifier,
+            optional(seq(':', $.type)),
+            optional(seq('=', $.expression))
+          ),
+          $.for_init_declarator
+        ),
+        $.expression
+      )),
       ';',
       optional($.expression),
       ';',
@@ -479,6 +491,14 @@ module.exports = grammar({
       ')',
       $._statement
     ),
+
+    // Explicitly define for_init_declarator to avoid conflict
+    for_init_declarator: $ => prec(10, seq(
+      choice('var', 'const'),
+      $.identifier,
+      optional(seq(':', $.type)),
+      optional(seq('=', $.expression))
+    )),
 
     for_in_statement: $ => seq(
       'for',
