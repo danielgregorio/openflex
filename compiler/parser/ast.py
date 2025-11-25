@@ -389,6 +389,7 @@ class Parameter(ASTNode):
 class ReturnStatement(Statement):
     """Return statement"""
     argument: Optional[Expression]
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass

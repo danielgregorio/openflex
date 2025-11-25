@@ -15,11 +15,11 @@
     </fx:Script>
 
     <!-- Neo components (no prefix needed!) -->
-    <VBox gap={16} horizontalAlign="center" verticalAlign="middle" width="100%" height="100%">
-        <Label text={message} fontSize={32} fontWeight="bold" />
-        <Label text="Welcome to the future of ActionScript" fontSize={16} />
-        <Label text="Built with Neo 🆕" fontSize={14} color="#666" />
-        <Button label="Click Me" click={greet} />
+    <VBox gap="{16}" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%">
+        <Label text="{message}" fontSize="{32}" fontWeight="bold" />
+        <Label text="Welcome to the future of ActionScript" fontSize="{16}" />
+        <Label text="Built with Neo 🆕" fontSize="{14}" color="#666" />
+        <Button label="Click Me" click="{greet}" />
     </VBox>
 
 </Application>
