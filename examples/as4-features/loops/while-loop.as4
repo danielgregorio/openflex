@@ -1,0 +1,43 @@
+// While loop examples
+// OpenFlex Neo - ActionScript 4
+
+function factorial(n: Number): Number {
+    var result: Number = 1;
+    var counter: Number = n;
+
+    while (counter > 1) {
+        result = result * counter;
+        counter = counter - 1;
+    }
+
+    return result;
+}
+
+function findPowerOfTwo(target: Number): Number {
+    var power: Number = 0;
+    var value: Number = 1;
+
+    while (value < target) {
+        value = value * 2;
+        power = power + 1;
+    }
+
+    return power;
+}
+
+// Do-while example
+function getUserInput(): String {
+    var input: String = "";
+    var valid: Boolean = false;
+
+    do {
+        input = "user_input_here";  // Simulated input
+        valid = input.length > 0;
+    } while (!valid);
+
+    return input;
+}
+
+// Test the functions
+trace("Factorial of 5: " + factorial(5));
+trace("Power of 2 >= 100: " + findPowerOfTwo(100));

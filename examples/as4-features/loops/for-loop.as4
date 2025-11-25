@@ -1,0 +1,40 @@
+// Traditional for loop example
+// OpenFlex Neo - ActionScript 4
+
+function sumNumbers(count: Number): Number {
+    var total: Number = 0;
+
+    for (var i: Number = 0; i < count; i++) {
+        total = total + i;
+    }
+
+    return total;
+}
+
+function printSquares(limit: Number): void {
+    for (var n: Number = 1; n <= limit; n++) {
+        var square: Number = n * n;
+        trace("Square of " + n + " is " + square);
+    }
+}
+
+// Nested for loops
+function createGrid(rows: Number, cols: Number): Array<Array<Number>> {
+    var grid: Array<Array<Number>> = [];
+
+    for (var row: Number = 0; row < rows; row++) {
+        var rowArray: Array<Number> = [];
+        for (var col: Number = 0; col < cols; col++) {
+            rowArray.push(row * cols + col);
+        }
+        grid.push(rowArray);
+    }
+
+    return grid;
+}
+
+// Test the functions
+var result: Number = sumNumbers(10);
+trace("Sum of 0-9: " + result);
+
+printSquares(5);

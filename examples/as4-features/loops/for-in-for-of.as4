@@ -1,0 +1,56 @@
+// For-in and For-of loop examples
+// OpenFlex Neo - ActionScript 4
+
+// For-in: iterate over object keys
+function printObjectKeys(obj: Object): void {
+    for (var key: String in obj) {
+        trace("Key: " + key + ", Value: " + obj[key]);
+    }
+}
+
+// For-of: iterate over array values
+function sumArray(numbers: Array<Number>): Number {
+    var total: Number = 0;
+
+    for (var num: Number of numbers) {
+        total = total + num;
+    }
+
+    return total;
+}
+
+function findMax(values: Array<Number>): Number {
+    var max: Number = -Infinity;
+
+    for (var value: Number of values) {
+        if (value > max) {
+            max = value;
+        }
+    }
+
+    return max;
+}
+
+// For-of with strings (iterate over characters)
+function countVowels(text: String): Number {
+    var count: Number = 0;
+    var vowels: String = "aeiouAEIOU";
+
+    for (var char: String of text) {
+        if (vowels.indexOf(char) >= 0) {
+            count = count + 1;
+        }
+    }
+
+    return count;
+}
+
+// Test the functions
+var user: Object = { name: "Alice", age: 30, city: "NYC" };
+printObjectKeys(user);
+
+var numbers: Array<Number> = [5, 12, 8, 3, 19, 7];
+trace("Sum: " + sumArray(numbers));
+trace("Max: " + findMax(numbers));
+
+trace("Vowels in 'Hello World': " + countVowels("Hello World"));

@@ -1,0 +1,198 @@
+// Combined features demo: Data Processor
+// OpenFlex Neo - ActionScript 4
+// Demonstrates: loops, try-catch, match expressions, type checking
+
+class DataProcessor {
+    @reactive
+    var records: Array<Record> = [];
+
+    @reactive
+    var errorCount: Number = 0;
+
+    // Process an array of data records
+    function processRecords(data: Array<Object>): Array<Record> {
+        var results: Array<Record> = [];
+
+        // For-of loop to iterate over input data
+        for (var item: Object of data) {
+            try {
+                var record: Record = this.parseRecord(item);
+                results.push(record);
+            } catch (error: ValidationError) {
+                trace("Validation error: " + error.message);
+                this.errorCount = this.errorCount + 1;
+            } catch (error: Error) {
+                trace("Unexpected error: " + error.message);
+                this.errorCount = this.errorCount + 1;
+            }
+        }
+
+        return results;
+    }
+
+    // Parse a single record with pattern matching
+    function parseRecord(data: Object): Record {
+        return match (data.type) {
+            "user" => this.parseUser(data),
+            "product" => this.parseProduct(data),
+            "order" => this.parseOrder(data),
+            _ => throw new Error("Unknown record type: " + data.type)
+        };
+    }
+
+    // Validate and filter records
+    function filterRecords(records: Array<Record>, criteria: FilterCriteria): Array<Record> {
+        var filtered: Array<Record> = [];
+
+        for (var record: Record of records) {
+            var matches: Boolean = match (criteria.type) {
+                "active" => record.status === "active",
+                "recent" => this.isRecent(record.timestamp),
+                "premium" => record.tier === "premium",
+                _ => true
+            };
+
+            if (matches) {
+                filtered.push(record);
+            }
+        }
+
+        return filtered;
+    }
+
+    // Aggregate data with error handling
+    function aggregateData(records: Array<Record>): Statistics {
+        var stats: Statistics = {
+            total: 0,
+            sum: 0,
+            average: 0,
+            max: -Infinity,
+            min: Infinity
+        };
+
+        try {
+            // Traditional for loop for indexing
+            for (var i: Number = 0; i < records.length; i++) {
+                var record: Record = records[i];
+                var value: Number = this.extractValue(record);
+
+                stats.total = stats.total + 1;
+                stats.sum = stats.sum + value;
+
+                if (value > stats.max) {
+                    stats.max = value;
+                }
+
+                if (value < stats.min) {
+                    stats.min = value;
+                }
+            }
+
+            // Calculate average
+            if (stats.total > 0) {
+                stats.average = stats.sum / stats.total;
+            }
+
+            return stats;
+        } catch (error: Error) {
+            trace("Aggregation error: " + error.message);
+            throw error;
+        } finally {
+            trace("Aggregation complete: " + stats.total + " records processed");
+        }
+    }
+
+    // Retry logic with while loop
+    function fetchWithRetry(url: String, maxRetries: Number): Object? {
+        var attempts: Number = 0;
+        var success: Boolean = false;
+        var result: Object? = null;
+
+        while (attempts < maxRetries && !success) {
+            try {
+                result = this.fetch(url);
+                success = true;
+            } catch (error: NetworkError) {
+                attempts = attempts + 1;
+                trace("Attempt " + attempts + " failed, retrying...");
+
+                // Exponential backoff
+                var delay: Number = Math.pow(2, attempts) * 100;
+                this.sleep(delay);
+            } catch (error: Error) {
+                // Non-network errors shouldn't retry
+                throw error;
+            }
+        }
+
+        return result;
+    }
+
+    // Group records by category
+    function groupByCategory(records: Array<Record>): Object {
+        var groups: Object = {};
+
+        for (var record: Record of records) {
+            var category: String = match (record.value) {
+                value when value < 100 => "low",
+                value when value < 500 => "medium",
+                value when value < 1000 => "high",
+                _ => "very_high"
+            };
+
+            // Initialize array if needed
+            if (!groups[category]) {
+                groups[category] = [];
+            }
+
+            groups[category].push(record);
+        }
+
+        // For-in loop to iterate over groups
+        for (var key: String in groups) {
+            trace("Category " + key + ": " + groups[key].length + " records");
+        }
+
+        return groups;
+    }
+
+    // Clean up invalid records
+    function cleanup(records: Array<Record>): void {
+        var removed: Number = 0;
+
+        try {
+            var i: Number = 0;
+            while (i < records.length) {
+                var record: Record = records[i];
+
+                var shouldRemove: Boolean = match (record.status) {
+                    "deleted" => true,
+                    "invalid" => true,
+                    "expired" => this.isExpired(record.timestamp),
+                    _ => false
+                };
+
+                if (shouldRemove) {
+                    records.splice(i, 1);
+                    removed = removed + 1;
+                } else {
+                    i = i + 1;
+                }
+            }
+
+            trace("Cleanup complete: " + removed + " records removed");
+        } catch (error: Error) {
+            trace("Cleanup error: " + error.message);
+        }
+    }
+
+    // Helper methods (stubs for demo)
+    private function parseUser(data: Object): Record { return {}; }
+    private function parseProduct(data: Object): Record { return {}; }
+    private function parseOrder(data: Object): Record { return {}; }
+    private function isRecent(timestamp: Number): Boolean { return true; }
+    private function extractValue(record: Record): Number { return 0; }
+    private function fetch(url: String): Object { return {}; }
+    private function sleep(ms: Number): void {}
+    private function isExpired(timestamp: Number): Boolean { return false; }
+}

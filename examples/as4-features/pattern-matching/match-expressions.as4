@@ -1,0 +1,114 @@
+// Pattern matching with match expressions
+// OpenFlex Neo - ActionScript 4
+
+// Basic match expression
+function getColorName(code: Number): String {
+    return match (code) {
+        1 => "Red",
+        2 => "Green",
+        3 => "Blue",
+        _ => "Unknown"
+    };
+}
+
+// Match with type patterns
+function describeValue(value: any): String {
+    return match (value) {
+        value: String => "Text: " + value,
+        value: Number => "Number: " + value,
+        value: Boolean => "Boolean: " + value,
+        null => "Null value",
+        _ => "Unknown type"
+    };
+}
+
+// Match with guards (conditions)
+function categorizeAge(age: Number): String {
+    return match (age) {
+        age when age < 0 => "Invalid",
+        age when age < 13 => "Child",
+        age when age < 20 => "Teenager",
+        age when age < 65 => "Adult",
+        _ => "Senior"
+    };
+}
+
+// Match with object destructuring
+function processResponse(response: Object): String {
+    return match (response) {
+        { status: 200, data: data } => "Success: " + data,
+        { status: 404 } => "Not found",
+        { status: 500, error: error } => "Server error: " + error,
+        _ => "Unknown response"
+    };
+}
+
+// Match with array patterns
+function describeArray(arr: Array<any>): String {
+    return match (arr) {
+        [] => "Empty array",
+        [x] => "Single element: " + x,
+        [x, y] => "Two elements: " + x + ", " + y,
+        [first, ...rest] => "Multiple elements, first: " + first,
+        _ => "Unknown pattern"
+    };
+}
+
+// Match statement (not expression)
+function handleEvent(event: Event): void {
+    match (event.type) {
+        "click" => {
+            trace("Clicked at: " + event.x + ", " + event.y);
+        },
+        "keypress" => {
+            trace("Key pressed: " + event.key);
+        },
+        "resize" => {
+            trace("Window resized");
+        },
+        _ => {
+            trace("Unknown event: " + event.type);
+        }
+    }
+}
+
+// Nested match expressions
+function evaluateGrade(subject: String, score: Number): String {
+    var grade: String = match (score) {
+        score when score >= 90 => "A",
+        score when score >= 80 => "B",
+        score when score >= 70 => "C",
+        score when score >= 60 => "D",
+        _ => "F"
+    };
+
+    return match (subject) {
+        "Math" => "Math grade: " + grade,
+        "Science" => "Science grade: " + grade,
+        _ => subject + " grade: " + grade
+    };
+}
+
+// Test the functions
+trace("Color 1: " + getColorName(1));
+trace("Color 99: " + getColorName(99));
+
+trace(describeValue("Hello"));
+trace(describeValue(42));
+trace(describeValue(true));
+
+trace("Age 5: " + categorizeAge(5));
+trace("Age 15: " + categorizeAge(15));
+trace("Age 45: " + categorizeAge(45));
+trace("Age 70: " + categorizeAge(70));
+
+var response: Object = { status: 200, data: "User profile" };
+trace(processResponse(response));
+
+trace(describeArray([]));
+trace(describeArray([1]));
+trace(describeArray([1, 2]));
+trace(describeArray([1, 2, 3, 4]));
+
+trace(evaluateGrade("Math", 95));
+trace(evaluateGrade("Science", 73));

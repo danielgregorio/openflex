@@ -422,6 +422,7 @@ class IfStatement(Statement):
     test: Expression
     consequent: Statement
     alternate: Optional[Statement] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -429,6 +430,7 @@ class WhileStatement(Statement):
     """While loop"""
     test: Expression
     body: Statement
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -438,6 +440,7 @@ class ForStatement(Statement):
     test: Optional[Expression]
     update: Optional[Expression]
     body: Statement
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -446,6 +449,7 @@ class ForInStatement(Statement):
     left: Union[VariableDeclaration, Identifier]
     right: Expression
     body: Statement
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -454,6 +458,7 @@ class ForOfStatement(Statement):
     left: Union[VariableDeclaration, Identifier]
     right: Expression
     body: Statement
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -480,6 +485,7 @@ class TryStatement(Statement):
     block: BlockStatement
     handler: Optional['CatchClause'] = None
     finalizer: Optional[BlockStatement] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -488,6 +494,7 @@ class CatchClause(ASTNode):
     param: Optional[str]
     param_type: Optional[Type]
     body: BlockStatement
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass

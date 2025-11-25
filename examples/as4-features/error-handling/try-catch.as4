@@ -1,0 +1,89 @@
+// Try-catch-finally examples
+// OpenFlex Neo - ActionScript 4
+
+function safeDivide(a: Number, b: Number): Number {
+    try {
+        if (b === 0) {
+            throw new Error("Division by zero");
+        }
+        return a / b;
+    } catch (error: Error) {
+        trace("Error: " + error.message);
+        return 0;
+    }
+}
+
+function parseJSON(jsonString: String): Object {
+    try {
+        return JSON.parse(jsonString);
+    } catch (error: SyntaxError) {
+        trace("Invalid JSON: " + error.message);
+        return {};
+    } catch (error: Error) {
+        trace("Unexpected error: " + error.message);
+        return {};
+    }
+}
+
+// Try-catch-finally with resource cleanup
+function readFile(filename: String): String {
+    var file: File = null;
+    var content: String = "";
+
+    try {
+        file = File.open(filename);
+        content = file.read();
+        return content;
+    } catch (error: FileNotFoundError) {
+        trace("File not found: " + filename);
+        return "";
+    } catch (error: Error) {
+        trace("Error reading file: " + error.message);
+        return "";
+    } finally {
+        if (file !== null) {
+            file.close();
+            trace("File closed");
+        }
+    }
+}
+
+// Nested try-catch
+function processUserData(data: String): Object {
+    try {
+        var parsed: Object = parseJSON(data);
+
+        try {
+            validateUser(parsed);
+            return parsed;
+        } catch (error: ValidationError) {
+            trace("Invalid user data: " + error.message);
+            return null;
+        }
+    } catch (error: Error) {
+        trace("Failed to process data: " + error.message);
+        return null;
+    }
+}
+
+// Re-throwing errors
+function validateAge(age: Number): void {
+    try {
+        if (age < 0) {
+            throw new Error("Age cannot be negative");
+        }
+        if (age > 150) {
+            throw new Error("Age is unrealistic");
+        }
+    } catch (error: Error) {
+        trace("Validation failed: " + error.message);
+        throw error;  // Re-throw for caller to handle
+    }
+}
+
+// Test the functions
+trace("10 / 2 = " + safeDivide(10, 2));
+trace("10 / 0 = " + safeDivide(10, 0));
+
+var validJson: String = '{"name": "Alice", "age": 30}';
+var result: Object = parseJSON(validJson);
