@@ -23,7 +23,7 @@ from .ast import (
     VariableDeclaration, FunctionDeclaration, Parameter,
     ClassDeclaration, InterfaceDeclaration, TraitDeclaration,
     BlockStatement, ExpressionStatement, ReturnStatement,
-    IfStatement, ForStatement, WhileStatement,
+    IfStatement, ForStatement, ForInStatement, ForOfStatement, WhileStatement,
     BinaryExpression, UnaryExpression, CallExpression,
     MemberExpression, Identifier, Literal,
     NumberLiteral, StringLiteral, BooleanLiteral, NullLiteral,
@@ -169,6 +169,8 @@ class ASTVisitor:
             'conditional_compilation_block': self.visit_conditional_compilation,
             'if_statement': self.visit_if_statement,
             'for_statement': self.visit_for_statement,
+            'for_in_statement': self.visit_for_in_statement,
+            'for_of_statement': self.visit_for_of_statement,
             'while_statement': self.visit_while_statement,
             'return_statement': self.visit_return_statement,
             'expression_statement': self.visit_expression_statement,
@@ -860,20 +862,155 @@ class ASTVisitor:
         )
 
     def visit_for_statement(self, node) -> ForStatement:
-        """Visit for_statement node - simplified"""
+        """Visit for_statement node: for (init; test; update) body"""
+        # Parse: for ( init ; test ; update ) statement
+        # Children: 'for', '(', init?, ';', test?, ';', update?, ')', statement
+
+        init = None
+        test = None
+        update = None
+        body = BlockStatement(body=[])
+
+        # Find the components by iterating through children
+        in_parens = False
+        semicolon_count = 0
+
+        for i, child in enumerate(node.children):
+            if child.type == '(':
+                in_parens = True
+            elif child.type == ')':
+                in_parens = False
+            elif child.type == ';' and in_parens:
+                semicolon_count += 1
+            elif in_parens and child.type not in ('(', ')', ';', 'for'):
+                # Determine which component this is based on semicolon count
+                if semicolon_count == 0:
+                    # This is the init
+                    if child.type == 'variable_declaration':
+                        init = self.visit_variable_declaration(child)
+                    else:
+                        init = self.visit_expression(child)
+                elif semicolon_count == 1:
+                    # This is the test
+                    test = self.visit_expression(child)
+                elif semicolon_count == 2:
+                    # This is the update
+                    update = self.visit_expression(child)
+            elif not in_parens and child.type != 'for':
+                # This is the body statement
+                body = self.visit_statement(child)
+
         return ForStatement(
-            init=None,
-            test=None,
-            update=None,
-            body=BlockStatement(body=[]),
+            init=init,
+            test=test,
+            update=update,
+            body=body,
             loc=self._make_location(node)
         )
 
     def visit_while_statement(self, node) -> WhileStatement:
-        """Visit while_statement node - simplified"""
-        test = Identifier(name="true")
+        """Visit while_statement node: while (test) body"""
+        # Parse: while ( expression ) statement
+        # Children: 'while', '(', expression, ')', statement
+
+        test = None
         body = BlockStatement(body=[])
+
+        in_parens = False
+        for child in node.children:
+            if child.type == '(':
+                in_parens = True
+            elif child.type == ')':
+                in_parens = False
+            elif in_parens and child.type not in ('(', ')'):
+                # This is the test expression
+                test = self.visit_expression(child)
+            elif not in_parens and child.type not in ('while', '(', ')'):
+                # This is the body statement
+                body = self.visit_statement(child)
+
+        if test is None:
+            test = Identifier(name="true")  # Fallback
+
         return WhileStatement(test=test, body=body, loc=self._make_location(node))
+
+    def visit_for_in_statement(self, node) -> 'ForInStatement':
+        """Visit for_in_statement node: for (left in right) body"""
+        # Parse: for ( (var x | x) in expression ) statement
+        # Children: 'for', '(', (variable_declaration | identifier), 'in', expression, ')', statement
+
+        left = None
+        right = None
+        body = BlockStatement(body=[])
+
+        in_parens = False
+        found_in_keyword = False
+
+        for child in node.children:
+            if child.type == '(':
+                in_parens = True
+            elif child.type == ')':
+                in_parens = False
+            elif in_parens and child.type == 'in':
+                found_in_keyword = True
+            elif in_parens and not found_in_keyword:
+                # This is the left side (before 'in')
+                if child.type == 'variable_declaration':
+                    left = self.visit_variable_declaration(child)
+                elif child.type == 'identifier':
+                    left = Identifier(name=self._get_text(child))
+            elif in_parens and found_in_keyword and child.type not in ('in',):
+                # This is the right side (after 'in')
+                right = self.visit_expression(child)
+            elif not in_parens and child.type not in ('for', '(', ')'):
+                # This is the body statement
+                body = self.visit_statement(child)
+
+        return ForInStatement(
+            left=left or Identifier(name="unknown"),
+            right=right or Identifier(name="unknown"),
+            body=body,
+            loc=self._make_location(node)
+        )
+
+    def visit_for_of_statement(self, node) -> 'ForOfStatement':
+        """Visit for_of_statement node: for (left of right) body"""
+        # Parse: for ( (var x | x) of expression ) statement
+        # Children: 'for', '(', (variable_declaration | identifier), 'of', expression, ')', statement
+
+        left = None
+        right = None
+        body = BlockStatement(body=[])
+
+        in_parens = False
+        found_of_keyword = False
+
+        for child in node.children:
+            if child.type == '(':
+                in_parens = True
+            elif child.type == ')':
+                in_parens = False
+            elif in_parens and child.type == 'of':
+                found_of_keyword = True
+            elif in_parens and not found_of_keyword:
+                # This is the left side (before 'of')
+                if child.type == 'variable_declaration':
+                    left = self.visit_variable_declaration(child)
+                elif child.type == 'identifier':
+                    left = Identifier(name=self._get_text(child))
+            elif in_parens and found_of_keyword and child.type not in ('of',):
+                # This is the right side (after 'of')
+                right = self.visit_expression(child)
+            elif not in_parens and child.type not in ('for', '(', ')'):
+                # This is the body statement
+                body = self.visit_statement(child)
+
+        return ForOfStatement(
+            left=left or Identifier(name="unknown"),
+            right=right or Identifier(name="unknown"),
+            body=body,
+            loc=self._make_location(node)
+        )
 
     def visit_return_statement(self, node) -> ReturnStatement:
         """Visit return_statement node"""

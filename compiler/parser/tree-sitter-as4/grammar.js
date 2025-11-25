@@ -49,6 +49,8 @@ module.exports = grammar({
       $.expression_statement,
       $.if_statement,
       $.for_statement,
+      // $.for_in_statement,
+      // $.for_of_statement,
       $.while_statement,
       $.return_statement,
       $.break_statement,
@@ -82,6 +84,14 @@ module.exports = grammar({
       optional(seq(':', field('type', $.type))),
       optional(seq('=', field('value', $.expression))),
       ';'
+    ),
+
+    // Variable declarator (without semicolon, for use in for loops)
+    variable_declarator: $ => seq(
+      choice('var', 'const'),
+      field('name', $.identifier),
+      optional(seq(':', field('type', $.type))),
+      optional(seq('=', field('value', $.expression)))
     ),
 
     // Function declarations with decorators
@@ -461,11 +471,31 @@ module.exports = grammar({
     for_statement: $ => seq(
       'for',
       '(',
-      optional(choice($.variable_declaration, $.expression)),
+      optional(choice($.variable_declarator, $.expression)),
       ';',
       optional($.expression),
       ';',
       optional($.expression),
+      ')',
+      $._statement
+    ),
+
+    for_in_statement: $ => seq(
+      'for',
+      '(',
+      choice($.variable_declarator, $.identifier),
+      'in',
+      $.expression,
+      ')',
+      $._statement
+    ),
+
+    for_of_statement: $ => seq(
+      'for',
+      '(',
+      choice($.variable_declarator, $.identifier),
+      'of',
+      $.expression,
       ')',
       $._statement
     ),
