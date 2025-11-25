@@ -455,6 +455,10 @@ class ASTVisitor:
 
     def visit_expression(self, node) -> Optional[Expression]:
         """Visit expression node"""
+        # If this is a generic 'expression' wrapper, unwrap it
+        if node.type == 'expression' and len(node.children) > 0:
+            return self.visit_expression(node.children[0])
+
         if node.type == 'identifier':
             return Identifier(name=self._get_text(node), loc=self._make_location(node))
 

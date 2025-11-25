@@ -242,12 +242,16 @@ class NullLiteral(Literal):
 class ArrayLiteral(Expression):
     """Array literal: [1, 2, 3]"""
     elements: List[Expression]
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
 class ObjectLiteral(Expression):
     """Object literal: { name: "Alice", age: 30 }"""
     properties: List['Property']
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -256,6 +260,7 @@ class Property(ASTNode):
     key: Union[Identifier, StringLiteral]
     value: Expression
     is_computed: bool = False  # { [key]: value }
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -264,6 +269,8 @@ class BinaryExpression(Expression):
     operator: str
     left: Expression
     right: Expression
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -272,6 +279,8 @@ class UnaryExpression(Expression):
     operator: str
     operand: Expression
     is_prefix: bool = True
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -279,6 +288,8 @@ class CallExpression(Expression):
     """Function call: foo(1, 2)"""
     callee: Expression
     arguments: List[Expression]
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -287,6 +298,8 @@ class MemberExpression(Expression):
     object: Expression
     property: Expression
     is_computed: bool = False  # arr[0] vs obj.prop
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -295,6 +308,8 @@ class ConditionalExpression(Expression):
     test: Expression
     consequent: Expression
     alternate: Expression
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -303,12 +318,16 @@ class ArrowFunction(Expression):
     params: List['Parameter']
     body: Union[Expression, 'BlockStatement']
     is_async: bool = False
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
 class AwaitExpression(Expression):
     """Await expression: await promise"""
     argument: Expression
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -316,12 +335,16 @@ class NewExpression(Expression):
     """New expression: new User("Alice")"""
     callee: Expression
     arguments: List[Expression]
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
 class TemplateString(Expression):
     """Template string: `Hello ${name}`"""
     parts: List[Union[StringLiteral, Expression]]
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
 
 
 # ============================================================================
