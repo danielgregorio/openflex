@@ -543,6 +543,7 @@ class ClassDeclaration(Statement):
     implements: List[Identifier]
     members: List[Union['PropertyDeclaration', FunctionDeclaration]]
     type_parameters: List['TypeParameter'] = field(default_factory=list)
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass

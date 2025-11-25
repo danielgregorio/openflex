@@ -1036,7 +1036,72 @@ class ASTVisitor:
 
     # Stubs for not-yet-implemented nodes
     def visit_class_declaration(self, node) -> Optional[Statement]:
-        return None
+        """Visit class_declaration node"""
+        # Extract visibility (optional)
+        visibility = "public"
+        for child in node.children:
+            if self._get_text(child) in ('public', 'private', 'protected'):
+                visibility = self._get_text(child)
+                break
+
+        # Extract class name
+        name = "UnknownClass"
+        for child in node.children:
+            if child.type == 'identifier':
+                name = self._get_text(child)
+                break
+
+        # Extract super class (extends clause)
+        super_class = None
+        extends_found = False
+        for i, child in enumerate(node.children):
+            if self._get_text(child) == 'extends':
+                extends_found = True
+            elif extends_found and child.type == 'type':
+                # Get the identifier from the type node
+                for subchild in child.children:
+                    if subchild.type == 'identifier':
+                        super_class = Identifier(name=self._get_text(subchild))
+                        break
+                break
+
+        # Extract implements clause
+        implements = []
+        implements_found = False
+        for i, child in enumerate(node.children):
+            if self._get_text(child) == 'implements':
+                implements_found = True
+            elif implements_found and child.type == 'type':
+                # Get the identifier from the type node
+                for subchild in child.children:
+                    if subchild.type == 'identifier':
+                        implements.append(Identifier(name=self._get_text(subchild)))
+
+        # Extract class body members
+        members = []
+        body_node = next((c for c in node.children if c.type == 'class_body'), None)
+        if body_node:
+            for child in body_node.children:
+                if child.type == 'variable_declaration':
+                    # Convert variable declaration to property declaration
+                    var_decl = self.visit_variable_declaration(child)
+                    if var_decl:
+                        members.append(var_decl)
+                elif child.type == 'function_declaration':
+                    func_decl = self.visit_function_declaration(child)
+                    if func_decl:
+                        members.append(func_decl)
+                elif child.type == 'constructor_declaration':
+                    # TODO: Handle constructor separately if needed
+                    pass
+
+        return ClassDeclaration(
+            name=name,
+            super_class=super_class,
+            implements=implements,
+            members=members,
+            loc=self._make_location(node)
+        )
 
     def visit_interface_declaration(self, node) -> Optional[Statement]:
         return None
