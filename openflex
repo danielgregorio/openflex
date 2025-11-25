@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+"""
+OpenFlex Neo CLI
+Compiler for ActionScript 4
+"""
+
+import sys
+import argparse
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent))
+
+from compiler.parser.as4_parser import AS4Parser
+from compiler.analyzer.type_checker import TypeChecker
+from compiler.codegen.js_codegen import JSCodeGenerator
+
+
+VERSION = "0.1.0-alpha"
+
+
+def cmd_build(args):
+    """Compile AS4 file to JavaScript"""
+    input_file = Path(args.file)
+
+    if not input_file.exists():
+        print(f"Error: File not found: {input_file}")
+        return 1
+
+    # Determine output file
+    if args.output:
+        output_file = Path(args.output)
+    else:
+        output_file = input_file.with_suffix('.js')
+
+    print(f"📄 Compiling {input_file}...")
+
+    # Read source
+    source = input_file.read_text()
+
+    # Parse
+    try:
+        parser = AS4Parser()
+        ast = parser.parse(source, str(input_file))
+        print(f"✅ Parsed successfully")
+    except Exception as e:
+        print(f"❌ Parse error: {e}")
+        return 1
+
+    # Type check (unless --no-check)
+    if not args.no_check:
+        try:
+            type_checker = TypeChecker()
+            errors = type_checker.check_program(ast)
+
+            if errors:
+                print(f"⚠️  Found {len(errors)} type error(s):")
+                for error in errors[:10]:  # Show first 10
+                    print(f"  {error.message}")
+                if len(errors) > 10:
+                    print(f"  ... and {len(errors) - 10} more")
+
+                if not args.force:
+                    print(f"❌ Compilation failed. Use --force to compile anyway.")
+                    return 1
+        except Exception as e:
+            print(f"⚠️  Type checking error: {e}")
+            if not args.force:
+                return 1
+
+    # Generate JavaScript
+    try:
+        codegen = JSCodeGenerator()
+        js_code = codegen.generate(ast)
+        print(f"✅ Generated JavaScript")
+    except Exception as e:
+        print(f"❌ Code generation error: {e}")
+        return 1
+
+    # Write output
+    try:
+        output_file.write_text(js_code)
+        print(f"💾 Saved to {output_file}")
+        print(f"✨ Compilation complete!")
+        return 0
+    except Exception as e:
+        print(f"❌ Write error: {e}")
+        return 1
+
+
+def cmd_check(args):
+    """Type check AS4 file without compiling"""
+    input_file = Path(args.file)
+
+    if not input_file.exists():
+        print(f"Error: File not found: {input_file}")
+        return 1
+
+    print(f"🔍 Type checking {input_file}...")
+
+    # Read source
+    source = input_file.read_text()
+
+    # Parse
+    try:
+        parser = AS4Parser()
+        ast = parser.parse(source, str(input_file))
+    except Exception as e:
+        print(f"❌ Parse error: {e}")
+        return 1
+
+    # Type check
+    try:
+        type_checker = TypeChecker()
+        errors = type_checker.check_program(ast)
+
+        if errors:
+            print(f"❌ Found {len(errors)} type error(s):")
+            for error in errors:
+                print(f"  {error.message}")
+            return 1
+        else:
+            print(f"✅ No type errors found!")
+            return 0
+    except Exception as e:
+        print(f"❌ Type checking error: {e}")
+        return 1
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog='openflex',
+        description='OpenFlex Neo - ActionScript 4 Compiler',
+        epilog='For more info: https://github.com/yourusername/openflex'
+    )
+
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=f'OpenFlex Neo v{VERSION}'
+    )
+
+    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+
+    # Build command
+    build_parser = subparsers.add_parser('build', help='Compile AS4 to JavaScript')
+    build_parser.add_argument('file', help='Input AS4 file')
+    build_parser.add_argument('-o', '--output', help='Output JavaScript file')
+    build_parser.add_argument('--no-check', action='store_true', help='Skip type checking')
+    build_parser.add_argument('--force', action='store_true', help='Compile even with type errors')
+    build_parser.set_defaults(func=cmd_build)
+
+    # Check command
+    check_parser = subparsers.add_parser('check', help='Type check AS4 file')
+    check_parser.add_argument('file', help='Input AS4 file')
+    check_parser.set_defaults(func=cmd_check)
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
+        return 0
+
+    # Execute command
+    return args.func(args)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

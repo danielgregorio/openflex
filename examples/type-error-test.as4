@@ -1,0 +1,6 @@
+// Test file with type error
+function add(a: Number, b: Number): Number {
+    return a + b;
+}
+
+var result: String = add(1, 2);  // Error: Number not assignable to String
