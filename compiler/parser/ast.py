@@ -406,6 +406,7 @@ class Parameter(ASTNode):
     param_type: Optional[Type]
     default_value: Optional[Expression] = None
     is_rest: bool = False  # ...args
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass

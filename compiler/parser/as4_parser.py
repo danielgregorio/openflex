@@ -248,15 +248,31 @@ class ASTVisitor:
             name_node = next((c for c in node.children if c.type == 'identifier'), None)
         name = self._get_text(name_node) if name_node else "unknown"
 
-        # Extract type
+        # Extract type (look for ':' followed by type node)
         var_type = None
         type_node = node.child_by_field_name('type')
+        if not type_node:
+            # Fallback: find ':' then get next 'type' node
+            for i, child in enumerate(node.children):
+                if self._get_text(child) == ':' and i + 1 < len(node.children):
+                    next_node = node.children[i + 1]
+                    if next_node.type == 'type':
+                        type_node = next_node
+                        break
         if type_node:
             var_type = self.visit_type(type_node)
 
-        # Extract initializer
+        # Extract initializer (look for '=' followed by expression)
         initializer = None
         init_node = node.child_by_field_name('value')
+        if not init_node:
+            # Fallback: find '=' then get next 'expression' node
+            for i, child in enumerate(node.children):
+                if self._get_text(child) == '=' and i + 1 < len(node.children):
+                    next_node = node.children[i + 1]
+                    if next_node.type == 'expression':
+                        init_node = next_node
+                        break
         if init_node:
             initializer = self.visit_expression(init_node)
 
@@ -299,12 +315,27 @@ class ASTVisitor:
         # Extract parameters
         params = []
         param_list = node.child_by_field_name('parameters')
+        if not param_list:
+            # Fallback: find parameter_list node
+            param_list = next((c for c in node.children if c.type == 'parameter_list'), None)
         if param_list:
             params = self.visit_parameter_list(param_list)
 
-        # Extract return type
+        # Extract return type (look for ':' followed by type)
         return_type = None
         type_node = node.child_by_field_name('return_type')
+        if not type_node:
+            # Fallback: find ':' after parameter_list, then get next 'type' node
+            for i, child in enumerate(node.children):
+                if self._get_text(child) == ':' and i > 0:
+                    # Make sure this ':' is after the parameter list (not inside it)
+                    prev_node = node.children[i - 1]
+                    if prev_node.type == 'parameter_list' or prev_node.type == ')':
+                        if i + 1 < len(node.children):
+                            next_node = node.children[i + 1]
+                            if next_node.type == 'type':
+                                type_node = next_node
+                                break
         if type_node:
             return_type = self.visit_type(type_node)
 
@@ -386,9 +417,17 @@ class ASTVisitor:
             name_node = next((c for c in node.children if c.type == 'identifier'), None)
         name = self._get_text(name_node) if name_node else "unknown"
 
-        # Extract type
+        # Extract type (look for ':' followed by type node)
         param_type = None
         type_node = node.child_by_field_name('type')
+        if not type_node:
+            # Fallback: find ':' then get next 'type' node
+            for i, child in enumerate(node.children):
+                if self._get_text(child) == ':' and i + 1 < len(node.children):
+                    next_node = node.children[i + 1]
+                    if next_node.type == 'type':
+                        type_node = next_node
+                        break
         if type_node:
             param_type = self.visit_type(type_node)
 
@@ -411,6 +450,10 @@ class ASTVisitor:
 
     def visit_type(self, node) -> Type:
         """Visit type node"""
+        # If this is a 'type' wrapper, unwrap it to get the actual type
+        if node.type == 'type' and len(node.children) > 0:
+            return self.visit_type(node.children[0])
+
         if node.type == 'identifier':
             type_name = self._get_text(node)
             return TYPE_MAP.get(type_name, PrimitiveType(
@@ -457,6 +500,10 @@ class ASTVisitor:
         """Visit expression node"""
         # If this is a generic 'expression' wrapper, unwrap it
         if node.type == 'expression' and len(node.children) > 0:
+            return self.visit_expression(node.children[0])
+
+        # If this is a 'literal' wrapper, unwrap it
+        if node.type == 'literal' and len(node.children) > 0:
             return self.visit_expression(node.children[0])
 
         if node.type == 'identifier':

@@ -272,13 +272,14 @@ class TypeChecker:
     def _check_literal(self, literal: Literal) -> Type:
         """Type check literal"""
         if isinstance(literal, NumberLiteral):
-            return TYPE_MAP['number']
+            return TYPE_MAP['Number']
         elif isinstance(literal, StringLiteral):
-            return TYPE_MAP['string']
+            return TYPE_MAP['String']
         elif isinstance(literal, BooleanLiteral):
-            return TYPE_MAP['boolean']
+            return TYPE_MAP['Boolean']
         elif isinstance(literal, NullLiteral):
-            return TYPE_MAP['null']
+            # null is a special case - lowercase in TYPE_MAP
+            return TYPE_MAP.get('null', TYPE_MAP['any'])
         return TYPE_MAP['any']
 
     def _check_identifier(self, ident: Identifier) -> Type:
@@ -298,17 +299,17 @@ class TypeChecker:
         if binary.operator in ['+', '-', '*', '/', '%', '**']:
             if binary.operator == '+':
                 # String concatenation or number addition
-                if left_type.kind == TypeKind.STRING or right_type.kind == TypeKind.STRING:
-                    return TYPE_MAP['string']
-            return TYPE_MAP['number']
+                if left_type.name == 'String' or right_type.name == 'String':
+                    return TYPE_MAP['String']
+            return TYPE_MAP['Number']
 
         # Comparison operators
         elif binary.operator in ['<', '<=', '>', '>=', '==', '!=', '===', '!==']:
-            return TYPE_MAP['boolean']
+            return TYPE_MAP['Boolean']
 
         # Logical operators
         elif binary.operator in ['&&', '||']:
-            return TYPE_MAP['boolean']
+            return TYPE_MAP['Boolean']
 
         # Assignment
         elif binary.operator == '=':
@@ -327,11 +328,11 @@ class TypeChecker:
         operand_type = self._check_expression(unary.operand)
 
         if unary.operator in ['+', '-', '++', '--']:
-            return TYPE_MAP['number']
+            return TYPE_MAP['Number']
         elif unary.operator == '!':
-            return TYPE_MAP['boolean']
+            return TYPE_MAP['Boolean']
         elif unary.operator == 'typeof':
-            return TYPE_MAP['string']
+            return TYPE_MAP['String']
 
         return TYPE_MAP['any']
 
@@ -429,20 +430,16 @@ class TypeChecker:
             return True
 
         # null is assignable to nullable types
-        if source.kind == TypeKind.NULL:
+        if source.name == 'null':
             return isinstance(target, NullableType) or target.kind == TypeKind.ANY
 
         # Nullable type handling
         if isinstance(target, NullableType):
             return self._is_assignable(target.base_type, source)
 
-        # Number literal is assignable to number
-        if target.kind == TypeKind.NUMBER and source.kind == TypeKind.NUMBER:
-            return True
-
-        # String literal is assignable to string
-        if target.kind == TypeKind.STRING and source.kind == TypeKind.STRING:
-            return True
+        # Primitive type matching by name
+        if target.kind == TypeKind.PRIMITIVE and source.kind == TypeKind.PRIMITIVE:
+            return target.name == source.name
 
         return False
 

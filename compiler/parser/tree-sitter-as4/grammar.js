@@ -78,23 +78,23 @@ module.exports = grammar({
       optional($.visibility),
       optional('static'),
       choice('var', 'const'),
-      $.identifier,
-      optional(seq(':', $.type)),
-      optional(seq('=', $.expression)),
+      field('name', $.identifier),
+      optional(seq(':', field('type', $.type))),
+      optional(seq('=', field('value', $.expression))),
       ';'
     ),
 
     // Function declarations with decorators
     function_declaration: $ => seq(
-      optional($.decorator_list),
-      optional($.visibility),
+      optional(field('decorators', $.decorator_list)),
+      optional(field('visibility', $.visibility)),
       optional('static'),
       optional('async'),
       'function',
-      $.identifier,
-      $.parameter_list,
-      optional(seq(':', $.type)),
-      $.block
+      field('name', $.identifier),
+      field('parameters', $.parameter_list),
+      optional(seq(':', field('return_type', $.type))),
+      field('body', $.block)
     ),
 
     // Class declarations
