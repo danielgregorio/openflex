@@ -1,0 +1,13 @@
+// Hello World in ActionScript 4
+// Simple demo for code generation
+
+function greet(name: String): String {
+    return "Hello, " + name + "!";
+}
+
+function main(): void {
+    const message: String = greet("World");
+    trace(message);
+}
+
+main();
