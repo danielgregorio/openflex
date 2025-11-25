@@ -24,7 +24,6 @@ module.exports = grammar({
     [$.union_type],
     [$.match_expression, $.match_statement],
     [$.if_statement],
-    [$.variable_declaration, $.variable_declarator],
   ],
 
   rules: {
@@ -40,8 +39,7 @@ module.exports = grammar({
     // Statements
     _statement: $ => choice(
       $.import_statement,
-      $.for_statement,  // Try for_statement before variable_declaration
-      $.variable_declaration,
+      seq($.variable_declaration, ';'),  // Add semicolon at call site
       $.function_declaration,
       $.class_declaration,
       $.interface_declaration,
@@ -50,8 +48,9 @@ module.exports = grammar({
       $.conditional_compilation_block,
       $.expression_statement,
       $.if_statement,
-      // $.for_in_statement,
-      // $.for_of_statement,
+      $.for_statement,
+      $.for_in_statement,
+      $.for_of_statement,
       $.while_statement,
       $.return_statement,
       $.break_statement,
@@ -75,20 +74,11 @@ module.exports = grammar({
       repeat(seq('.', choice($.identifier, '*')))
     ),
 
-    // Variable declarations with decorators
+    // Variable declarations with decorators (no semicolon - added at call sites)
     variable_declaration: $ => seq(
       optional($.decorator_list),
       optional($.visibility),
       optional('static'),
-      choice('var', 'const'),
-      field('name', $.identifier),
-      optional(seq(':', field('type', $.type))),
-      optional(seq('=', field('value', $.expression))),
-      ';'
-    ),
-
-    // Variable declarator (without semicolon, for use in for loops)
-    variable_declarator: $ => seq(
       choice('var', 'const'),
       field('name', $.identifier),
       optional(seq(':', field('type', $.type))),
@@ -122,7 +112,7 @@ module.exports = grammar({
     class_body: $ => seq(
       '{',
       repeat(choice(
-        $.variable_declaration,
+        seq($.variable_declaration, ';'),  // Add semicolon at call site
         $.function_declaration,
         $.constructor_declaration
       )),
@@ -169,7 +159,7 @@ module.exports = grammar({
       '{',
       repeat(choice(
         $.function_declaration,
-        $.variable_declaration
+        seq($.variable_declaration, ';')  // Add semicolon at call site
       )),
       '}'
     ),
@@ -473,15 +463,7 @@ module.exports = grammar({
       'for',
       '(',
       optional(choice(
-        alias(
-          seq(
-            choice('var', 'const'),
-            $.identifier,
-            optional(seq(':', $.type)),
-            optional(seq('=', $.expression))
-          ),
-          $.for_init_declarator
-        ),
+        $.variable_declaration,  // No semicolon - it's part of for syntax
         $.expression
       )),
       ';',
@@ -492,18 +474,10 @@ module.exports = grammar({
       $._statement
     ),
 
-    // Explicitly define for_init_declarator to avoid conflict
-    for_init_declarator: $ => prec(10, seq(
-      choice('var', 'const'),
-      $.identifier,
-      optional(seq(':', $.type)),
-      optional(seq('=', $.expression))
-    )),
-
     for_in_statement: $ => seq(
       'for',
       '(',
-      choice($.variable_declarator, $.identifier),
+      choice($.variable_declaration, $.identifier),
       'in',
       $.expression,
       ')',
@@ -513,7 +487,7 @@ module.exports = grammar({
     for_of_statement: $ => seq(
       'for',
       '(',
-      choice($.variable_declarator, $.identifier),
+      choice($.variable_declaration, $.identifier),
       'of',
       $.expression,
       ')',
