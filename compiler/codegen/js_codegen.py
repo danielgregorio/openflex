@@ -51,6 +51,9 @@ class JSCodeGenerator:
                 if any(d.name == 'reactive' for d in decl.decorators):
                     self.has_reactivity = True
                     self.reactive_vars.add(decl.name)
+                elif any(d.name == 'computed' for d in decl.decorators):
+                    self.has_reactivity = True
+                    self.reactive_vars.add(decl.name)  # Computed vars are also reactive
             elif isinstance(decl, FunctionDeclaration):
                 if any(d.name in ('computed', 'effect') for d in decl.decorators):
                     self.has_reactivity = True
@@ -80,11 +83,12 @@ class JSCodeGenerator:
 
     def _generate_variable_declaration(self, var_decl: VariableDeclaration) -> str:
         """Generate variable declaration"""
-        # Check for @reactive decorator
+        # Check for decorators
         is_reactive = any(d.name == 'reactive' for d in var_decl.decorators)
+        is_computed = any(d.name == 'computed' for d in var_decl.decorators)
 
-        # Reactive variables are always const (the Signal is const, not the value)
-        keyword = "const" if (var_decl.is_const or is_reactive) else "let"
+        # Reactive/computed variables are always const (the Signal/Computed is const)
+        keyword = "const" if (var_decl.is_const or is_reactive or is_computed) else "let"
         name = var_decl.name
 
         if var_decl.initializer:
@@ -93,12 +97,18 @@ class JSCodeGenerator:
             if is_reactive:
                 # Wrap in Signal
                 return f"{self._indent()}{keyword} {name} = new Signal({value});"
+            elif is_computed:
+                # Wrap in Computed with arrow function
+                return f"{self._indent()}{keyword} {name} = new Computed(() => {value});"
             else:
                 return f"{self._indent()}{keyword} {name} = {value};"
         else:
             if is_reactive:
                 # Reactive variable without initializer defaults to undefined
                 return f"{self._indent()}{keyword} {name} = new Signal(undefined);"
+            elif is_computed:
+                # Computed must have an expression
+                return f"{self._indent()}{keyword} {name} = new Computed(() => undefined);"
             else:
                 return f"{self._indent()}{keyword} {name};"
 
@@ -263,6 +273,9 @@ class JSCodeGenerator:
         if isinstance(expr, Literal):
             return self._generate_literal(expr)
         elif isinstance(expr, Identifier):
+            # Auto-transform reactive variable access
+            if expr.name in self.reactive_vars:
+                return f"{expr.name}.value"
             return expr.name
         elif isinstance(expr, BinaryExpression):
             return self._generate_binary_expression(expr)

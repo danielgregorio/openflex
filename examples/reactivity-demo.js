@@ -10,24 +10,24 @@ const message = new Signal("Hello, OpenFlex!");
 
 createEffect(() => logCount());
 function logCount() {
-  trace("Count changed: " + count);
+  trace("Count changed: " + count.value);
 }
 
 createEffect(() => logMessage());
 function logMessage() {
-  trace("Message: " + message);
+  trace("Message: " + message.value);
 }
 
 function increment() {
-  count = count + 1;
+  count.value = count.value + 1;
 }
 
 function decrement() {
-  count = count - 1;
+  count.value = count.value - 1;
 }
 
 function setMessage(msg) {
-  message = msg;
+  message.value = msg;
 }
 
 trace("=== OpenFlex Neo Reactivity Demo ===");
