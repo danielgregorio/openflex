@@ -229,6 +229,12 @@ class ASTVisitor:
         # Extract decorators
         decorators = []
         decorator_list = node.child_by_field_name('decorators')
+        if not decorator_list:
+            # Fallback: find decorator nodes manually
+            for child in node.children:
+                if child.type == 'decorator_list':
+                    decorator_list = child
+                    break
         if decorator_list:
             decorators = self.visit_decorator_list(decorator_list)
 
@@ -295,6 +301,12 @@ class ASTVisitor:
         # Extract decorators
         decorators = []
         decorator_list = node.child_by_field_name('decorators')
+        if not decorator_list:
+            # Fallback: find decorator nodes manually
+            for child in node.children:
+                if child.type == 'decorator_list':
+                    decorator_list = child
+                    break
         if decorator_list:
             decorators = self.visit_decorator_list(decorator_list)
 

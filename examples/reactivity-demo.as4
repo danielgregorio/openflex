@@ -1,0 +1,68 @@
+// OpenFlex Neo - Reactivity Demo
+// Built-in reactive programming with signals
+
+// ============================================================================
+// 1. Basic Reactive Variables
+// ============================================================================
+
+@reactive var count: Number = 0;
+@reactive var message: String = "Hello, OpenFlex!";
+
+// ============================================================================
+// 2. Effects - Auto-run when dependencies change
+// ============================================================================
+
+@effect
+function logCount(): void {
+    trace("Count changed: " + count);
+}
+
+@effect
+function logMessage(): void {
+    trace("Message: " + message);
+}
+
+// ============================================================================
+// 3. Regular functions that modify reactive state
+// ============================================================================
+
+function increment(): void {
+    count = count + 1;
+}
+
+function decrement(): void {
+    count = count - 1;
+}
+
+function setMessage(msg: String): void {
+    message = msg;
+}
+
+// ============================================================================
+// 4. Demo execution
+// ============================================================================
+
+trace("=== OpenFlex Neo Reactivity Demo ===");
+trace("");
+
+trace("Initial state:");
+// Effects run automatically on startup
+
+trace("");
+trace("Incrementing count...");
+increment();  // Effect will trigger
+
+trace("");
+trace("Incrementing again...");
+increment();  // Effect will trigger
+
+trace("");
+trace("Decrementing...");
+decrement();  // Effect will trigger
+
+trace("");
+trace("Changing message...");
+setMessage("Reactivity is awesome!");  // Effect will trigger
+
+trace("");
+trace("✨ Reactivity working perfectly! ✨");

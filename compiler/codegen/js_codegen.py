@@ -14,6 +14,8 @@ class JSCodeGenerator:
     def __init__(self):
         self.indent_level = 0
         self.indent_str = "  "  # 2 spaces
+        self.reactive_vars = set()  # Track reactive variables
+        self.has_reactivity = False  # Track if we need runtime import
 
     def generate(self, program: Program) -> str:
         """Generate JavaScript code for entire program"""
@@ -24,6 +26,15 @@ class JSCodeGenerator:
         lines.append("// AS4 -> JavaScript")
         lines.append("")
 
+        # Scan for reactivity features
+        self._scan_for_reactivity(program)
+
+        # Add runtime import if needed
+        if self.has_reactivity:
+            lines.append("// OpenFlex Reactivity Runtime")
+            lines.append("const { Signal, Computed, createEffect } = require('./runtime/openflex-runtime.js');")
+            lines.append("")
+
         # Generate each declaration
         for decl in program.declarations:
             code = self._generate_statement(decl)
@@ -32,6 +43,17 @@ class JSCodeGenerator:
                 lines.append("")  # Blank line between declarations
 
         return "\n".join(lines)
+
+    def _scan_for_reactivity(self, program: Program):
+        """Scan program for reactive features"""
+        for decl in program.declarations:
+            if isinstance(decl, VariableDeclaration):
+                if any(d.name == 'reactive' for d in decl.decorators):
+                    self.has_reactivity = True
+                    self.reactive_vars.add(decl.name)
+            elif isinstance(decl, FunctionDeclaration):
+                if any(d.name in ('computed', 'effect') for d in decl.decorators):
+                    self.has_reactivity = True
 
     def _generate_statement(self, stmt: Statement) -> str:
         """Generate code for a statement"""
@@ -58,18 +80,34 @@ class JSCodeGenerator:
 
     def _generate_variable_declaration(self, var_decl: VariableDeclaration) -> str:
         """Generate variable declaration"""
-        keyword = "const" if var_decl.is_const else "let"
+        # Check for @reactive decorator
+        is_reactive = any(d.name == 'reactive' for d in var_decl.decorators)
+
+        # Reactive variables are always const (the Signal is const, not the value)
+        keyword = "const" if (var_decl.is_const or is_reactive) else "let"
         name = var_decl.name
 
         if var_decl.initializer:
             value = self._generate_expression(var_decl.initializer)
-            return f"{self._indent()}{keyword} {name} = {value};"
+
+            if is_reactive:
+                # Wrap in Signal
+                return f"{self._indent()}{keyword} {name} = new Signal({value});"
+            else:
+                return f"{self._indent()}{keyword} {name} = {value};"
         else:
-            return f"{self._indent()}{keyword} {name};"
+            if is_reactive:
+                # Reactive variable without initializer defaults to undefined
+                return f"{self._indent()}{keyword} {name} = new Signal(undefined);"
+            else:
+                return f"{self._indent()}{keyword} {name};"
 
     def _generate_function_declaration(self, func_decl: FunctionDeclaration) -> str:
         """Generate function declaration"""
         name = func_decl.name
+
+        # Check for @effect decorator
+        is_effect = any(d.name == 'effect' for d in func_decl.decorators)
 
         # Parameters
         params = []
@@ -86,9 +124,17 @@ class JSCodeGenerator:
         # Body
         if func_decl.body:
             body = self._generate_block_statement(func_decl.body)
-            return f"{self._indent()}function {name}({params_str}) {body}"
+
+            if is_effect:
+                # Wrap in createEffect
+                return f"{self._indent()}createEffect(() => {name}({params_str}));\n{self._indent()}function {name}({params_str}) {body}"
+            else:
+                return f"{self._indent()}function {name}({params_str}) {body}"
         else:
-            return f"{self._indent()}function {name}({params_str}) {{}}"
+            if is_effect:
+                return f"{self._indent()}createEffect(() => {name}({params_str}));\n{self._indent()}function {name}({params_str}) {{}}"
+            else:
+                return f"{self._indent()}function {name}({params_str}) {{}}"
 
     def _generate_class_declaration(self, class_decl: ClassDeclaration) -> str:
         """Generate class declaration"""
