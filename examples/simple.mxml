@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo">
+
+    <fx:Script>
+        @reactive var count: Number = 0;
+
+        function increment(): void {
+            count = count + 1;
+        }
+    </fx:Script>
+
+    <VBox>
+        <Label text="Counter Example" />
+        <Label text="Count: {count}" />
+        <Button label="Increment" click={increment} />
+    </VBox>
+
+</Application>
