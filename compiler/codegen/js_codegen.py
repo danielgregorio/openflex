@@ -115,6 +115,15 @@ class JSCodeGenerator:
                 else:
                     lines.append(f"{self._indent()}{prop_name};")
 
+            elif isinstance(member, VariableDeclaration):
+                # Variable declaration (treated as property in classes)
+                prop_name = member.name
+                if member.initializer:
+                    value = self._generate_expression(member.initializer)
+                    lines.append(f"{self._indent()}{prop_name} = {value};")
+                else:
+                    lines.append(f"{self._indent()}{prop_name};")
+
             elif isinstance(member, FunctionDeclaration):
                 # Method
                 method_code = self._generate_function_declaration(member)

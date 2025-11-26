@@ -437,6 +437,14 @@ class ASTVisitor:
         # Extract default value
         default_value = None
         default_node = node.child_by_field_name('default')
+        if not default_node:
+            # Fallback: find '=' then get next expression
+            for i, child in enumerate(node.children):
+                if self._get_text(child) == '=' and i + 1 < len(node.children):
+                    next_node = node.children[i + 1]
+                    if next_node.type not in ('=', ',', ')'):
+                        default_node = next_node
+                        break
         if default_node:
             default_value = self.visit_expression(default_node)
 
