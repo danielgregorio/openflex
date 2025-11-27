@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenFlex Neo - Live Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .tagline {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .demo-title {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .demo-section {
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .code-example {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .code-example .keyword {
+            color: #c678dd;
+        }
+
+        .code-example .string {
+            color: #98c379;
+        }
+
+        .code-example .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.9;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 OpenFlex Neo</h1>
+            <p class="tagline">The Modern ActionScript Compiler</p>
+            <p style="margin-top: 10px; font-size: 1.1em;">MXML + Reactivity → Web Components</p>
+        </header>
+
+        <div class="demo-card">
+            <h2 class="demo-title">Live Counter Demo</h2>
+
+            <div class="demo-section">
+                <!-- This is the compiled MXML component -->
+                <app-root></app-root>
+            </div>
+
+            <div class="info-box">
+                <h3>🎯 What You're Seeing</h3>
+                <ul>
+                    <li><strong>Source:</strong> MXML file compiled to Web Component</li>
+                    <li><strong>Reactivity:</strong> @reactive var automatically updates DOM</li>
+                    <li><strong>Bindings:</strong> {count} syntax creates live data binding</li>
+                    <li><strong>Events:</strong> click={increment} wires button to function</li>
+                    <li><strong>Output:</strong> Pure vanilla JavaScript, no framework</li>
+                </ul>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">📝 MXML Source Code</h3>
+                <div class="code-example"><span class="comment">&lt;?xml version="1.0"?&gt;</span>
+<span class="keyword">&lt;Application</span> xmlns:fx="http://openflex.dev/core"<span class="keyword">&gt;</span>
+
+    <span class="keyword">&lt;fx:Script&gt;</span>
+        <span class="keyword">@reactive var</span> count: Number = 0;
+
+        <span class="keyword">function</span> increment(): void {
+            count = count + 1;
+        }
+    <span class="keyword">&lt;/fx:Script&gt;</span>
+
+    <span class="keyword">&lt;VBox&gt;</span>
+        <span class="keyword">&lt;Label</span> text=<span class="string">"Counter Example"</span> <span class="keyword">/&gt;</span>
+        <span class="keyword">&lt;Label</span> text=<span class="string">"Count: {count}"</span> <span class="keyword">/&gt;</span>
+        <span class="keyword">&lt;Button</span> label=<span class="string">"Increment"</span> click={increment} <span class="keyword">/&gt;</span>
+    <span class="keyword">&lt;/VBox&gt;</span>
+
+<span class="keyword">&lt;/Application&gt;</span></div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">⚡ How It Works</h3>
+                <ol style="line-height: 2; padding-left: 20px; color: #555;">
+                    <li>MXML file is parsed to extract structure and AS4 script</li>
+                    <li>@reactive decorator transforms variable into Signal primitive</li>
+                    <li>{count} binding generates createEffect() for auto-updates</li>
+                    <li>Web Component renders with Shadow DOM encapsulation</li>
+                    <li>Reactivity runtime tracks dependencies automatically</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="demo-card">
+            <h2 class="demo-title">✨ Features Implemented</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">⚛️ Reactivity System</h4>
+                    <ul style="color: #666; line-height: 1.8;">
+                        <li>Signal primitives</li>
+                        <li>Computed values</li>
+                        <li>Automatic effects</li>
+                        <li>Dependency tracking</li>
+                    </ul>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">🧩 MXML Integration</h4>
+                    <ul style="color: #666; line-height: 1.8;">
+                        <li>Web Components</li>
+                        <li>Reactive bindings</li>
+                        <li>Event handlers</li>
+                        <li>Shadow DOM</li>
+                    </ul>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">🔧 Compiler Features</h4>
+                    <ul style="color: #666; line-height: 1.8;">
+                        <li>AS4 → JavaScript</li>
+                        <li>Type checking</li>
+                        <li>Null safety</li>
+                        <li>Auto .value</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>OpenFlex Neo</strong> - Modernizing ActionScript for the Web</p>
+            <p style="margin-top: 10px;">
+                Built with Python + Tree-sitter | Inspired by Solid.js & Flex
+            </p>
+        </footer>
+    </div>
+
+    <!-- OpenFlex Runtime -->
+    <script src="../runtime/openflex-runtime-browser.js"></script>
+
+    <!-- Generated Web Component -->
+    <script src="simple-component-browser.js"></script>
+</body>
+</html>

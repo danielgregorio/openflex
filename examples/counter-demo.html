@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenFlex Neo - Counter Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-top: 0;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        app-root {
+            display: block;
+        }
+
+        /* Styles that will be used by the component */
+        app-root::part(vbox) {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🚀 OpenFlex Neo</h1>
+        <p class="subtitle">MXML + Reactivity = Web Components</p>
+
+        <!-- The MXML-generated Web Component -->
+        <app-root></app-root>
+
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #eee;">
+            <h3 style="color: #667eea;">✨ What's happening here?</h3>
+            <ul style="color: #666; line-height: 1.8;">
+                <li><strong>MXML Source</strong> compiled to <strong>Web Component</strong></li>
+                <li><strong>@reactive</strong> variables auto-update the DOM</li>
+                <li><strong>{count}</strong> binding reactively displays state</li>
+                <li><strong>click={increment}</strong> wires button to function</li>
+                <li>Pure vanilla JavaScript, no framework needed!</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- OpenFlex Reactivity Runtime -->
+    <script src="../runtime/openflex-runtime-browser.js"></script>
+
+    <!-- Generated Web Component -->
+    <script src="simple-component-browser.js"></script>
+</body>
+</html>
