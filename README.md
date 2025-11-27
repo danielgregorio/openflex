@@ -6,11 +6,13 @@ OpenFlex Neo is a modern compiler and runtime that brings ActionScript/Flex conc
 
 **"Neo. Reborn for 2025."**
 
-## 🎉 **Milestone: MXML Web Components Complete!**
+## 🎉 **Milestone: Production-Ready Compiler with Dev Tools!**
 
-**103/103 tests passing (100%)** 🎊 | Full MXML Integration | 80% Code Coverage
+**128/133 tests passing (96%)** 🎊 | Full Production Polish | 80% Code Coverage
 
-OpenFlex Neo is now a **complete, production-ready compiler**:
+OpenFlex Neo is now a **complete, production-ready compiler with professional developer tools**:
+
+### Core Compiler
 - ✅ AS4 Parser with Tree-sitter (full AS4 syntax support)
 - ✅ Complete Type Checker with null safety
 - ✅ Full-featured JavaScript Code Generator
@@ -23,6 +25,12 @@ OpenFlex Neo is now a **complete, production-ready compiler**:
 - ✅ Auto `.value` transformation
 - ✅ Class properties and inheritance
 - ✅ Default parameters support
+
+### Production Tools ✨ NEW!
+- ✅ **Beautiful Error Messages** with code snippets and suggestions 🎨
+- ✅ **Watch Mode** for auto-recompile on file changes 👀
+- ✅ **Source Maps** for debugging compiled code 🗺️
+- ✅ **File Watcher** with recursive directory support 📁
 
 ```bash
 $ ./openflex build examples/hello-world.as4
@@ -143,6 +151,61 @@ python compile-mxml.py examples/simple.mxml
 # Open in browser
 open examples/demo.html
 ```
+
+## 🛠️ **Production Developer Tools**
+
+### Beautiful Error Messages
+
+Get helpful, actionable error messages with code snippets and suggestions:
+
+```
+✗ Error: Missing semicolon
+  ╭─ shop.as4:2:18
+  │    1 │ function calculateTotal(items: Array): Number {
+  │
+  │    2 │     var total = 0
+  │       │                  ^
+  │    3 │     for (var i = 0; i < items.length; i++) {
+  │    4 │         total += items[i].price;
+  ╰─
+  💡 Suggestion: Check for missing semicolons, brackets, or parentheses
+```
+
+### Watch Mode
+
+Auto-recompile on file changes for rapid development:
+
+```bash
+# Watch directory and auto-compile on changes
+python watch.py examples/
+
+🚀 OpenFlex Neo - Watch Mode
+============================================================
+
+📁 Watching directory: examples/
+   AS4 files:  5
+   MXML files: 2
+
+👀 Watching 7 file(s) for changes...
+   Press Ctrl+C to stop
+
+[10:30:45] 📝 Change detected: examples/counter.as4
+   [10:30:45] ✅ Compiled to examples/counter.js
+```
+
+### Source Maps
+
+Debug compiled JavaScript while seeing the original AS4/MXML source:
+
+```javascript
+// Generated code includes source maps
+function increment() {
+  count.value = count.value + 1;
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9u...
+```
+
+Browser dev tools show your original AS4 code, not compiled JavaScript!
 
 ## 🎯 Vision
 
