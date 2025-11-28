@@ -1,0 +1,87 @@
+{
+  "MXML Application": {
+    "prefix": "mxml:app",
+    "body": [
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+      "<Application xmlns:fx=\"http://openflex.dev/core\">",
+      "\t<fx:Script>",
+      "\t\t${1:// Script code}",
+      "\t</fx:Script>",
+      "\t",
+      "\t<VBox>",
+      "\t\t${2:<!-- UI components -->}",
+      "\t</VBox>",
+      "</Application>"
+    ],
+    "description": "MXML Application template"
+  },
+  "MXML Component": {
+    "prefix": "mxml:component",
+    "body": [
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+      "<${1:Component} xmlns:fx=\"http://openflex.dev/core\">",
+      "\t<fx:Script>",
+      "\t\t${2:// Script code}",
+      "\t</fx:Script>",
+      "\t",
+      "\t${3:<!-- Component content -->}",
+      "</${1:Component}>"
+    ],
+    "description": "MXML Component template"
+  },
+  "VBox": {
+    "prefix": "vbox",
+    "body": [
+      "<VBox>",
+      "\t${1:<!-- Children -->}",
+      "</VBox>"
+    ],
+    "description": "VBox layout container"
+  },
+  "HBox": {
+    "prefix": "hbox",
+    "body": [
+      "<HBox>",
+      "\t${1:<!-- Children -->}",
+      "</HBox>"
+    ],
+    "description": "HBox layout container"
+  },
+  "Label": {
+    "prefix": "label",
+    "body": [
+      "<Label text=\"${1:Text}\" />"
+    ],
+    "description": "Label component"
+  },
+  "Button": {
+    "prefix": "button",
+    "body": [
+      "<Button label=\"${1:Click Me}\" click={${2:handleClick}} />"
+    ],
+    "description": "Button component"
+  },
+  "TextInput": {
+    "prefix": "textinput",
+    "body": [
+      "<TextInput value=\"{${1:value}}\" />"
+    ],
+    "description": "TextInput component"
+  },
+  "Reactive Binding": {
+    "prefix": "binding",
+    "body": [
+      "{${1:expression}}"
+    ],
+    "description": "Reactive data binding"
+  },
+  "Script Section": {
+    "prefix": "script",
+    "body": [
+      "<fx:Script>",
+      "\t${1:// Script code}",
+      "</fx:Script>"
+    ],
+    "description": "MXML script section"
+  }
+}

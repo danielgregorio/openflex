@@ -1,0 +1,147 @@
+{
+  "name": "openflex-neo",
+  "displayName": "OpenFlex Neo",
+  "description": "ActionScript 4 and MXML language support for Visual Studio Code",
+  "version": "0.1.0",
+  "publisher": "openflex",
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Formatters"
+  ],
+  "keywords": [
+    "actionscript",
+    "as4",
+    "mxml",
+    "flex",
+    "openflex"
+  ],
+  "activationEvents": [
+    "onLanguage:actionscript4",
+    "onLanguage:mxml"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "actionscript4",
+        "aliases": [
+          "ActionScript 4",
+          "AS4",
+          "actionscript4"
+        ],
+        "extensions": [
+          ".as4"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/as4-icon.svg",
+          "dark": "./images/as4-icon.svg"
+        }
+      },
+      {
+        "id": "mxml",
+        "aliases": [
+          "MXML",
+          "mxml"
+        ],
+        "extensions": [
+          ".mxml"
+        ],
+        "configuration": "./mxml-configuration.json",
+        "icon": {
+          "light": "./images/mxml-icon.svg",
+          "dark": "./images/mxml-icon.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "actionscript4",
+        "scopeName": "source.actionscript4",
+        "path": "./syntaxes/actionscript4.tmLanguage.json"
+      },
+      {
+        "language": "mxml",
+        "scopeName": "text.mxml",
+        "path": "./syntaxes/mxml.tmLanguage.json",
+        "embeddedLanguages": {
+          "source.actionscript4": "actionscript4"
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "language": "actionscript4",
+        "path": "./snippets/as4.json"
+      },
+      {
+        "language": "mxml",
+        "path": "./snippets/mxml.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "openflex.compile",
+        "title": "OpenFlex: Compile File"
+      },
+      {
+        "command": "openflex.watch",
+        "title": "OpenFlex: Start Watch Mode"
+      },
+      {
+        "command": "openflex.stopWatch",
+        "title": "OpenFlex: Stop Watch Mode"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "openflex.compile",
+        "key": "ctrl+shift+b",
+        "mac": "cmd+shift+b",
+        "when": "editorLangId == actionscript4 || editorLangId == mxml"
+      }
+    ],
+    "configuration": {
+      "title": "OpenFlex Neo",
+      "properties": {
+        "openflex.compilerPath": {
+          "type": "string",
+          "default": "openflex",
+          "description": "Path to OpenFlex compiler"
+        },
+        "openflex.watchMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable watch mode for auto-compilation"
+        },
+        "openflex.sourceMapEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Generate source maps for debugging"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^5.0.0",
+    "vsce": "^2.15.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openflex-neo/vscode-openflex.git"
+  },
+  "license": "MIT"
+}

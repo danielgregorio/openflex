@@ -1,0 +1,127 @@
+{
+  "Reactive Variable": {
+    "prefix": "reactive",
+    "body": [
+      "@reactive var ${1:name}: ${2:Type} = ${3:initialValue};"
+    ],
+    "description": "Create a reactive variable with Signal"
+  },
+  "Computed Variable": {
+    "prefix": "computed",
+    "body": [
+      "@computed var ${1:name}: ${2:Type} = ${3:expression};"
+    ],
+    "description": "Create a computed variable"
+  },
+  "Effect Function": {
+    "prefix": "effect",
+    "body": [
+      "@effect",
+      "function ${1:effectName}(): void {",
+      "\t${2:// Effect code}",
+      "}"
+    ],
+    "description": "Create an effect function"
+  },
+  "Function Declaration": {
+    "prefix": "function",
+    "body": [
+      "function ${1:functionName}(${2:params}): ${3:ReturnType} {",
+      "\t${4:// Function body}",
+      "}"
+    ],
+    "description": "Create a function"
+  },
+  "Class Declaration": {
+    "prefix": "class",
+    "body": [
+      "class ${1:ClassName} {",
+      "\t${2:// Class members}",
+      "\t",
+      "\tfunction constructor() {",
+      "\t\t${3:// Constructor}",
+      "\t}",
+      "}"
+    ],
+    "description": "Create a class"
+  },
+  "Interface Declaration": {
+    "prefix": "interface",
+    "body": [
+      "interface ${1:InterfaceName} {",
+      "\t${2:// Interface members}",
+      "}"
+    ],
+    "description": "Create an interface"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": [
+      "for (var ${1:i}: Number = 0; ${1:i} < ${2:length}; ${1:i}++) {",
+      "\t${3:// Loop body}",
+      "}"
+    ],
+    "description": "For loop"
+  },
+  "If Statement": {
+    "prefix": "if",
+    "body": [
+      "if (${1:condition}) {",
+      "\t${2:// If body}",
+      "}"
+    ],
+    "description": "If statement"
+  },
+  "If-Else Statement": {
+    "prefix": "ifelse",
+    "body": [
+      "if (${1:condition}) {",
+      "\t${2:// If body}",
+      "} else {",
+      "\t${3:// Else body}",
+      "}"
+    ],
+    "description": "If-else statement"
+  },
+  "Try-Catch": {
+    "prefix": "try",
+    "body": [
+      "try {",
+      "\t${1:// Try body}",
+      "} catch (${2:error}: Error) {",
+      "\t${3:// Catch body}",
+      "}"
+    ],
+    "description": "Try-catch block"
+  },
+  "Import Statement": {
+    "prefix": "import",
+    "body": [
+      "import ${1:package.ClassName};"
+    ],
+    "description": "Import statement"
+  },
+  "Package Declaration": {
+    "prefix": "package",
+    "body": [
+      "package ${1:com.example} {",
+      "\t${2:// Package contents}",
+      "}"
+    ],
+    "description": "Package declaration"
+  },
+  "Trace": {
+    "prefix": "trace",
+    "body": [
+      "trace(${1:message});"
+    ],
+    "description": "Trace output"
+  },
+  "Nullable Type": {
+    "prefix": "nullable",
+    "body": [
+      "?${1:Type}"
+    ],
+    "description": "Nullable type annotation"
+  }
+}

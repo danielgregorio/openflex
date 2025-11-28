@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenFlex MXML App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* Web Component Styles */
+        app-root::part(vbox) {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        app-root::part(hbox) {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1>🚀 OpenFlex MXML App</h1>
+
+        <!-- MXML-generated Web Component -->
+        <app-root></app-root>
+    </div>
+
+    <!-- OpenFlex Runtime -->
+    <script src="../../../runtime/openflex-runtime-browser.js"></script>
+
+    <!-- Compiled MXML Component -->
+    <script src="app-component.js"></script>
+</body>
+</html>

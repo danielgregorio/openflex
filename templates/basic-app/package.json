@@ -1,0 +1,19 @@
+{
+  "name": "openflex-basic-app",
+  "version": "1.0.0",
+  "description": "OpenFlex Neo basic application template",
+  "scripts": {
+    "build": "openflex build src/main.as4",
+    "watch": "openflex-watch src/",
+    "dev": "npm run watch"
+  },
+  "keywords": [
+    "openflex",
+    "actionscript",
+    "reactivity"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "openflex-neo": "^0.1.0"
+  }
+}

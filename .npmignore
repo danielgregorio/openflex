@@ -1,0 +1,39 @@
+# Test files
+tests/
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Development files
+.git/
+.github/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Documentation (keep README.md)
+docs/
+*.md
+!README.md
+
+# Demo files (keep examples)
+demo-*.py
+
+# Configuration
+.gitignore
+.pylintrc
+pyproject.toml
+setup.py
+
+# IDE
+.DS_Store
+Thumbs.db

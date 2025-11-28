@@ -1,0 +1,57 @@
+/**
+ * OpenFlex Neo - Basic App
+ * A simple counter application demonstrating reactivity
+ */
+
+// Reactive state
+@reactive var count: Number = 0;
+@reactive var step: Number = 1;
+
+// Computed values
+@computed var doubled: Number = count * 2;
+@computed var total: Number = count + doubled;
+
+// Effects - automatically run when dependencies change
+@effect
+function logChanges(): void {
+    trace("Count changed to: " + count);
+}
+
+// Actions
+function increment(): void {
+    count = count + step;
+}
+
+function decrement(): void {
+    count = count - step;
+}
+
+function reset(): void {
+    count = 0;
+}
+
+function setStep(newStep: Number): void {
+    step = newStep;
+}
+
+// Initialize app
+function init(): void {
+    trace("OpenFlex Neo - Basic App Started!");
+    trace("Initial count: " + count);
+    trace("Double: " + doubled);
+    trace("Total: " + total);
+}
+
+// Run initialization
+init();
+
+// Example usage
+trace("\nIncrementing...");
+increment();  // Triggers logChanges effect
+
+trace("\nSetting step to 5...");
+setStep(5);
+increment();  // Count increases by 5
+
+trace("\nResetting...");
+reset();      // Count back to 0

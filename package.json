@@ -1,0 +1,58 @@
+{
+  "name": "openflex-neo",
+  "version": "0.1.0",
+  "description": "Modern ActionScript 4 compiler with MXML support, reactivity, and Web Components",
+  "main": "index.js",
+  "bin": {
+    "openflex": "./bin/openflex.js",
+    "openflex-watch": "./bin/watch.js",
+    "openflex-mxml": "./bin/compile-mxml.js"
+  },
+  "scripts": {
+    "test": "python -m pytest tests/",
+    "build": "echo 'No build step required - Python compiler'",
+    "watch": "python watch.py",
+    "demo": "python demo-errors.py",
+    "lint": "python -m pylint compiler/"
+  },
+  "keywords": [
+    "actionscript",
+    "as4",
+    "mxml",
+    "compiler",
+    "reactivity",
+    "web-components",
+    "flex",
+    "flash",
+    "transpiler",
+    "typescript-alternative"
+  ],
+  "author": "OpenFlex Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openflex-neo/openflex.git"
+  },
+  "bugs": {
+    "url": "https://github.com/openflex-neo/openflex/issues"
+  },
+  "homepage": "https://openflex.dev",
+  "engines": {
+    "node": ">=14.0.0",
+    "python": ">=3.9.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "files": [
+    "bin/",
+    "compiler/",
+    "runtime/",
+    "grammar/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

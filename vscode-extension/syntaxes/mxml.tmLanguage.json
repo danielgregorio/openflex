@@ -1,0 +1,118 @@
+{
+  "name": "MXML",
+  "scopeName": "text.mxml",
+  "fileTypes": ["mxml"],
+  "patterns": [
+    { "include": "#xml-declaration" },
+    { "include": "#tags" },
+    { "include": "#comments" }
+  ],
+  "repository": {
+    "xml-declaration": {
+      "name": "meta.tag.preprocessor.xml",
+      "begin": "<\\?xml",
+      "end": "\\?>",
+      "patterns": [
+        { "include": "#attributes" }
+      ]
+    },
+    "comments": {
+      "name": "comment.block.xml",
+      "begin": "<!--",
+      "end": "-->"
+    },
+    "tags": {
+      "patterns": [
+        { "include": "#script-tag" },
+        { "include": "#self-closing-tag" },
+        { "include": "#opening-tag" },
+        { "include": "#closing-tag" }
+      ]
+    },
+    "script-tag": {
+      "name": "meta.tag.script.mxml",
+      "begin": "(<)(fx:Script)(>)",
+      "end": "(</)(fx:Script)(>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.mxml" },
+        "2": { "name": "entity.name.tag.mxml" },
+        "3": { "name": "punctuation.definition.tag.mxml" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.mxml" },
+        "2": { "name": "entity.name.tag.mxml" },
+        "3": { "name": "punctuation.definition.tag.mxml" }
+      },
+      "patterns": [
+        {
+          "include": "source.actionscript4"
+        }
+      ]
+    },
+    "self-closing-tag": {
+      "name": "meta.tag.self-closing.mxml",
+      "begin": "(<)([a-zA-Z_][a-zA-Z0-9_:]*)",
+      "end": "(/>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.mxml" },
+        "2": { "name": "entity.name.tag.mxml" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.mxml" }
+      },
+      "patterns": [
+        { "include": "#attributes" },
+        { "include": "#reactive-binding" }
+      ]
+    },
+    "opening-tag": {
+      "name": "meta.tag.opening.mxml",
+      "begin": "(<)([a-zA-Z_][a-zA-Z0-9_:]*)",
+      "end": "(>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.mxml" },
+        "2": { "name": "entity.name.tag.mxml" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.mxml" }
+      },
+      "patterns": [
+        { "include": "#attributes" },
+        { "include": "#reactive-binding" }
+      ]
+    },
+    "closing-tag": {
+      "name": "meta.tag.closing.mxml",
+      "match": "(</)([a-zA-Z_][a-zA-Z0-9_:]*)(>)",
+      "captures": {
+        "1": { "name": "punctuation.definition.tag.mxml" },
+        "2": { "name": "entity.name.tag.mxml" },
+        "3": { "name": "punctuation.definition.tag.mxml" }
+      }
+    },
+    "attributes": {
+      "patterns": [
+        {
+          "name": "meta.attribute.mxml",
+          "match": "([a-zA-Z_][a-zA-Z0-9_:-]*)\\s*(=)\\s*([\"'])",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.mxml" },
+            "2": { "name": "punctuation.separator.key-value.mxml" },
+            "3": { "name": "punctuation.definition.string.begin.mxml" }
+          }
+        }
+      ]
+    },
+    "reactive-binding": {
+      "patterns": [
+        {
+          "name": "meta.reactive-binding.mxml",
+          "match": "\\{([^}]+)\\}",
+          "captures": {
+            "1": { "name": "source.actionscript4.embedded" }
+          }
+        }
+      ]
+    }
+  }
+}

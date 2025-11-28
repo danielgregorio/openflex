@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns:fx="http://openflex.dev/core">
+    <fx:Script>
+        /**
+         * Todo List Application
+         * Demonstrates MXML with reactive state management
+         */
+
+        @reactive var taskInput: String = "";
+        @reactive var tasks: Array = [];
+        @reactive var filter: String = "all";
+
+        @computed var filteredTasks: Array = filterTasks();
+        @computed var activeCount: Number = countActive();
+        @computed var completedCount: Number = countCompleted();
+
+        function filterTasks(): Array {
+            if (filter == "active") {
+                return tasks.filter((task) => !task.completed);
+            } else if (filter == "completed") {
+                return tasks.filter((task) => task.completed);
+            }
+            return tasks;
+        }
+
+        function countActive(): Number {
+            return tasks.filter((task) => !task.completed).length;
+        }
+
+        function countCompleted(): Number {
+            return tasks.filter((task) => task.completed).length;
+        }
+
+        function addTask(): void {
+            if (taskInput.trim() != "") {
+                tasks.push({
+                    id: Date.now(),
+                    text: taskInput,
+                    completed: false
+                });
+                taskInput = "";
+            }
+        }
+
+        function toggleTask(id: Number): void {
+            var task = tasks.find((t) => t.id == id);
+            if (task) {
+                task.completed = !task.completed;
+            }
+        }
+
+        function deleteTask(id: Number): void {
+            tasks = tasks.filter((t) => t.id != id);
+        }
+
+        function setFilter(newFilter: String): void {
+            filter = newFilter;
+        }
+    </fx:Script>
+
+    <VBox>
+        <!-- Header -->
+        <HBox>
+            <Label text="OpenFlex Todo List" />
+        </HBox>
+
+        <!-- Input Section -->
+        <HBox>
+            <TextInput
+                value="{taskInput}"
+                placeholder="What needs to be done?"
+            />
+            <Button label="Add" click={addTask} />
+        </HBox>
+
+        <!-- Task List -->
+        <VBox>
+            <Label text="Tasks: {filteredTasks.length}" />
+
+            <!-- TODO: Iterate over filteredTasks -->
+            <!-- This would require list rendering support -->
+        </VBox>
+
+        <!-- Filter Buttons -->
+        <HBox>
+            <Button label="All" click={() => setFilter("all")} />
+            <Button label="Active ({activeCount})" click={() => setFilter("active")} />
+            <Button label="Completed ({completedCount})" click={() => setFilter("completed")} />
+        </HBox>
+
+        <!-- Stats -->
+        <Label text="{activeCount} active, {completedCount} completed" />
+    </VBox>
+</Application>

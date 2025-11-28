@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenFlex Neo - Basic App</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .counter {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .info {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 OpenFlex Neo</h1>
+        <p>Basic App with Reactivity</p>
+
+        <div class="counter" id="counter">0</div>
+
+        <div class="controls">
+            <button onclick="decrement()">-</button>
+            <button onclick="reset()">Reset</button>
+            <button onclick="increment()">+</button>
+        </div>
+
+        <div class="info">
+            <strong>Doubled:</strong> <span id="doubled">0</span><br>
+            <strong>Total:</strong> <span id="total">0</span>
+        </div>
+    </div>
+
+    <!-- OpenFlex Runtime -->
+    <script src="../../runtime/openflex-runtime-browser.js"></script>
+
+    <!-- Compiled Application -->
+    <script src="src/main.js"></script>
+
+    <!-- UI Update Logic -->
+    <script>
+        // Update UI when reactive state changes
+        createEffect(() => {
+            document.getElementById('counter').textContent = count.value;
+        });
+
+        createEffect(() => {
+            document.getElementById('doubled').textContent = doubled.value;
+        });
+
+        createEffect(() => {
+            document.getElementById('total').textContent = total.value;
+        });
+    </script>
+</body>
+</html>

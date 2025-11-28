@@ -1,0 +1,21 @@
+{
+  "name": "openflex-mxml-app",
+  "version": "1.0.0",
+  "description": "OpenFlex Neo MXML application template",
+  "scripts": {
+    "build": "openflex-mxml src/App.mxml public/app-component.js",
+    "watch": "openflex-watch src/",
+    "dev": "npm run watch",
+    "serve": "python3 -m http.server 8080"
+  },
+  "keywords": [
+    "openflex",
+    "mxml",
+    "web-components",
+    "reactivity"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "openflex-neo": "^0.1.0"
+  }
+}
