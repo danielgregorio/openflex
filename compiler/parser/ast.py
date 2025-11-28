@@ -590,6 +590,97 @@ class TraitDeclaration(Statement):
 
 
 # ============================================================================
+# Pattern Matching & Algebraic Data Types
+# ============================================================================
+
+@dataclass
+class EnumDeclaration(Statement):
+    """Enum/ADT declaration with variants"""
+    name: str
+    variants: List['EnumVariant']
+    type_parameters: List[TypeParameter] = field(default_factory=list)
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
+class EnumVariant(ASTNode):
+    """Enum variant: Some(T), None, Error(String)"""
+    name: str
+    fields: List[Type] = field(default_factory=list)  # Tuple-style fields
+    named_fields: dict = field(default_factory=dict)  # Struct-style fields
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
+class MatchExpression(Expression):
+    """Match expression: match value { pattern => expr, ... }"""
+    scrutinee: Expression  # Value being matched
+    arms: List['MatchArm']
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
+class MatchArm(ASTNode):
+    """Single match arm: Pattern => Expression"""
+    pattern: 'Pattern'
+    guard: Optional[Expression] = None  # if guard
+    body: Expression = None
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
+class Pattern(ASTNode):
+    """Base class for patterns"""
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
+class LiteralPattern(Pattern):
+    """Literal pattern: 1, "hello", true"""
+    value: Any = None
+
+
+@dataclass
+class IdentifierPattern(Pattern):
+    """Identifier pattern: binds to variable"""
+    name: str = ""
+
+
+@dataclass
+class WildcardPattern(Pattern):
+    """Wildcard pattern: _ (matches anything)"""
+    pass
+
+
+@dataclass
+class VariantPattern(Pattern):
+    """Variant pattern: Some(x), Error(msg)"""
+    variant_name: str = ""
+    fields: List[Pattern] = field(default_factory=list)
+    named_fields: dict = field(default_factory=dict)
+
+
+@dataclass
+class TuplePattern(Pattern):
+    """Tuple pattern: (x, y, z)"""
+    elements: List[Pattern] = field(default_factory=list)
+
+
+@dataclass
+class ArrayPattern(Pattern):
+    """Array pattern: [first, ...rest]"""
+    elements: List[Pattern] = field(default_factory=list)
+    rest: Optional[str] = None  # Rest pattern name
+
+
+@dataclass
+class ObjectPattern(Pattern):
+    """Object pattern: {x, y: newY}"""
+    properties: dict = field(default_factory=dict)  # name -> pattern
+    rest: Optional[str] = None  # Rest pattern name
+
+
+# ============================================================================
 # Program
 # ============================================================================
 
