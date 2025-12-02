@@ -1,0 +1,290 @@
+/**
+ * Async/Await Demo - Promise Integration
+ * Demonstrates modern asynchronous programming in AS4
+ */
+
+// ============================================================================
+// Basic Async Functions
+// ============================================================================
+
+// Simple async function returning a Promise
+async function fetchData(url: String): Promise<String> {
+    var response = await fetch(url);
+    var data = await response.text();
+    return data;
+}
+
+// Async function with error handling
+async function safeFetch(url: String): Promise<String> {
+    try {
+        var response = await fetch(url);
+        if (!response.ok) {
+            throw new Error("HTTP error: " + response.status);
+        }
+        return await response.text();
+    } catch (e) {
+        console.error("Fetch failed:", e);
+        return "Error: " + e.message;
+    }
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+// Delay helper - returns a Promise
+function delay(ms: Number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Timeout helper
+function timeout(ms: Number): Promise<void> {
+    return new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), ms)
+    );
+}
+
+// Race between promise and timeout
+async function fetchWithTimeout(url: String, ms: Number): Promise<String> {
+    var result = await Promise.race([
+        fetchData(url),
+        timeout(ms)
+    ]);
+    return result;
+}
+
+// ============================================================================
+// Sequential vs Parallel Execution
+// ============================================================================
+
+// Sequential execution - waits for each operation
+async function sequentialFetch(): void {
+    console.log("Sequential fetch started");
+
+    var user = await fetchData("/api/user");
+    console.log("User fetched:", user);
+
+    var posts = await fetchData("/api/posts");
+    console.log("Posts fetched:", posts);
+
+    var comments = await fetchData("/api/comments");
+    console.log("Comments fetched:", comments);
+
+    console.log("All done sequentially!");
+}
+
+// Parallel execution - starts all at once, waits for all
+async function parallelFetch(): void {
+    console.log("Parallel fetch started");
+
+    var [user, posts, comments] = await Promise.all([
+        fetchData("/api/user"),
+        fetchData("/api/posts"),
+        fetchData("/api/comments")
+    ]);
+
+    console.log("User:", user);
+    console.log("Posts:", posts);
+    console.log("Comments:", comments);
+
+    console.log("All done in parallel!");
+}
+
+// ============================================================================
+// Async Arrow Functions
+// ============================================================================
+
+// Async arrow function - expression body
+const quickFetch = async (url: String) => await fetch(url);
+
+// Async arrow function - block body
+const fetchAndParse = async (url: String) => {
+    var response = await fetch(url);
+    var data = await response.json();
+    return data;
+};
+
+// Array of async operations
+const fetchMultiple = async (urls: Array<String>) => {
+    var promises = urls.map(async (url) => await fetchData(url));
+    return await Promise.all(promises);
+};
+
+// ============================================================================
+// Real-World Examples
+// ============================================================================
+
+// Example 1: User authentication
+async function login(username: String, password: String): Promise<Boolean> {
+    try {
+        var response = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+            var data = await response.json();
+            localStorage.setItem("token", data.token);
+            return true;
+        }
+
+        return false;
+    } catch (e) {
+        console.error("Login failed:", e);
+        return false;
+    }
+}
+
+// Example 2: Loading user profile with retries
+async function loadUserProfile(userId: String, retries: Number = 3): Promise<Object> {
+    for (var i = 0; i < retries; i++) {
+        try {
+            var response = await fetch("/api/users/" + userId);
+
+            if (response.ok) {
+                return await response.json();
+            }
+
+            // Wait before retrying (exponential backoff)
+            await delay(Math.pow(2, i) * 1000);
+
+        } catch (e) {
+            if (i === retries - 1) {
+                throw e;  // Last retry failed
+            }
+            await delay(Math.pow(2, i) * 1000);
+        }
+    }
+
+    throw new Error("Failed to load user profile after " + retries + " retries");
+}
+
+// Example 3: Batch processing with progress
+async function processBatch(items: Array<Object>): Promise<Array<Object>> {
+    var results: Array<Object> = [];
+    var total = items.length;
+
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+
+        // Process item
+        var result = await processItem(item);
+        results.push(result);
+
+        // Report progress
+        var progress = ((i + 1) / total * 100).toFixed(0);
+        console.log("Progress: " + progress + "%");
+
+        // Small delay to avoid overwhelming server
+        await delay(100);
+    }
+
+    return results;
+}
+
+async function processItem(item: Object): Promise<Object> {
+    // Simulate API call
+    await delay(Math.random() * 500);
+    return { ...item, processed: true };
+}
+
+// Example 4: Async initialization
+class DataService {
+    private cache: Object;
+    private initialized: Boolean = false;
+
+    async initialize(): void {
+        if (this.initialized) {
+            return;
+        }
+
+        console.log("Initializing DataService...");
+
+        // Load configuration
+        var config = await fetchData("/api/config");
+
+        // Warm up cache
+        this.cache = await fetchData("/api/cache");
+
+        this.initialized = true;
+        console.log("DataService initialized!");
+    }
+
+    async getData(key: String): Promise<Object> {
+        // Ensure initialized
+        if (!this.initialized) {
+            await this.initialize();
+        }
+
+        // Check cache first
+        if (this.cache[key]) {
+            return this.cache[key];
+        }
+
+        // Fetch from API
+        var data = await fetchData("/api/data/" + key);
+        this.cache[key] = data;
+
+        return data;
+    }
+}
+
+// ============================================================================
+// Demo Runner
+// ============================================================================
+
+async function main(): void {
+    console.log("=== Async/Await Demo ===");
+    console.log("");
+
+    // Demo 1: Simple delay
+    console.log("Demo 1: Simple delay");
+    console.log("Waiting 1 second...");
+    await delay(1000);
+    console.log("Done!");
+    console.log("");
+
+    // Demo 2: Sequential vs Parallel
+    console.log("Demo 2: Sequential fetch (slow)");
+    var start = Date.now();
+    await sequentialFetch();
+    console.log("Time: " + (Date.now() - start) + "ms");
+    console.log("");
+
+    console.log("Demo 3: Parallel fetch (fast)");
+    start = Date.now();
+    await parallelFetch();
+    console.log("Time: " + (Date.now() - start) + "ms");
+    console.log("");
+
+    // Demo 3: Error handling
+    console.log("Demo 4: Error handling");
+    var result = await safeFetch("/api/invalid");
+    console.log("Result:", result);
+    console.log("");
+
+    // Demo 4: Retry logic
+    console.log("Demo 5: Retry logic");
+    try {
+        var profile = await loadUserProfile("user123");
+        console.log("Profile loaded:", profile);
+    } catch (e) {
+        console.error("Failed to load profile:", e);
+    }
+    console.log("");
+
+    // Demo 5: DataService
+    console.log("Demo 6: Async class initialization");
+    var service = new DataService();
+    var data = await service.getData("key1");
+    console.log("Data:", data);
+    console.log("");
+
+    console.log("=== All demos complete! ===");
+}
+
+// Run main
+main().catch((error) => {
+    console.error("Fatal error:", error);
+});

@@ -119,6 +119,9 @@ class JSCodeGenerator:
         # Check for @effect decorator
         is_effect = any(d.name == 'effect' for d in func_decl.decorators)
 
+        # Async modifier
+        async_keyword = "async " if func_decl.is_async else ""
+
         # Parameters
         params = []
         for param in func_decl.params:
@@ -137,9 +140,9 @@ class JSCodeGenerator:
 
             if is_effect:
                 # Wrap in createEffect
-                return f"{self._indent()}createEffect(() => {name}({params_str}));\n{self._indent()}function {name}({params_str}) {body}"
+                return f"{self._indent()}createEffect(() => {name}({params_str}));\n{self._indent()}{async_keyword}function {name}({params_str}) {body}"
             else:
-                return f"{self._indent()}function {name}({params_str}) {body}"
+                return f"{self._indent()}{async_keyword}function {name}({params_str}) {body}"
         else:
             if is_effect:
                 return f"{self._indent()}createEffect(() => {name}({params_str}));\n{self._indent()}function {name}({params_str}) {{}}"
@@ -291,6 +294,12 @@ class JSCodeGenerator:
             return self._generate_object_literal(expr)
         elif isinstance(expr, ConditionalExpression):
             return self._generate_conditional_expression(expr)
+        elif isinstance(expr, AwaitExpression):
+            return self._generate_await_expression(expr)
+        elif isinstance(expr, ArrowFunction):
+            return self._generate_arrow_function(expr)
+        elif isinstance(expr, NewExpression):
+            return self._generate_new_expression(expr)
         else:
             return f"/* TODO: {expr.__class__.__name__} */"
 
@@ -346,7 +355,7 @@ class JSCodeGenerator:
         obj = self._generate_expression(member.object)
         prop = self._generate_expression(member.property)
 
-        if member.computed:
+        if member.is_computed:
             return f"{obj}[{prop}]"
         else:
             return f"{obj}.{prop}"
@@ -377,6 +386,48 @@ class JSCodeGenerator:
         consequent = self._generate_expression(cond.consequent)
         alternate = self._generate_expression(cond.alternate)
         return f"{test} ? {consequent} : {alternate}"
+
+    def _generate_await_expression(self, await_expr: AwaitExpression) -> str:
+        """Generate await expression"""
+        argument = self._generate_expression(await_expr.argument)
+        return f"await {argument}"
+
+    def _generate_arrow_function(self, arrow: ArrowFunction) -> str:
+        """Generate arrow function"""
+        # Async modifier
+        async_keyword = "async " if arrow.is_async else ""
+
+        # Parameters
+        if len(arrow.params) == 1 and not arrow.params[0].default_value:
+            # Single parameter without default - no parentheses needed
+            params_str = arrow.params[0].name
+        else:
+            params = []
+            for param in arrow.params:
+                param_name = param.name
+                if param.default_value:
+                    default = self._generate_expression(param.default_value)
+                    params.append(f"{param_name} = {default}")
+                else:
+                    params.append(param_name)
+            params_str = f"({', '.join(params)})"
+
+        # Body
+        if isinstance(arrow.body, BlockStatement):
+            # Block body
+            body_str = self._generate_block_statement(arrow.body)
+            return f"{async_keyword}{params_str} => {body_str}"
+        else:
+            # Expression body
+            body_str = self._generate_expression(arrow.body)
+            return f"{async_keyword}{params_str} => {body_str}"
+
+    def _generate_new_expression(self, new_expr: NewExpression) -> str:
+        """Generate new expression"""
+        callee = self._generate_expression(new_expr.callee)
+        args = [self._generate_expression(arg) for arg in new_expr.arguments]
+        args_str = ", ".join(args)
+        return f"new {callee}({args_str})"
 
     def _indent(self) -> str:
         """Get current indentation"""
