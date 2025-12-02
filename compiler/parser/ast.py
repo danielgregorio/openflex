@@ -303,6 +303,25 @@ class MemberExpression(Expression):
 
 
 @dataclass
+class OptionalMemberExpression(Expression):
+    """Optional member access: obj?.prop, arr?.[0]"""
+    object: Expression
+    property: Expression
+    is_computed: bool = False  # arr?.[0] vs obj?.prop
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
+class OptionalCallExpression(Expression):
+    """Optional function call: func?.()"""
+    callee: Expression
+    arguments: List[Expression]
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
 class ConditionalExpression(Expression):
     """Ternary: condition ? true_expr : false_expr"""
     test: Expression

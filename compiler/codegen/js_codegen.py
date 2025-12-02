@@ -348,8 +348,12 @@ class JSCodeGenerator:
             return self._generate_unary_expression(expr)
         elif isinstance(expr, CallExpression):
             return self._generate_call_expression(expr)
+        elif isinstance(expr, OptionalCallExpression):
+            return self._generate_optional_call_expression(expr)
         elif isinstance(expr, MemberExpression):
             return self._generate_member_expression(expr)
+        elif isinstance(expr, OptionalMemberExpression):
+            return self._generate_optional_member_expression(expr)
         elif isinstance(expr, ArrayLiteral):
             return self._generate_array_literal(expr)
         elif isinstance(expr, ObjectLiteral):
@@ -421,6 +425,23 @@ class JSCodeGenerator:
             return f"{obj}[{prop}]"
         else:
             return f"{obj}.{prop}"
+
+    def _generate_optional_member_expression(self, member: OptionalMemberExpression) -> str:
+        """Generate optional member access: obj?.prop or obj?.[key]"""
+        obj = self._generate_expression(member.object)
+        prop = self._generate_expression(member.property)
+
+        if member.is_computed:
+            return f"{obj}?.[{prop}]"
+        else:
+            return f"{obj}?.{prop}"
+
+    def _generate_optional_call_expression(self, call: OptionalCallExpression) -> str:
+        """Generate optional function call: func?.()"""
+        callee = self._generate_expression(call.callee)
+        args = [self._generate_expression(arg) for arg in call.arguments]
+        args_str = ", ".join(args)
+        return f"{callee}?.({args_str})"
 
     def _generate_array_literal(self, array: ArrayLiteral) -> str:
         """Generate array literal"""
