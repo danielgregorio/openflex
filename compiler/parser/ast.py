@@ -386,6 +386,16 @@ class VariableDeclaration(Statement):
 
 
 @dataclass
+class DestructuringDeclaration(Statement):
+    """Destructuring declaration: const [x, y] = arr; const {a, b} = obj"""
+    pattern: 'Pattern'  # ArrayPattern or ObjectPattern
+    initializer: Optional[Expression] = None
+    is_const: bool = False
+    decorators: List[Decorator] = field(default_factory=list)
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
 class FunctionDeclaration(Statement):
     """Function declaration"""
     name: str

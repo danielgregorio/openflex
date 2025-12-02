@@ -62,6 +62,8 @@ class JSCodeGenerator:
         """Generate code for a statement"""
         if isinstance(stmt, VariableDeclaration):
             return self._generate_variable_declaration(stmt)
+        elif isinstance(stmt, DestructuringDeclaration):
+            return self._generate_destructuring_declaration(stmt)
         elif isinstance(stmt, FunctionDeclaration):
             return self._generate_function_declaration(stmt)
         elif isinstance(stmt, ClassDeclaration):
@@ -111,6 +113,66 @@ class JSCodeGenerator:
                 return f"{self._indent()}{keyword} {name} = new Computed(() => undefined);"
             else:
                 return f"{self._indent()}{keyword} {name};"
+
+    def _generate_destructuring_declaration(self, destruct_decl: DestructuringDeclaration) -> str:
+        """Generate destructuring declaration"""
+        keyword = "const" if destruct_decl.is_const else "let"
+        pattern = self._generate_destructuring_pattern(destruct_decl.pattern)
+
+        if destruct_decl.initializer:
+            value = self._generate_expression(destruct_decl.initializer)
+            return f"{self._indent()}{keyword} {pattern} = {value};"
+        else:
+            return f"{self._indent()}{keyword} {pattern};"
+
+    def _generate_destructuring_pattern(self, pattern: Pattern) -> str:
+        """Generate destructuring pattern code"""
+        if isinstance(pattern, IdentifierPattern):
+            return pattern.name
+        elif isinstance(pattern, WildcardPattern):
+            return ""  # Empty slot in array destructuring
+        elif isinstance(pattern, ArrayPattern):
+            return self._generate_array_pattern(pattern)
+        elif isinstance(pattern, ObjectPattern):
+            return self._generate_object_pattern(pattern)
+        else:
+            return f"/* TODO: Pattern {pattern.__class__.__name__} */"
+
+    def _generate_array_pattern(self, pattern: ArrayPattern) -> str:
+        """Generate array destructuring pattern: [a, b, ...rest]"""
+        elements = []
+
+        for elem in pattern.elements:
+            elem_str = self._generate_destructuring_pattern(elem)
+            elements.append(elem_str)
+
+        # Add rest element if present
+        if pattern.rest:
+            elements.append(f"...{pattern.rest}")
+
+        return f"[{', '.join(elements)}]"
+
+    def _generate_object_pattern(self, pattern: ObjectPattern) -> str:
+        """Generate object destructuring pattern: {x, y: newY, ...rest}"""
+        props = []
+
+        for key, value_pattern in pattern.properties.items():
+            if isinstance(value_pattern, IdentifierPattern) and value_pattern.name == key:
+                # Shorthand: {x} instead of {x: x}
+                props.append(key)
+            elif isinstance(value_pattern, IdentifierPattern):
+                # Rename: {name: n}
+                props.append(f"{key}: {value_pattern.name}")
+            else:
+                # Nested pattern: {pos: {x, y}}
+                nested = self._generate_destructuring_pattern(value_pattern)
+                props.append(f"{key}: {nested}")
+
+        # Add rest property if present
+        if pattern.rest:
+            props.append(f"...{pattern.rest}")
+
+        return f"{{{', '.join(props)}}}"
 
     def _generate_function_declaration(self, func_decl: FunctionDeclaration) -> str:
         """Generate function declaration"""
