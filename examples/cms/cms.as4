@@ -1,0 +1,904 @@
+/**
+ * OpenFlex Neo CMS - Complete Content Management System
+ *
+ * Features:
+ * - Content management (Posts, Pages, Media)
+ * - WYSIWYG editor with rich text
+ * - Media library with file uploads
+ * - User and role management
+ * - Real-time preview
+ * - Analytics dashboard
+ * - Pattern matching for content types
+ * - Reactive state management
+ */
+
+// ============================================================================
+// DATA MODELS
+// ============================================================================
+
+/**
+ * Content Types - Using Pattern Matching
+ */
+type ContentType =
+    | Post { title: String, body: String, excerpt: String, categories: Array<String> }
+    | Page { title: String, body: String, slug: String, template: String }
+    | Media { filename: String, url: String, mimeType: String, size: Number }
+    | Draft { title: String, body: String, savedAt: Date };
+
+/**
+ * User Roles
+ */
+enum UserRole {
+    Admin,
+    Editor,
+    Author,
+    Contributor,
+    Subscriber
+}
+
+/**
+ * Content Status
+ */
+enum ContentStatus {
+    Draft,
+    Published,
+    Scheduled,
+    Archived
+}
+
+/**
+ * User Model
+ */
+class User {
+    id: Number;
+    email: String;
+    name: String;
+    role: UserRole;
+    avatar: String;
+    token: String;
+    createdAt: Date;
+
+    constructor(data: Object) {
+        this.id = data.id ?? 0;
+        this.email = data.email ?? "";
+        this.name = data.name ?? "";
+        this.role = data.role ?? UserRole.Subscriber;
+        this.avatar = data.avatar ?? "";
+        this.token = data.token ?? "";
+        this.createdAt = data.createdAt ? new Date(data.createdAt) : new Date();
+    }
+
+    get displayName(): String {
+        return this.name || this.email.split("@")[0];
+    }
+
+    get roleLabel(): String {
+        match (this.role) {
+            case UserRole.Admin => "Administrator",
+            case UserRole.Editor => "Editor",
+            case UserRole.Author => "Author",
+            case UserRole.Contributor => "Contributor",
+            case UserRole.Subscriber => "Subscriber"
+        }
+    }
+
+    canEdit(): Boolean {
+        return this.role === UserRole.Admin ||
+               this.role === UserRole.Editor;
+    }
+
+    canPublish(): Boolean {
+        return this.role === UserRole.Admin ||
+               this.role === UserRole.Editor ||
+               this.role === UserRole.Author;
+    }
+
+    canDelete(): Boolean {
+        return this.role === UserRole.Admin ||
+               this.role === UserRole.Editor;
+    }
+
+    canManageUsers(): Boolean {
+        return this.role === UserRole.Admin;
+    }
+}
+
+/**
+ * Post Model
+ */
+class Post {
+    id: Number;
+    title: String;
+    slug: String;
+    body: String;
+    excerpt: String;
+    featuredImage: String;
+    author: User;
+    categories: Array<String>;
+    tags: Array<String>;
+    status: ContentStatus;
+    publishedAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    viewCount: Number;
+
+    constructor(data: Object) {
+        this.id = data.id ?? 0;
+        this.title = data.title ?? "";
+        this.slug = data.slug ?? this.generateSlug(this.title);
+        this.body = data.body ?? "";
+        this.excerpt = data.excerpt ?? this.generateExcerpt(this.body);
+        this.featuredImage = data.featuredImage ?? "";
+        this.author = data.author ? new User(data.author) : null;
+        this.categories = data.categories ?? [];
+        this.tags = data.tags ?? [];
+        this.status = data.status ?? ContentStatus.Draft;
+        this.publishedAt = data.publishedAt ? new Date(data.publishedAt) : null;
+        this.createdAt = data.createdAt ? new Date(data.createdAt) : new Date();
+        this.updatedAt = data.updatedAt ? new Date(data.updatedAt) : new Date();
+        this.viewCount = data.viewCount ?? 0;
+    }
+
+    get isPublished(): Boolean {
+        return this.status === ContentStatus.Published;
+    }
+
+    get isDraft(): Boolean {
+        return this.status === ContentStatus.Draft;
+    }
+
+    get statusLabel(): String {
+        match (this.status) {
+            case ContentStatus.Draft => "Draft",
+            case ContentStatus.Published => "Published",
+            case ContentStatus.Scheduled => "Scheduled",
+            case ContentStatus.Archived => "Archived"
+        }
+    }
+
+    get wordCount(): Number {
+        return this.body.split(/\s+/).length;
+    }
+
+    get readingTime(): Number {
+        // Average reading speed: 200 words per minute
+        return Math.ceil(this.wordCount / 200);
+    }
+
+    get formattedDate(): String {
+        const date = this.publishedAt || this.createdAt;
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    }
+
+    private generateSlug(title: String): String {
+        return title
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/--+/g, "-")
+            .trim();
+    }
+
+    private generateExcerpt(body: String, maxLength: Number = 160): String {
+        const stripped = body.replace(/<[^>]*>/g, ""); // Remove HTML tags
+        if (stripped.length <= maxLength) {
+            return stripped;
+        }
+        return stripped.substring(0, maxLength).trim() + "...";
+    }
+}
+
+/**
+ * Media File Model
+ */
+class MediaFile {
+    id: Number;
+    filename: String;
+    url: String;
+    thumbnailUrl: String;
+    mimeType: String;
+    size: Number;
+    width: Number;
+    height: Number;
+    uploadedBy: User;
+    uploadedAt: Date;
+    alt: String;
+    caption: String;
+
+    constructor(data: Object) {
+        this.id = data.id ?? 0;
+        this.filename = data.filename ?? "";
+        this.url = data.url ?? "";
+        this.thumbnailUrl = data.thumbnailUrl ?? this.url;
+        this.mimeType = data.mimeType ?? "";
+        this.size = data.size ?? 0;
+        this.width = data.width ?? 0;
+        this.height = data.height ?? 0;
+        this.uploadedBy = data.uploadedBy ? new User(data.uploadedBy) : null;
+        this.uploadedAt = data.uploadedAt ? new Date(data.uploadedAt) : new Date();
+        this.alt = data.alt ?? "";
+        this.caption = data.caption ?? "";
+    }
+
+    get isImage(): Boolean {
+        return this.mimeType.startsWith("image/");
+    }
+
+    get isVideo(): Boolean {
+        return this.mimeType.startsWith("video/");
+    }
+
+    get isDocument(): Boolean {
+        return this.mimeType.includes("pdf") ||
+               this.mimeType.includes("document") ||
+               this.mimeType.includes("word");
+    }
+
+    get formattedSize(): String {
+        const kb = this.size / 1024;
+        if (kb < 1024) {
+            return kb.toFixed(1) + " KB";
+        }
+        const mb = kb / 1024;
+        return mb.toFixed(1) + " MB";
+    }
+
+    get dimensions(): String {
+        if (this.isImage && this.width && this.height) {
+            return this.width + " × " + this.height;
+        }
+        return "";
+    }
+
+    get fileExtension(): String {
+        const parts = this.filename.split(".");
+        return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : "";
+    }
+}
+
+/**
+ * Analytics Data Model
+ */
+class AnalyticsData {
+    totalPosts: Number;
+    totalPages: Number;
+    totalMedia: Number;
+    totalViews: Number;
+    totalComments: Number;
+    viewsToday: Number;
+    viewsThisWeek: Number;
+    viewsThisMonth: Number;
+    topPosts: Array<Post>;
+    recentActivity: Array<Object>;
+
+    constructor(data: Object = {}) {
+        this.totalPosts = data.totalPosts ?? 0;
+        this.totalPages = data.totalPages ?? 0;
+        this.totalMedia = data.totalMedia ?? 0;
+        this.totalViews = data.totalViews ?? 0;
+        this.totalComments = data.totalComments ?? 0;
+        this.viewsToday = data.viewsToday ?? 0;
+        this.viewsThisWeek = data.viewsThisWeek ?? 0;
+        this.viewsThisMonth = data.viewsThisMonth ?? 0;
+        this.topPosts = data.topPosts?.map((p) => new Post(p)) ?? [];
+        this.recentActivity = data.recentActivity ?? [];
+    }
+}
+
+// ============================================================================
+// API SERVICE LAYER
+// ============================================================================
+
+/**
+ * CMS API Service - Handles all backend communication
+ */
+class CMSAPI {
+    private baseUrl: String = "/api";
+    private authToken: String = "";
+
+    constructor(baseUrl: String = "/api") {
+        this.baseUrl = baseUrl;
+        this.loadAuthToken();
+    }
+
+    private loadAuthToken(): void {
+        this.authToken = localStorage.getItem("cms_auth_token") ?? "";
+    }
+
+    private saveAuthToken(token: String): void {
+        this.authToken = token;
+        localStorage.setItem("cms_auth_token", token);
+    }
+
+    private clearAuthToken(): void {
+        this.authToken = "";
+        localStorage.removeItem("cms_auth_token");
+    }
+
+    /**
+     * Generic request handler with error handling
+     */
+    private async request(endpoint: String, options: Object = {}): Promise<Object> {
+        const url = this.baseUrl + endpoint;
+
+        const headers = {
+            "Content-Type": "application/json",
+            ...(options.headers ?? {})
+        };
+
+        if (this.authToken) {
+            headers["Authorization"] = "Bearer " + this.authToken;
+        }
+
+        const requestOptions = {
+            ...options,
+            headers
+        };
+
+        try {
+            const response = await fetch(url, requestOptions);
+
+            if (response.status === 401) {
+                this.clearAuthToken();
+                throw new Error("Unauthorized - Please login again");
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message ?? "Request failed with status " + response.status);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("API Error:", error);
+            throw error;
+        }
+    }
+
+    // Authentication
+    async login(email: String, password: String): Promise<User> {
+        const data = await this.request("/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password })
+        });
+
+        const user = new User(data.user);
+        if (data.token) {
+            this.saveAuthToken(data.token);
+        }
+        return user;
+    }
+
+    async logout(): Promise<void> {
+        try {
+            await this.request("/auth/logout", { method: "POST" });
+        } finally {
+            this.clearAuthToken();
+        }
+    }
+
+    async getCurrentUser(): Promise<User> {
+        const data = await this.request("/auth/me");
+        return new User(data.user);
+    }
+
+    // Posts
+    async getPosts(filters: Object = {}): Promise<Array<Post>> {
+        const params = new URLSearchParams();
+
+        if (filters.status) {
+            params.append("status", filters.status);
+        }
+        if (filters.category) {
+            params.append("category", filters.category);
+        }
+        if (filters.author) {
+            params.append("author", filters.author);
+        }
+        if (filters.search) {
+            params.append("q", filters.search);
+        }
+
+        const queryString = params.toString();
+        const endpoint = queryString ? "/posts?" + queryString : "/posts";
+
+        const data = await this.request(endpoint);
+        return data.posts?.map((p) => new Post(p)) ?? [];
+    }
+
+    async getPost(id: Number): Promise<Post> {
+        const data = await this.request("/posts/" + id);
+        return new Post(data.post);
+    }
+
+    async createPost(postData: Object): Promise<Post> {
+        const data = await this.request("/posts", {
+            method: "POST",
+            body: JSON.stringify(postData)
+        });
+        return new Post(data.post);
+    }
+
+    async updatePost(id: Number, postData: Object): Promise<Post> {
+        const data = await this.request("/posts/" + id, {
+            method: "PUT",
+            body: JSON.stringify(postData)
+        });
+        return new Post(data.post);
+    }
+
+    async deletePost(id: Number): Promise<void> {
+        await this.request("/posts/" + id, { method: "DELETE" });
+    }
+
+    async publishPost(id: Number): Promise<Post> {
+        const data = await this.request("/posts/" + id + "/publish", {
+            method: "POST"
+        });
+        return new Post(data.post);
+    }
+
+    // Media
+    async getMediaFiles(filters: Object = {}): Promise<Array<MediaFile>> {
+        const params = new URLSearchParams();
+
+        if (filters.type) {
+            params.append("type", filters.type);
+        }
+        if (filters.search) {
+            params.append("q", filters.search);
+        }
+
+        const queryString = params.toString();
+        const endpoint = queryString ? "/media?" + queryString : "/media";
+
+        const data = await this.request(endpoint);
+        return data.media?.map((m) => new MediaFile(m)) ?? [];
+    }
+
+    async uploadMedia(file: File, metadata: Object = {}): Promise<MediaFile> {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        if (metadata.alt) {
+            formData.append("alt", metadata.alt);
+        }
+        if (metadata.caption) {
+            formData.append("caption", metadata.caption);
+        }
+
+        const headers = {};
+        if (this.authToken) {
+            headers["Authorization"] = "Bearer " + this.authToken;
+        }
+
+        const response = await fetch(this.baseUrl + "/media/upload", {
+            method: "POST",
+            headers,
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        return new MediaFile(data.media);
+    }
+
+    async deleteMedia(id: Number): Promise<void> {
+        await this.request("/media/" + id, { method: "DELETE" });
+    }
+
+    // Users
+    async getUsers(): Promise<Array<User>> {
+        const data = await this.request("/users");
+        return data.users?.map((u) => new User(u)) ?? [];
+    }
+
+    async createUser(userData: Object): Promise<User> {
+        const data = await this.request("/users", {
+            method: "POST",
+            body: JSON.stringify(userData)
+        });
+        return new User(data.user);
+    }
+
+    async updateUser(id: Number, userData: Object): Promise<User> {
+        const data = await this.request("/users/" + id, {
+            method: "PUT",
+            body: JSON.stringify(userData)
+        });
+        return new User(data.user);
+    }
+
+    async deleteUser(id: Number): Promise<void> {
+        await this.request("/users/" + id, { method: "DELETE" });
+    }
+
+    // Analytics
+    async getAnalytics(): Promise<AnalyticsData> {
+        const data = await this.request("/analytics");
+        return new AnalyticsData(data);
+    }
+}
+
+// ============================================================================
+// STATE MANAGEMENT
+// ============================================================================
+
+/**
+ * CMS Application State - Reactive state management
+ */
+class CMSState {
+    @reactive currentUser: User = null;
+    @reactive isAuthenticated: Boolean = false;
+    @reactive isLoading: Boolean = false;
+    @reactive error: String = "";
+
+    // Content
+    @reactive posts: Array<Post> = [];
+    @reactive currentPost: Post = null;
+    @reactive mediaFiles: Array<MediaFile> = [];
+    @reactive users: Array<User> = [];
+
+    // Filters
+    @reactive postFilter: String = "all"; // all, published, draft
+    @reactive searchQuery: String = "";
+    @reactive selectedCategory: String = "";
+
+    // UI State
+    @reactive currentView: String = "dashboard"; // dashboard, posts, media, users, settings
+    @reactive sidebarCollapsed: Boolean = false;
+    @reactive showMediaLibrary: Boolean = false;
+    @reactive selectedMediaFiles: Array<Number> = [];
+
+    // Editor State
+    @reactive editorContent: String = "";
+    @reactive editorMode: String = "visual"; // visual, code
+    @reactive isDirty: Boolean = false;
+
+    // Analytics
+    @reactive analytics: AnalyticsData = new AnalyticsData();
+
+    // Upload Progress
+    @reactive uploadProgress: Number = 0;
+    @reactive isUploading: Boolean = false;
+
+    private api: CMSAPI;
+
+    constructor() {
+        this.api = new CMSAPI();
+        this.initializeFromStorage();
+    }
+
+    // Computed Properties
+    @computed get filteredPosts(): Array<Post> {
+        var result = this.posts;
+
+        // Filter by status
+        if (this.postFilter === "published") {
+            result = result.filter((p) => p.isPublished);
+        } else if (this.postFilter === "draft") {
+            result = result.filter((p) => p.isDraft);
+        }
+
+        // Filter by category
+        if (this.selectedCategory) {
+            result = result.filter((p) =>
+                p.categories.includes(this.selectedCategory)
+            );
+        }
+
+        // Search
+        if (this.searchQuery) {
+            const query = this.searchQuery.toLowerCase();
+            result = result.filter((p) =>
+                p.title.toLowerCase().includes(query) ||
+                p.body.toLowerCase().includes(query) ||
+                p.excerpt.toLowerCase().includes(query)
+            );
+        }
+
+        return result;
+    }
+
+    @computed get totalPosts(): Number {
+        return this.posts.length;
+    }
+
+    @computed get publishedPosts(): Number {
+        return this.posts.filter((p) => p.isPublished).length;
+    }
+
+    @computed get draftPosts(): Number {
+        return this.posts.filter((p) => p.isDraft).length;
+    }
+
+    @computed get allCategories(): Array<String> {
+        const categories = new Set<String>();
+        this.posts.forEach((post) => {
+            post.categories.forEach((cat) => categories.add(cat));
+        });
+        return Array.from(categories).sort();
+    }
+
+    @computed get canEdit(): Boolean {
+        return this.currentUser?.canEdit() ?? false;
+    }
+
+    @computed get canPublish(): Boolean {
+        return this.currentUser?.canPublish() ?? false;
+    }
+
+    @computed get canManageUsers(): Boolean {
+        return this.currentUser?.canManageUsers() ?? false;
+    }
+
+    // Initialization
+    private initializeFromStorage(): void {
+        const savedView = localStorage.getItem("cms_current_view");
+        if (savedView) {
+            this.currentView = savedView;
+        }
+
+        const savedSidebarState = localStorage.getItem("cms_sidebar_collapsed");
+        if (savedSidebarState) {
+            this.sidebarCollapsed = savedSidebarState === "true";
+        }
+    }
+
+    // Actions
+    async login(email: String, password: String): Promise<void> {
+        this.isLoading = true;
+        this.error = "";
+
+        try {
+            this.currentUser = await this.api.login(email, password);
+            this.isAuthenticated = true;
+            await this.loadDashboard();
+        } catch (error) {
+            this.error = error.message;
+            throw error;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async logout(): Promise<void> {
+        await this.api.logout();
+        this.currentUser = null;
+        this.isAuthenticated = false;
+        this.posts = [];
+        this.mediaFiles = [];
+        this.users = [];
+    }
+
+    async loadDashboard(): Promise<void> {
+        this.isLoading = true;
+
+        try {
+            const [posts, analytics] = await Promise.all([
+                this.api.getPosts(),
+                this.api.getAnalytics()
+            ]);
+
+            this.posts = posts;
+            this.analytics = analytics;
+        } catch (error) {
+            this.error = error.message;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async loadPosts(): Promise<void> {
+        this.isLoading = true;
+
+        try {
+            this.posts = await this.api.getPosts({
+                status: this.postFilter === "all" ? null : this.postFilter,
+                category: this.selectedCategory || null,
+                search: this.searchQuery || null
+            });
+        } catch (error) {
+            this.error = error.message;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async loadPost(id: Number): Promise<void> {
+        this.isLoading = true;
+
+        try {
+            this.currentPost = await this.api.getPost(id);
+            this.editorContent = this.currentPost.body;
+            this.isDirty = false;
+        } catch (error) {
+            this.error = error.message;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async savePost(postData: Object): Promise<Post> {
+        this.isLoading = true;
+
+        try {
+            var savedPost: Post;
+
+            if (postData.id) {
+                savedPost = await this.api.updatePost(postData.id, postData);
+                const index = this.posts.findIndex((p) => p.id === postData.id);
+                if (index !== -1) {
+                    this.posts[index] = savedPost;
+                }
+            } else {
+                savedPost = await this.api.createPost(postData);
+                this.posts.unshift(savedPost);
+            }
+
+            this.currentPost = savedPost;
+            this.isDirty = false;
+
+            return savedPost;
+        } catch (error) {
+            this.error = error.message;
+            throw error;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async deletePost(id: Number): Promise<void> {
+        this.isLoading = true;
+
+        try {
+            await this.api.deletePost(id);
+            this.posts = this.posts.filter((p) => p.id !== id);
+        } catch (error) {
+            this.error = error.message;
+            throw error;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async publishPost(id: Number): Promise<void> {
+        this.isLoading = true;
+
+        try {
+            const publishedPost = await this.api.publishPost(id);
+            const index = this.posts.findIndex((p) => p.id === id);
+            if (index !== -1) {
+                this.posts[index] = publishedPost;
+            }
+            if (this.currentPost?.id === id) {
+                this.currentPost = publishedPost;
+            }
+        } catch (error) {
+            this.error = error.message;
+            throw error;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async loadMediaFiles(): Promise<void> {
+        this.isLoading = true;
+
+        try {
+            this.mediaFiles = await this.api.getMediaFiles();
+        } catch (error) {
+            this.error = error.message;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async uploadMediaFile(file: File, metadata: Object = {}): Promise<MediaFile> {
+        this.isUploading = true;
+        this.uploadProgress = 0;
+
+        try {
+            // Simulate progress updates (in real app, use XMLHttpRequest for progress tracking)
+            const progressInterval = setInterval(() => {
+                this.uploadProgress = Math.min(this.uploadProgress + 10, 90);
+            }, 100);
+
+            const mediaFile = await this.api.uploadMedia(file, metadata);
+
+            clearInterval(progressInterval);
+            this.uploadProgress = 100;
+
+            this.mediaFiles.unshift(mediaFile);
+            return mediaFile;
+        } catch (error) {
+            this.error = error.message;
+            throw error;
+        } finally {
+            this.isUploading = false;
+            setTimeout(() => {
+                this.uploadProgress = 0;
+            }, 1000);
+        }
+    }
+
+    async deleteMediaFile(id: Number): Promise<void> {
+        this.isLoading = true;
+
+        try {
+            await this.api.deleteMedia(id);
+            this.mediaFiles = this.mediaFiles.filter((m) => m.id !== id);
+            this.selectedMediaFiles = this.selectedMediaFiles.filter((mid) => mid !== id);
+        } catch (error) {
+            this.error = error.message;
+            throw error;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async loadUsers(): Promise<void> {
+        this.isLoading = true;
+
+        try {
+            this.users = await this.api.getUsers();
+        } catch (error) {
+            this.error = error.message;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    // UI Actions
+    setView(view: String): void {
+        this.currentView = view;
+        localStorage.setItem("cms_current_view", view);
+    }
+
+    toggleSidebar(): void {
+        this.sidebarCollapsed = !this.sidebarCollapsed;
+        localStorage.setItem("cms_sidebar_collapsed", this.sidebarCollapsed.toString());
+    }
+
+    setPostFilter(filter: String): void {
+        this.postFilter = filter;
+        this.loadPosts();
+    }
+
+    setSearchQuery(query: String): void {
+        this.searchQuery = query;
+    }
+
+    setEditorContent(content: String): void {
+        this.editorContent = content;
+        this.isDirty = true;
+    }
+
+    toggleMediaLibrary(): void {
+        this.showMediaLibrary = !this.showMediaLibrary;
+    }
+
+    selectMediaFile(id: Number): void {
+        if (this.selectedMediaFiles.includes(id)) {
+            this.selectedMediaFiles = this.selectedMediaFiles.filter((mid) => mid !== id);
+        } else {
+            this.selectedMediaFiles.push(id);
+        }
+    }
+
+    clearMediaSelection(): void {
+        this.selectedMediaFiles = [];
+    }
+}
+
+// Global CMS state instance
+const cms = new CMSState();
+
+export { cms, CMSState, CMSAPI, User, Post, MediaFile, AnalyticsData, UserRole, ContentStatus };

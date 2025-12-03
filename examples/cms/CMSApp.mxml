@@ -1,0 +1,935 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns="http://openflex.org/mxml/2024"
+             width="100%"
+             height="100%"
+             title="OpenFlex CMS">
+
+    <Script>
+        <![CDATA[
+        import { cms, UserRole, ContentStatus } from "./cms.as4";
+
+        @reactive private var showLoginModal: Boolean = !cms.isAuthenticated;
+        @reactive private var showDeleteConfirm: Boolean = false;
+        @reactive private var deleteTargetId: Number = 0;
+        @reactive private var notification: String = "";
+        @reactive private var notificationVisible: Boolean = false;
+
+        // Login handlers
+        private function handleLogin(event: Event): void {
+            event.preventDefault();
+
+            const form = event.target;
+            const email = form.querySelector("#email").value;
+            const password = form.querySelector("#password").value;
+
+            cms.login(email, password)
+                .then(() => {
+                    showLoginModal = false;
+                    showNotification("Welcome back, " + cms.currentUser.displayName + "!");
+                })
+                .catch((error) => {
+                    showNotification("Login failed: " + error.message, "error");
+                });
+        }
+
+        private function handleLogout(): void {
+            cms.logout().then(() => {
+                showLoginModal = true;
+                showNotification("You have been logged out");
+            });
+        }
+
+        // Navigation
+        private function navigateTo(view: String): void {
+            cms.setView(view);
+
+            match (view) {
+                case "posts" => cms.loadPosts(),
+                case "media" => cms.loadMediaFiles(),
+                case "users" => cms.loadUsers(),
+                case "dashboard" => cms.loadDashboard()
+            };
+        }
+
+        // Post actions
+        private function handleNewPost(): void {
+            cms.currentPost = null;
+            cms.setEditorContent("");
+            cms.setView("editor");
+        }
+
+        private function handleEditPost(post: Post): void {
+            cms.loadPost(post.id).then(() => {
+                cms.setView("editor");
+            });
+        }
+
+        private function handleDeletePost(post: Post): void {
+            deleteTargetId = post.id;
+            showDeleteConfirm = true;
+        }
+
+        private function confirmDelete(): void {
+            cms.deletePost(deleteTargetId)
+                .then(() => {
+                    showNotification("Post deleted successfully");
+                    showDeleteConfirm = false;
+                })
+                .catch((error) => {
+                    showNotification("Delete failed: " + error.message, "error");
+                });
+        }
+
+        private function handlePublishPost(post: Post): void {
+            cms.publishPost(post.id)
+                .then(() => {
+                    showNotification("Post published successfully!");
+                })
+                .catch((error) => {
+                    showNotification("Publish failed: " + error.message, "error");
+                });
+        }
+
+        // Media actions
+        private function handleMediaUpload(event: Event): void {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const file = files[0];
+
+            cms.uploadMediaFile(file)
+                .then((mediaFile) => {
+                    showNotification("File uploaded: " + mediaFile.filename);
+                })
+                .catch((error) => {
+                    showNotification("Upload failed: " + error.message, "error");
+                });
+        }
+
+        private function handleMediaDelete(media: MediaFile): void {
+            if (confirm("Delete " + media.filename + "?")) {
+                cms.deleteMediaFile(media.id)
+                    .then(() => {
+                        showNotification("Media file deleted");
+                    })
+                    .catch((error) => {
+                        showNotification("Delete failed: " + error.message, "error");
+                    });
+            }
+        }
+
+        // Notification helper
+        private function showNotification(message: String, type: String = "success"): void {
+            notification = message;
+            notificationVisible = true;
+
+            setTimeout(() => {
+                notificationVisible = false;
+            }, 3000);
+        }
+
+        // Initialize
+        private function init(): void {
+            if (cms.isAuthenticated) {
+                cms.loadDashboard();
+            }
+        }
+        ]]>
+    </Script>
+
+    <Style>
+        <![CDATA[
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .cms-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s;
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #1a252f;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: #3498db;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            min-width: 20px;
+        }
+
+        .nav-label {
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.collapsed .nav-label {
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        /* Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            color: #27ae60;
+            margin-top: 8px;
+        }
+
+        .stat-change.negative {
+            color: #e74c3c;
+        }
+
+        /* Posts List */
+        .posts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-box {
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            width: 300px;
+        }
+
+        .filter-select {
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .posts-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .posts-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .posts-table th {
+            background: #f8f9fa;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .posts-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .posts-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .post-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .post-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .post-status.published {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .post-status.draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Media Library */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .media-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .media-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .media-thumbnail {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .media-info {
+            padding: 12px;
+        }
+
+        .media-filename {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .media-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .upload-area {
+            background: white;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: #3498db;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s;
+        }
+
+        .notification.error {
+            background: #e74c3c;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            min-width: 400px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        ]]>
+    </Style>
+
+    <VBox className="cms-container" creationComplete={init()}>
+        <!-- Login Modal -->
+        <VBox className="modal-overlay" visible={showLoginModal}>
+            <VBox className="modal">
+                <Label className="modal-title" text="Login to CMS" />
+
+                <Form submit={handleLogin}>
+                    <VBox className="form-group">
+                        <Label className="form-label" text="Email" htmlFor="email" />
+                        <Input id="email" className="form-input" type="email" required={true} />
+                    </VBox>
+
+                    <VBox className="form-group">
+                        <Label className="form-label" text="Password" htmlFor="password" />
+                        <Input id="password" className="form-input" type="password" required={true} />
+                    </VBox>
+
+                    <HBox className="modal-actions">
+                        <Button type="submit" className="btn btn-primary" text="Login" />
+                    </HBox>
+                </Form>
+
+                <Label text="Demo: admin@openflex.org / admin123" style="margin-top: 12px; font-size: 12px; color: #666;" />
+            </VBox>
+        </VBox>
+
+        <!-- Notification -->
+        <VBox className={"notification" + (cms.error ? " error" : "")} visible={notificationVisible}>
+            <Label text={notification} />
+        </VBox>
+
+        <!-- Main App (visible only when authenticated) -->
+        <HBox className="cms-container" visible={cms.isAuthenticated}>
+            <!-- Sidebar -->
+            <VBox className={"sidebar" + (cms.sidebarCollapsed ? " collapsed" : "")}>
+                <HBox className="sidebar-header">
+                    <Label className="sidebar-logo" text="📝 CMS" />
+                    <Button className="sidebar-toggle" text="☰" click={cms.toggleSidebar()} />
+                </HBox>
+
+                <VBox className="sidebar-nav">
+                    <HBox
+                        className={"nav-item" + (cms.currentView === "dashboard" ? " active" : "")}
+                        click={navigateTo("dashboard")}>
+                        <Label className="nav-icon" text="📊" />
+                        <Label className="nav-label" text="Dashboard" />
+                    </HBox>
+
+                    <HBox
+                        className={"nav-item" + (cms.currentView === "posts" || cms.currentView === "editor" ? " active" : "")}
+                        click={navigateTo("posts")}>
+                        <Label className="nav-icon" text="📝" />
+                        <Label className="nav-label" text="Posts" />
+                    </HBox>
+
+                    <HBox
+                        className={"nav-item" + (cms.currentView === "media" ? " active" : "")}
+                        click={navigateTo("media")}>
+                        <Label className="nav-icon" text="🖼️" />
+                        <Label className="nav-label" text="Media" />
+                    </HBox>
+
+                    <HBox
+                        className={"nav-item" + (cms.currentView === "users" ? " active" : "")}
+                        click={navigateTo("users")}
+                        visible={cms.canManageUsers}>
+                        <Label className="nav-icon" text="👥" />
+                        <Label className="nav-label" text="Users" />
+                    </HBox>
+                </VBox>
+
+                <VBox className="sidebar-footer">
+                    <HBox className="user-info">
+                        <VBox className="user-avatar">
+                            <Label text={cms.currentUser?.displayName.substring(0, 1).toUpperCase()} />
+                        </VBox>
+                        <VBox visible={!cms.sidebarCollapsed}>
+                            <Label text={cms.currentUser?.displayName} style="font-weight: 600;" />
+                            <Label text={cms.currentUser?.roleLabel} style="font-size: 12px; color: #bdc3c7;" />
+                        </VBox>
+                    </HBox>
+                    <Button
+                        className="btn btn-secondary"
+                        text="Logout"
+                        click={handleLogout()}
+                        visible={!cms.sidebarCollapsed}
+                        style="margin-top: 12px; width: 100%;" />
+                </VBox>
+            </VBox>
+
+            <!-- Main Content -->
+            <VBox className="main-content">
+                <!-- Dashboard View -->
+                <VBox visible={cms.currentView === "dashboard"}>
+                    <HBox className="header">
+                        <Label className="header-title" text="Dashboard" />
+                        <HBox className="header-actions">
+                            <Button className="btn btn-primary" text="+ New Post" click={handleNewPost()} />
+                        </HBox>
+                    </HBox>
+
+                    <VBox className="content-area">
+                        <VBox className="loading" visible={cms.isLoading}>
+                            <VBox className="spinner" />
+                        </VBox>
+
+                        <VBox visible={!cms.isLoading}>
+                            <!-- Stats -->
+                            <HBox className="dashboard-grid">
+                                <VBox className="stat-card">
+                                    <Label className="stat-label" text="Total Posts" />
+                                    <Label className="stat-value" text={cms.totalPosts} />
+                                </VBox>
+
+                                <VBox className="stat-card">
+                                    <Label className="stat-label" text="Published" />
+                                    <Label className="stat-value" text={cms.publishedPosts} />
+                                    <Label className="stat-change" text={"+" + cms.analytics.viewsThisWeek + " this week"} />
+                                </VBox>
+
+                                <VBox className="stat-card">
+                                    <Label className="stat-label" text="Drafts" />
+                                    <Label className="stat-value" text={cms.draftPosts} />
+                                </VBox>
+
+                                <VBox className="stat-card">
+                                    <Label className="stat-label" text="Total Views" />
+                                    <Label className="stat-value" text={cms.analytics.totalViews} />
+                                    <Label className="stat-change" text={"+" + cms.analytics.viewsToday + " today"} />
+                                </VBox>
+                            </HBox>
+
+                            <!-- Recent Posts -->
+                            <Label text="Recent Posts" style="font-size: 20px; font-weight: 600; margin-bottom: 16px;" />
+                            <VBox className="posts-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Author</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Views</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <Repeater items={cms.posts.slice(0, 5)}>
+                                            <tr>
+                                                <td className="post-title">{item.title}</td>
+                                                <td>{item.author?.displayName}</td>
+                                                <td>
+                                                    <span className={"post-status " + item.statusLabel.toLowerCase()}>
+                                                        {item.statusLabel}
+                                                    </span>
+                                                </td>
+                                                <td>{item.formattedDate}</td>
+                                                <td>{item.viewCount}</td>
+                                            </tr>
+                                        </Repeater>
+                                    </tbody>
+                                </table>
+                            </VBox>
+                        </VBox>
+                    </VBox>
+                </VBox>
+
+                <!-- Posts View -->
+                <VBox visible={cms.currentView === "posts"}>
+                    <HBox className="header">
+                        <Label className="header-title" text="Posts" />
+                        <HBox className="header-actions">
+                            <Button className="btn btn-primary" text="+ New Post" click={handleNewPost()} />
+                        </HBox>
+                    </HBox>
+
+                    <VBox className="content-area">
+                        <HBox className="posts-header">
+                            <HBox className="filters">
+                                <Input
+                                    className="search-box"
+                                    placeholder="Search posts..."
+                                    value={cms.searchQuery}
+                                    input={(e) => cms.setSearchQuery(e.target.value)} />
+
+                                <select
+                                    className="filter-select"
+                                    value={cms.postFilter}
+                                    change={(e) => cms.setPostFilter(e.target.value)}>
+                                    <option value="all">All Posts</option>
+                                    <option value="published">Published</option>
+                                    <option value="draft">Drafts</option>
+                                </select>
+                            </HBox>
+                        </HBox>
+
+                        <VBox className="posts-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Author</th>
+                                        <th>Categories</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <Repeater items={cms.filteredPosts}>
+                                        <tr>
+                                            <td className="post-title">{item.title}</td>
+                                            <td>{item.author?.displayName}</td>
+                                            <td>{item.categories.join(", ")}</td>
+                                            <td>
+                                                <span className={"post-status " + item.statusLabel.toLowerCase()}>
+                                                    {item.statusLabel}
+                                                </span>
+                                            </td>
+                                            <td>{item.formattedDate}</td>
+                                            <td>
+                                                <HBox className="post-actions">
+                                                    <Button
+                                                        className="btn btn-small btn-secondary"
+                                                        text="Edit"
+                                                        click={handleEditPost(item)} />
+                                                    <Button
+                                                        className="btn btn-small btn-success"
+                                                        text="Publish"
+                                                        click={handlePublishPost(item)}
+                                                        visible={item.isDraft && cms.canPublish} />
+                                                    <Button
+                                                        className="btn btn-small btn-danger"
+                                                        text="Delete"
+                                                        click={handleDeletePost(item)}
+                                                        visible={cms.canDelete} />
+                                                </HBox>
+                                            </td>
+                                        </tr>
+                                    </Repeater>
+                                </tbody>
+                            </table>
+                        </VBox>
+                    </VBox>
+                </VBox>
+
+                <!-- Media View -->
+                <VBox visible={cms.currentView === "media"}>
+                    <HBox className="header">
+                        <Label className="header-title" text="Media Library" />
+                    </HBox>
+
+                    <VBox className="content-area">
+                        <!-- Upload Area -->
+                        <Label htmlFor="media-upload">
+                            <VBox className="upload-area">
+                                <Label className="upload-icon" text="📁" />
+                                <Label text="Click to upload or drag and drop" style="font-weight: 600; margin-bottom: 8px;" />
+                                <Label text="JPG, PNG, GIF, PDF up to 10MB" style="font-size: 12px; color: #666;" />
+                            </VBox>
+                        </Label>
+                        <Input
+                            id="media-upload"
+                            type="file"
+                            change={handleMediaUpload}
+                            style="display: none;" />
+
+                        <!-- Upload Progress -->
+                        <VBox visible={cms.isUploading} style="margin-bottom: 20px;">
+                            <Label text={"Uploading... " + cms.uploadProgress + "%"} style="margin-bottom: 8px;" />
+                            <VBox style="width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px;">
+                                <VBox style={"width: " + cms.uploadProgress + "%; height: 100%; background: #3498db; transition: width 0.3s;"} />
+                            </VBox>
+                        </VBox>
+
+                        <!-- Media Grid -->
+                        <VBox className="media-grid">
+                            <Repeater items={cms.mediaFiles}>
+                                <VBox className="media-card">
+                                    <Image
+                                        className="media-thumbnail"
+                                        src={item.thumbnailUrl}
+                                        alt={item.alt || item.filename} />
+                                    <VBox className="media-info">
+                                        <Label className="media-filename" text={item.filename} />
+                                        <Label className="media-meta" text={item.formattedSize + " • " + item.dimensions} />
+                                        <Button
+                                            className="btn btn-small btn-danger"
+                                            text="Delete"
+                                            click={handleMediaDelete(item)}
+                                            visible={cms.canDelete}
+                                            style="margin-top: 8px; width: 100%;" />
+                                    </VBox>
+                                </VBox>
+                            </Repeater>
+                        </VBox>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </HBox>
+    </VBox>
+</Application>

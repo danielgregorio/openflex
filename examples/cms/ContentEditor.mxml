@@ -1,0 +1,758 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Component xmlns="http://openflex.org/mxml/2024">
+    <Script>
+        <![CDATA[
+        import { cms, Post, ContentStatus } from "./cms.as4";
+
+        @reactive private var showPreview: Boolean = false;
+        @reactive private var previewHtml: String = "";
+        @reactive private var isSaving: Boolean = false;
+        @reactive private var lastSaved: String = "";
+
+        // Form fields
+        @reactive private var title: String = "";
+        @reactive private var slug: String = "";
+        @reactive private var content: String = "";
+        @reactive private var excerpt: String = "";
+        @reactive private var featuredImage: String = "";
+        @reactive private var categories: Array<String> = [];
+        @reactive private var tags: Array<String> = [];
+        @reactive private var status: ContentStatus = ContentStatus.Draft;
+
+        // Editor state
+        @reactive private var selectedText: String = "";
+        @reactive private var cursorPosition: Number = 0;
+
+        // Initialize with current post if editing
+        private function init(): void {
+            if (cms.currentPost) {
+                loadPost(cms.currentPost);
+            } else {
+                resetForm();
+            }
+
+            // Auto-save every 30 seconds
+            setInterval(() => {
+                if (cms.isDirty && title) {
+                    autoSave();
+                }
+            }, 30000);
+        }
+
+        private function loadPost(post: Post): void {
+            title = post.title;
+            slug = post.slug;
+            content = post.body;
+            excerpt = post.excerpt;
+            featuredImage = post.featuredImage;
+            categories = [...post.categories];
+            tags = [...post.tags];
+            status = post.status;
+        }
+
+        private function resetForm(): void {
+            title = "";
+            slug = "";
+            content = "";
+            excerpt = "";
+            featuredImage = "";
+            categories = [];
+            tags = [];
+            status = ContentStatus.Draft;
+        }
+
+        // Title change handler - auto-generate slug
+        private function handleTitleChange(event: Event): void {
+            title = event.target.value;
+            cms.setEditorContent(content); // Mark as dirty
+
+            // Auto-generate slug if it's a new post
+            if (!cms.currentPost?.id) {
+                slug = generateSlug(title);
+            }
+        }
+
+        private function generateSlug(text: String): String {
+            return text
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, "")
+                .replace(/\s+/g, "-")
+                .replace(/--+/g, "-")
+                .trim();
+        }
+
+        // Content change handler
+        private function handleContentChange(event: Event): void {
+            content = event.target.value;
+            cms.setEditorContent(content);
+        }
+
+        // Formatting actions
+        private function applyFormatting(format: String): void {
+            const textarea = document.querySelector("#content-editor");
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selected = content.substring(start, end);
+
+            var formatted: String;
+
+            match (format) {
+                case "bold" => formatted = "**" + selected + "**",
+                case "italic" => formatted = "*" + selected + "*",
+                case "heading1" => formatted = "\n# " + selected + "\n",
+                case "heading2" => formatted = "\n## " + selected + "\n",
+                case "heading3" => formatted = "\n### " + selected + "\n",
+                case "link" => {
+                    const url = prompt("Enter URL:");
+                    formatted = "[" + selected + "](" + url + ")";
+                },
+                case "image" => {
+                    const url = prompt("Enter image URL:");
+                    formatted = "![" + (selected || "Image") + "](" + url + ")";
+                },
+                case "code" => formatted = "`" + selected + "`",
+                case "codeblock" => formatted = "\n```\n" + selected + "\n```\n",
+                case "quote" => formatted = "\n> " + selected + "\n",
+                case "list" => formatted = "\n- " + selected + "\n",
+                case "numbered" => formatted = "\n1. " + selected + "\n"
+            };
+
+            // Replace selected text with formatted version
+            content = content.substring(0, start) + formatted + content.substring(end);
+            cms.setEditorContent(content);
+
+            // Restore focus and selection
+            setTimeout(() => {
+                textarea.focus();
+                textarea.selectionStart = start;
+                textarea.selectionEnd = start + formatted.length;
+            }, 0);
+        }
+
+        // Preview
+        private function togglePreview(): void {
+            showPreview = !showPreview;
+
+            if (showPreview) {
+                // Convert markdown to HTML (simple implementation)
+                previewHtml = markdownToHtml(content);
+            }
+        }
+
+        private function markdownToHtml(markdown: String): String {
+            var html = markdown;
+
+            // Headings
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+            // Bold and italic
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+            // Links
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+            // Images
+            html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+
+            // Code
+            html = html.replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>');
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Quotes
+            html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+
+            // Lists
+            html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+            // Paragraphs
+            html = html.replace(/\n\n/g, '</p><p>');
+            html = '<p>' + html + '</p>';
+
+            return html;
+        }
+
+        // Category management
+        private function addCategory(event: Event): void {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                const input = event.target;
+                const category = input.value.trim();
+
+                if (category && !categories.includes(category)) {
+                    categories.push(category);
+                    input.value = "";
+                    cms.setEditorContent(content); // Mark as dirty
+                }
+            }
+        }
+
+        private function removeCategory(category: String): void {
+            categories = categories.filter((c) => c !== category);
+            cms.setEditorContent(content);
+        }
+
+        // Tag management (similar to categories)
+        private function addTag(event: Event): void {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                const input = event.target;
+                const tag = input.value.trim();
+
+                if (tag && !tags.includes(tag)) {
+                    tags.push(tag);
+                    input.value = "";
+                    cms.setEditorContent(content);
+                }
+            }
+        }
+
+        private function removeTag(tag: String): void {
+            tags = tags.filter((t) => t !== tag);
+            cms.setEditorContent(content);
+        }
+
+        // Save handlers
+        private async function autoSave(): Promise<void> {
+            if (isSaving) return;
+
+            try {
+                await savePost(ContentStatus.Draft);
+                lastSaved = "Auto-saved at " + new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error("Auto-save failed:", error);
+            }
+        }
+
+        private async function handleSaveDraft(): Promise<void> {
+            await savePost(ContentStatus.Draft);
+        }
+
+        private async function handlePublish(): Promise<void> {
+            if (!validatePost()) {
+                alert("Please fill in all required fields (title and content)");
+                return;
+            }
+
+            await savePost(ContentStatus.Published);
+        }
+
+        private function validatePost(): Boolean {
+            return title.trim().length > 0 && content.trim().length > 0;
+        }
+
+        private async function savePost(targetStatus: ContentStatus): Promise<void> {
+            isSaving = true;
+
+            try {
+                const postData = {
+                    id: cms.currentPost?.id,
+                    title,
+                    slug,
+                    body: content,
+                    excerpt: excerpt || generateExcerpt(content),
+                    featuredImage,
+                    categories: [...categories],
+                    tags: [...tags],
+                    status: targetStatus
+                };
+
+                const savedPost = await cms.savePost(postData);
+
+                lastSaved = "Saved at " + new Date().toLocaleTimeString();
+
+                if (targetStatus === ContentStatus.Published) {
+                    alert("Post published successfully!");
+                    cms.setView("posts");
+                }
+            } catch (error) {
+                alert("Save failed: " + error.message);
+            } finally {
+                isSaving = false;
+            }
+        }
+
+        private function generateExcerpt(text: String, maxLength: Number = 160): String {
+            // Remove markdown and HTML
+            const stripped = text.replace(/[#*`>]/g, "").replace(/<[^>]*>/g, "");
+            if (stripped.length <= maxLength) {
+                return stripped;
+            }
+            return stripped.substring(0, maxLength).trim() + "...";
+        }
+
+        // Media library integration
+        private function openMediaLibrary(): void {
+            cms.toggleMediaLibrary();
+
+            // When media is selected, insert it into the content
+            const unwatch = watch(() => cms.selectedMediaFiles, (selectedIds) => {
+                if (selectedIds.length > 0) {
+                    const mediaFile = cms.mediaFiles.find((m) => m.id === selectedIds[0]);
+                    if (mediaFile) {
+                        const imageMarkdown = "![" + mediaFile.alt + "](" + mediaFile.url + ")";
+                        content += "\n" + imageMarkdown + "\n";
+                        cms.setEditorContent(content);
+                        cms.clearMediaSelection();
+                    }
+                }
+            });
+        }
+
+        private function handleCancel(): void {
+            if (cms.isDirty) {
+                if (confirm("You have unsaved changes. Discard them?")) {
+                    cms.setView("posts");
+                }
+            } else {
+                cms.setView("posts");
+            }
+        }
+        ]]>
+    </Script>
+
+    <Style>
+        <![CDATA[
+        .editor-container {
+            display: flex;
+            height: calc(100vh - 80px);
+            background: #f5f5f5;
+        }
+
+        .editor-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .editor-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .editor-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .auto-save-indicator {
+            font-size: 12px;
+            color: #666;
+            margin-right: 12px;
+        }
+
+        .editor-toolbar {
+            padding: 12px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-btn {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            background: #ddd;
+            margin: 0 8px;
+        }
+
+        .editor-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .editor-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .form-field {
+            margin-bottom: 20px;
+        }
+
+        .field-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .field-required {
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .field-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .title-input {
+            font-size: 28px;
+            font-weight: 600;
+            border: none;
+            padding: 0;
+            margin-bottom: 12px;
+        }
+
+        .slug-input {
+            font-size: 14px;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .content-textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.6;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        .content-textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .preview-pane {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            border-left: 1px solid #e0e0e0;
+            background: #fafafa;
+        }
+
+        .preview-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .preview-content h1 {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .preview-content h2 {
+            font-size: 24px;
+            margin: 24px 0 12px;
+        }
+
+        .preview-content h3 {
+            font-size: 20px;
+            margin: 20px 0 10px;
+        }
+
+        .preview-content p {
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .preview-content code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .preview-content pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        .preview-content blockquote {
+            border-left: 4px solid #3498db;
+            padding-left: 16px;
+            margin: 16px 0;
+            color: #666;
+        }
+
+        .editor-sidebar {
+            width: 320px;
+            border-left: 1px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .sidebar-section {
+            background: white;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tag-remove:hover {
+            color: #d32f2f;
+        }
+
+        .featured-image-preview {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+        .word-count {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+        ]]>
+    </Style>
+
+    <HBox className="editor-container" creationComplete={init()}>
+        <!-- Main Editor Area -->
+        <VBox className="editor-main">
+            <!-- Header -->
+            <HBox className="editor-header">
+                <Label className="editor-title" text={cms.currentPost ? "Edit Post" : "New Post"} />
+                <HBox className="editor-actions">
+                    <Label className="auto-save-indicator" text={lastSaved} visible={lastSaved !== ""} />
+                    <Button className="btn btn-secondary" text="Cancel" click={handleCancel()} />
+                    <Button
+                        className="btn btn-secondary"
+                        text="Save Draft"
+                        click={handleSaveDraft()}
+                        disabled={isSaving} />
+                    <Button
+                        className="btn btn-primary"
+                        text="Preview"
+                        click={togglePreview()} />
+                    <Button
+                        className="btn btn-success"
+                        text={isSaving ? "Publishing..." : "Publish"}
+                        click={handlePublish()}
+                        disabled={isSaving || !cms.canPublish} />
+                </HBox>
+            </HBox>
+
+            <!-- Toolbar -->
+            <HBox className="editor-toolbar" visible={!showPreview}>
+                <button className="toolbar-btn" click={applyFormatting("bold")} title="Bold (Ctrl+B)">
+                    <strong>B</strong>
+                </button>
+                <button className="toolbar-btn" click={applyFormatting("italic")} title="Italic (Ctrl+I)">
+                    <em>I</em>
+                </button>
+                <VBox className="toolbar-separator" />
+                <button className="toolbar-btn" click={applyFormatting("heading1")} title="Heading 1">H1</button>
+                <button className="toolbar-btn" click={applyFormatting("heading2")} title="Heading 2">H2</button>
+                <button className="toolbar-btn" click={applyFormatting("heading3")} title="Heading 3">H3</button>
+                <VBox className="toolbar-separator" />
+                <button className="toolbar-btn" click={applyFormatting("link")} title="Insert Link">🔗</button>
+                <button className="toolbar-btn" click={applyFormatting("image")} title="Insert Image">🖼️</button>
+                <button className="toolbar-btn" click={openMediaLibrary()} title="Media Library">📁</button>
+                <VBox className="toolbar-separator" />
+                <button className="toolbar-btn" click={applyFormatting("quote")} title="Blockquote">💬</button>
+                <button className="toolbar-btn" click={applyFormatting("code")} title="Inline Code">&lt;/&gt;</button>
+                <button className="toolbar-btn" click={applyFormatting("codeblock")} title="Code Block">{ }</button>
+                <VBox className="toolbar-separator" />
+                <button className="toolbar-btn" click={applyFormatting("list")} title="Bullet List">• List</button>
+                <button className="toolbar-btn" click={applyFormatting("numbered")} title="Numbered List">1. List</button>
+            </HBox>
+
+            <!-- Content Area -->
+            <HBox className="editor-content">
+                <!-- Editor Pane -->
+                <VBox className="editor-pane" visible={!showPreview}>
+                    <VBox className="form-field">
+                        <Input
+                            className="field-input title-input"
+                            placeholder="Post title..."
+                            value={title}
+                            input={handleTitleChange} />
+                        <Input
+                            className="field-input slug-input"
+                            placeholder="post-slug"
+                            value={slug}
+                            input={(e) => slug = e.target.value} />
+                    </VBox>
+
+                    <VBox className="form-field" style="flex: 1;">
+                        <textarea
+                            id="content-editor"
+                            className="content-textarea"
+                            placeholder="Write your content here... (Markdown supported)"
+                            value={content}
+                            input={handleContentChange}>
+                        </textarea>
+                        <Label className="word-count" text={content.split(/\s+/).length + " words"} />
+                    </VBox>
+                </VBox>
+
+                <!-- Preview Pane -->
+                <VBox className="preview-pane" visible={showPreview}>
+                    <VBox className="preview-content">
+                        <div innerHTML={previewHtml}></div>
+                    </VBox>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- Sidebar -->
+        <VBox className="editor-sidebar">
+            <!-- Status -->
+            <VBox className="sidebar-section">
+                <Label className="sidebar-title" text="Status" />
+                <select className="field-input" value={status} change={(e) => status = e.target.value}>
+                    <option value={ContentStatus.Draft}>Draft</option>
+                    <option value={ContentStatus.Published}>Published</option>
+                    <option value={ContentStatus.Scheduled}>Scheduled</option>
+                </select>
+            </VBox>
+
+            <!-- Categories -->
+            <VBox className="sidebar-section">
+                <Label className="sidebar-title" text="Categories" />
+                <Input
+                    className="field-input"
+                    placeholder="Add category (press Enter)"
+                    keydown={addCategory} />
+                <VBox className="tag-list">
+                    <Repeater items={categories}>
+                        <span className="tag">
+                            {item}
+                            <span className="tag-remove" click={removeCategory(item)}>×</span>
+                        </span>
+                    </Repeater>
+                </VBox>
+            </VBox>
+
+            <!-- Tags -->
+            <VBox className="sidebar-section">
+                <Label className="sidebar-title" text="Tags" />
+                <Input
+                    className="field-input"
+                    placeholder="Add tag (press Enter)"
+                    keydown={addTag} />
+                <VBox className="tag-list">
+                    <Repeater items={tags}>
+                        <span className="tag">
+                            {item}
+                            <span className="tag-remove" click={removeTag(item)}>×</span>
+                        </span>
+                    </Repeater>
+                </VBox>
+            </VBox>
+
+            <!-- Featured Image -->
+            <VBox className="sidebar-section">
+                <Label className="sidebar-title" text="Featured Image" />
+                <Input
+                    className="field-input"
+                    placeholder="Image URL"
+                    value={featuredImage}
+                    input={(e) => featuredImage = e.target.value} />
+                <Button
+                    className="btn btn-secondary"
+                    text="Choose from Library"
+                    click={openMediaLibrary()}
+                    style="margin-top: 8px; width: 100%;" />
+                <Image
+                    className="featured-image-preview"
+                    src={featuredImage}
+                    visible={featuredImage !== ""} />
+            </VBox>
+
+            <!-- Excerpt -->
+            <VBox className="sidebar-section">
+                <Label className="sidebar-title" text="Excerpt" />
+                <textarea
+                    className="field-input"
+                    placeholder="Optional excerpt..."
+                    value={excerpt}
+                    input={(e) => excerpt = e.target.value}
+                    style="min-height: 80px; resize: vertical;">
+                </textarea>
+            </VBox>
+        </VBox>
+    </HBox>
+</Component>
