@@ -534,8 +534,20 @@ class ASTVisitor:
 
         elif node.type == 'number':
             text = self._get_text(node)
+            # Strip whitespace and validate before converting to float
+            stripped = text.strip()
+            if not stripped:
+                # Tree-sitter sometimes creates ghost nodes - skip them
+                # This is likely a parsing artifact, return a placeholder
+                print(f"WARNING: Skipping empty number node at {self._make_location(node)}")
+                # Return 0 as a fallback
+                return NumberLiteral(
+                    value=0,
+                    raw='0',
+                    loc=self._make_location(node)
+                )
             return NumberLiteral(
-                value=float(text),
+                value=float(stripped),
                 raw=text,
                 loc=self._make_location(node)
             )

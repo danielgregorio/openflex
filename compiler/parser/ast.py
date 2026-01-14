@@ -555,6 +555,7 @@ class ImportDeclaration(Statement):
     """Import statement: import { foo } from "module" """
     specifiers: List['ImportSpecifier']
     source: str
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass
@@ -562,6 +563,7 @@ class ImportSpecifier(ASTNode):
     """Import specifier"""
     imported: str
     local: str
+    loc: Optional[SourceLocation] = None
 
 
 @dataclass

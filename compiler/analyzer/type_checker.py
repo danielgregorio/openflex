@@ -395,7 +395,7 @@ class TypeChecker:
     def _check_object_literal(self, obj: ObjectLiteral) -> Type:
         """Type check object literal"""
         # TODO: Create object type from properties
-        return TYPE_MAP['object']
+        return TYPE_MAP['Object']
 
     def _check_conditional_expression(self, cond: ConditionalExpression) -> Type:
         """Type check ternary expression"""
