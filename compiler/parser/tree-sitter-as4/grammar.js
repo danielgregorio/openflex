@@ -343,6 +343,7 @@ module.exports = grammar({
       prec.left(7, seq($.expression, '>=', $.expression)),
       prec.left(6, seq($.expression, '==', $.expression)),
       prec.left(6, seq($.expression, '!=', $.expression)),
+      prec.left(4, seq($.expression, '??', $.expression)),  // Nullish coalescing
       prec.left(3, seq($.expression, '&&', $.expression)),
       prec.left(2, seq($.expression, '||', $.expression)),
       prec.right(1, seq($.expression, '=', $.expression)),
@@ -382,13 +383,19 @@ module.exports = grammar({
 
     array_literal: $ => seq(
       '[',
-      optional(commaSep1($.expression)),
+      optional(commaSep1(choice(
+        $.expression,
+        $.spread_element  // Allow spread in arrays
+      ))),
       ']'
     ),
 
     object_literal: $ => seq(
       '{',
-      optional(commaSep1($.property)),
+      optional(commaSep1(choice(
+        $.property,
+        $.spread_element  // Allow spread in objects
+      ))),
       '}'
     ),
 
@@ -399,6 +406,11 @@ module.exports = grammar({
         seq('[', $.expression, ']')
       ),
       ':',
+      $.expression
+    ),
+
+    spread_element: $ => seq(
+      '...',
       $.expression
     ),
 

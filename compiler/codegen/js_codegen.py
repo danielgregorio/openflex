@@ -503,6 +503,9 @@ class JSCodeGenerator:
         else:
             # Expression body
             body_str = self._generate_expression(arrow.body)
+            # Wrap object literals in parentheses to avoid ambiguity
+            if isinstance(arrow.body, ObjectLiteral):
+                return f"{async_keyword}{params_str} => ({body_str})"
             return f"{async_keyword}{params_str} => {body_str}"
 
     def _generate_new_expression(self, new_expr: NewExpression) -> str:
