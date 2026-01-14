@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Component xmlns="http://openflex.org/mxml/2024"
+           width="100%" height="100%">
+
+    <Script>
+        <![CDATA[
+        import { store } from "./store.as4";
+
+        [Property]
+        public var onCheckout: Function;
+
+        private function handleQuantityChange(item: CartItem, newQuantity: Number): void {
+            store.updateCartQuantity(item.product.id, newQuantity);
+        }
+
+        private function handleRemove(item: CartItem): void {
+            store.removeFromCart(item.product.id);
+        }
+
+        private function proceedToCheckout(): void {
+            if (onCheckout) {
+                onCheckout();
+            }
+        }
+        ]]>
+    </Script>
+
+    <Style>
+        <![CDATA[
+        .cart-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .cart-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .cart-item-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            font-size: 16px;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .quantity-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .remove-btn {
+            padding: 8px 16px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .remove-btn:hover {
+            background: #da190b;
+        }
+
+        .cart-summary {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .summary-row.total {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            padding-top: 15px;
+            border-top: 2px solid #ddd;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .checkout-btn:hover {
+            background: #45a049;
+        }
+
+        .checkout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        .empty-cart-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-cart-text {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .continue-shopping-btn {
+            padding: 12px 30px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        ]]>
+    </Style>
+
+    <VBox className="cart-container">
+        <!-- Header -->
+        <HBox className="cart-header">
+            <Label className="cart-title" text="Shopping Cart" />
+            <Label text={store.cartCount + " items"} style="font-size: 16px; color: #666;" />
+        </HBox>
+
+        <!-- Cart Items -->
+        <VBox visible={store.cart.length > 0}>
+            <Repeater items={store.cart}>
+                <HBox className="cart-item">
+                    <Image
+                        className="cart-item-image"
+                        src={item.product.image}
+                        alt={item.product.name} />
+
+                    <VBox className="cart-item-details">
+                        <Label className="cart-item-name" text={item.product.name} />
+                        <Label className="cart-item-price" text={item.product.formattedPrice} />
+
+                        <HBox className="quantity-controls">
+                            <Button
+                                className="quantity-btn"
+                                text="−"
+                                click={handleQuantityChange(item, item.quantity - 1)} />
+
+                            <Label className="quantity-value" text={item.quantity} />
+
+                            <Button
+                                className="quantity-btn"
+                                text="+"
+                                click={handleQuantityChange(item, item.quantity + 1)}
+                                disabled={item.quantity >= item.product.stock} />
+                        </HBox>
+                    </VBox>
+
+                    <VBox style="align-items: flex-end;">
+                        <Label
+                            text={item.formattedTotal}
+                            style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px;" />
+
+                        <Button
+                            className="remove-btn"
+                            text="Remove"
+                            click={handleRemove(item)} />
+                    </VBox>
+                </HBox>
+            </Repeater>
+
+            <!-- Cart Summary -->
+            <VBox className="cart-summary">
+                <HBox className="summary-row">
+                    <Label text="Subtotal:" />
+                    <Label text={store.formattedCartTotal} />
+                </HBox>
+
+                <HBox className="summary-row">
+                    <Label text="Shipping:" />
+                    <Label text="Calculated at checkout" style="color: #666; font-size: 14px;" />
+                </HBox>
+
+                <HBox className="summary-row total">
+                    <Label text="Total:" />
+                    <Label text={store.formattedCartTotal} />
+                </HBox>
+
+                <Button
+                    className="checkout-btn"
+                    text="Proceed to Checkout"
+                    click={proceedToCheckout()}
+                    disabled={store.cart.length === 0} />
+            </VBox>
+        </VBox>
+
+        <!-- Empty Cart State -->
+        <VBox className="empty-cart" visible={store.cart.length === 0}>
+            <Label className="empty-cart-icon" text="🛒" />
+            <Label className="empty-cart-text" text="Your cart is empty" />
+            <Label text="Add some products to get started" style="color: #999;" />
+
+            <Button
+                className="continue-shopping-btn"
+                text="Continue Shopping"
+                click={store.setView('catalog')} />
+        </VBox>
+    </VBox>
+</Component>

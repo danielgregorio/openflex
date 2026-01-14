@@ -1,0 +1,32 @@
+// Condicionais - Exemplo de estruturas condicionais
+
+function checkAge(age: Number): String {
+    if (age < 18) {
+        return "Menor de idade";
+    } else if (age < 65) {
+        return "Adulto";
+    } else {
+        return "Idoso";
+    }
+}
+
+function main(): void {
+    trace("=== IF/ELSE ===");
+    trace("Idade 15: " + checkAge(15));
+    trace("Idade 30: " + checkAge(30));
+    trace("Idade 70: " + checkAge(70));
+
+    trace("");
+    trace("=== Operador Ternário ===");
+    const isAdult: Boolean = true;
+    const message: String = isAdult ? "Pode entrar" : "Acesso negado";
+    trace(message);
+
+    trace("");
+    trace("=== Nullish Coalescing ===");
+    const name: String = null;
+    const displayName: String = name ?? "Anônimo";
+    trace("Nome: " + displayName);
+}
+
+main();

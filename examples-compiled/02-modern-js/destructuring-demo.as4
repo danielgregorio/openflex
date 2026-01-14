@@ -1,0 +1,292 @@
+/**
+ * Destructuring Demo - Modern Variable Binding
+ * Demonstrates array and object destructuring in AS4
+ */
+
+// ============================================================================
+// Array Destructuring
+// ============================================================================
+
+// Simple array destructuring
+const [first, second, third] = [1, 2, 3];
+trace("first:", first);   // 1
+trace("second:", second); // 2
+trace("third:", third);   // 3
+
+// Skip elements
+const [a, , c] = [10, 20, 30];
+trace("a:", a);  // 10
+trace("c:", c);  // 30
+
+// Rest elements
+const [head, ...tail] = [1, 2, 3, 4, 5];
+trace("head:", head);      // 1
+trace("tail:", tail);      // [2, 3, 4, 5]
+trace("tail length:", tail.length); // 4
+
+// Nested array destructuring
+const [[x1, y1], [x2, y2]] = [[10, 20], [30, 40]];
+trace("Point 1:", x1, y1); // 10, 20
+trace("Point 2:", x2, y2); // 30, 40
+
+// Destructuring function return values
+function getCoordinates(): Array<Number> {
+    return [42, 17];
+}
+
+const [x, y] = getCoordinates();
+trace("Coordinates:", x, y); // 42, 17
+
+// Swapping variables
+let m = 10;
+let n = 20;
+[m, n] = [n, m];
+trace("After swap - m:", m, "n:", n); // 20, 10
+
+// ============================================================================
+// Object Destructuring
+// ============================================================================
+
+// Simple object destructuring
+const person = {name: "Alice", age: 30, city: "NYC"};
+const {name, age, city} = person;
+trace("Name:", name);   // "Alice"
+trace("Age:", age);     // 30
+trace("City:", city);   // "NYC"
+
+// Renaming during destructuring
+const {name: personName, age: personAge} = person;
+trace("Person name:", personName); // "Alice"
+trace("Person age:", personAge);   // 30
+
+// Nested object destructuring
+const user = {
+    id: 123,
+    profile: {
+        username: "alice",
+        email: "alice@example.com"
+    },
+    settings: {
+        theme: "dark",
+        notifications: true
+    }
+};
+
+const {
+    id,
+    profile: {username, email},
+    settings: {theme}
+} = user;
+
+trace("ID:", id);           // 123
+trace("Username:", username); // "alice"
+trace("Email:", email);     // "alice@example.com"
+trace("Theme:", theme);     // "dark"
+
+// Rest properties
+const point = {x: 10, y: 20, z: 30, label: "Point A"};
+const {x: px, y: py, ...metadata} = point;
+trace("Position:", px, py);     // 10, 20
+trace("Metadata:", metadata);   // {z: 30, label: "Point A"}
+
+// ============================================================================
+// Mixed Destructuring
+// ============================================================================
+
+// Array of objects
+const users = [
+    {name: "Bob", score: 85},
+    {name: "Carol", score: 92},
+    {name: "Dave", score: 78}
+];
+
+const [{name: winner, score: winnerScore}] = users;
+trace("Winner:", winner, "with score", winnerScore);
+
+// Object with arrays
+const data = {
+    coordinates: [100, 200],
+    label: "Origin",
+    colors: ["red", "green", "blue"]
+};
+
+const {
+    coordinates: [cx, cy],
+    label: dataLabel,
+    colors: [primary, ...otherColors]
+} = data;
+
+trace("Coordinates:", cx, cy);     // 100, 200
+trace("Label:", dataLabel);        // "Origin"
+trace("Primary color:", primary);  // "red"
+trace("Other colors:", otherColors); // ["green", "blue"]
+
+// ============================================================================
+// Real-World Examples
+// ============================================================================
+
+// Example 1: Function parameters (future feature)
+// function greet({name, age}: Object): void {
+//     trace("Hello, " + name + "! You are " + age + " years old.");
+// }
+// greet({name: "Alice", age: 30});
+
+// Example 2: API response destructuring
+async function fetchUser(userId: String): Promise<Object> {
+    var response = await fetch("/api/users/" + userId);
+    var {status, data, error} = await response.json();
+
+    if (status === "success") {
+        return data;
+    } else {
+        throw new Error(error);
+    }
+}
+
+// Example 3: Configuration objects
+const defaultConfig = {
+    timeout: 5000,
+    retries: 3,
+    debug: false,
+    endpoint: "/api"
+};
+
+function makeRequest(options: Object): void {
+    // Merge with defaults
+    var config = {...defaultConfig, ...options};
+    var {timeout, retries, debug, endpoint} = config;
+
+    trace("Request config:");
+    trace("  Endpoint:", endpoint);
+    trace("  Timeout:", timeout);
+    trace("  Retries:", retries);
+    trace("  Debug:", debug);
+}
+
+makeRequest({endpoint: "/api/users", debug: true});
+
+// Example 4: Multiple return values
+function getStats(): Object {
+    return {
+        mean: 42.5,
+        median: 40,
+        mode: 38,
+        stdDev: 5.2
+    };
+}
+
+const {mean, median, stdDev} = getStats();
+trace("Statistics:");
+trace("  Mean:", mean);
+trace("  Median:", median);
+trace("  Std Dev:", stdDev);
+
+// Example 5: Extracting deeply nested data
+const apiResponse = {
+    status: 200,
+    body: {
+        user: {
+            id: 456,
+            profile: {
+                name: "Eve",
+                preferences: {
+                    language: "en",
+                    timezone: "UTC"
+                }
+            }
+        },
+        metadata: {
+            timestamp: 1234567890,
+            version: "2.0"
+        }
+    }
+};
+
+const {
+    status: httpStatus,
+    body: {
+        user: {
+            profile: {
+                name: userName,
+                preferences: {language, timezone}
+            }
+        },
+        metadata: {version}
+    }
+} = apiResponse;
+
+trace("HTTP Status:", httpStatus);
+trace("User:", userName);
+trace("Language:", language);
+trace("Timezone:", timezone);
+trace("API Version:", version);
+
+// Example 6: Array destructuring in loops
+const points = [
+    [10, 20],
+    [30, 40],
+    [50, 60]
+];
+
+trace("Points:");
+for (var i = 0; i < points.length; i++) {
+    const [px, py] = points[i];
+    trace("  Point " + i + ": (" + px + ", " + py + ")");
+}
+
+// Example 7: Destructuring with defaults (future feature)
+// const {width = 100, height = 200} = partialConfig;
+// const [r = 0, g = 0, b = 0] = colorArray;
+
+// ============================================================================
+// Advanced Patterns
+// ============================================================================
+
+// Destructuring and reassignment
+let config;
+({timeout: config} = {timeout: 3000}); // Note: parentheses required
+trace("Config timeout:", config); // 3000
+
+// Destructuring in variable declarations
+const matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+];
+
+const [[r1c1, r1c2, r1c3], [r2c1, r2c2, r2c3], [r3c1, r3c2, r3c3]] = matrix;
+trace("Matrix center:", r2c2); // 5
+
+// Partial destructuring
+const fullData = {
+    id: 1,
+    name: "Test",
+    description: "A test object",
+    created: "2024-01-01",
+    modified: "2024-01-02",
+    metadata: {tags: ["test", "demo"], priority: "high"}
+};
+
+// Only extract what we need
+const {id: dataId, name: dataName, metadata: {tags}} = fullData;
+trace("ID:", dataId);
+trace("Name:", dataName);
+trace("Tags:", tags);
+
+// ============================================================================
+// Demo Runner
+// ============================================================================
+
+function runDemo(): void {
+    trace("=== Destructuring Demo Complete ===");
+    trace("");
+    trace("Demonstrated:");
+    trace("  ✓ Array destructuring with rest elements");
+    trace("  ✓ Object destructuring with renaming");
+    trace("  ✓ Nested destructuring patterns");
+    trace("  ✓ Mixed array and object destructuring");
+    trace("  ✓ Real-world examples with async/await");
+    trace("  ✓ Deeply nested data extraction");
+}
+
+runDemo();

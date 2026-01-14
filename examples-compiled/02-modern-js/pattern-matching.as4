@@ -1,0 +1,68 @@
+// Pattern Matching Demo
+// Basic match expressions for Option/Result types
+
+// ============================================================================
+// Type Definitions (simulated with strings for now)
+// ============================================================================
+
+// Note: True pattern matching with algebraic data types would require
+// more grammar support. This demo shows the concept.
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+function processResult(result: String): String {
+    // In full implementation, this would be:
+    // match result {
+    //     Success(value) => return "Got: " + value,
+    //     Error(msg) => return "Error: " + msg
+    // }
+
+    // For now, simulate with if/else
+    if (result == "success") {
+        return "Got: value";
+    } else {
+        return "Error: failed";
+    }
+}
+
+function processOption(opt: String): String {
+    // In full implementation:
+    // match opt {
+    //     Some(value) => return value,
+    //     None => return "nothing"
+    // }
+
+    if (opt == "some") {
+        return "value";
+    } else {
+        return "nothing";
+    }
+}
+
+// ============================================================================
+// Demo
+// ============================================================================
+
+trace("=== Pattern Matching Demo (Conceptual) ===");
+trace("");
+
+trace("Processing success:");
+trace(processResult("success"));
+trace("");
+
+trace("Processing error:");
+trace(processResult("error"));
+trace("");
+
+trace("Processing Some:");
+trace(processOption("some"));
+trace("");
+
+trace("Processing None:");
+trace(processOption("none"));
+trace("");
+
+trace("Pattern matching concept demonstrated!");
+trace("Full algebraic data types require grammar support");

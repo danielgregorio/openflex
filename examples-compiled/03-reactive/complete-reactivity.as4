@@ -1,0 +1,93 @@
+// Complete Reactivity Test
+// Tests @reactive, @computed, @effect, and auto .value
+
+// ============================================================================
+// 1. Reactive Variables
+// ============================================================================
+
+@reactive var count: Number = 0;
+@reactive var multiplier: Number = 2;
+
+// ============================================================================
+// 2. Computed Values - Derived from reactive state
+// ============================================================================
+
+@computed var doubled: Number = count * 2;
+@computed var tripled: Number = count * 3;
+@computed var total: Number = count * multiplier;
+
+// ============================================================================
+// 3. Effects - Auto-run when dependencies change
+// ============================================================================
+
+@effect
+function logCount(): void {
+    trace("Count: " + count);
+}
+
+@effect
+function logDoubled(): void {
+    trace("Doubled: " + doubled);
+}
+
+@effect
+function logTotal(): void {
+    trace("Total (count * multiplier): " + total);
+}
+
+// ============================================================================
+// 4. Regular functions that modify reactive state
+// ============================================================================
+
+function increment(): void {
+    count = count + 1;
+}
+
+function decrement(): void {
+    count = count - 1;
+}
+
+function setMultiplier(value: Number): void {
+    multiplier = value;
+}
+
+function reset(): void {
+    count = 0;
+    multiplier = 2;
+}
+
+// ============================================================================
+// 5. Test execution
+// ============================================================================
+
+trace("=== Complete Reactivity Test ===");
+trace("");
+
+trace("Initial state (effects run automatically):");
+trace("");
+
+trace("Incrementing count...");
+increment();  // count = 1, triggers: logCount, logDoubled, logTotal
+trace("");
+
+trace("Incrementing again...");
+increment();  // count = 2, triggers: logCount, logDoubled, logTotal
+trace("");
+
+trace("Changing multiplier...");
+setMultiplier(5);  // multiplier = 5, triggers: logTotal
+trace("");
+
+trace("Incrementing with new multiplier...");
+increment();  // count = 3, triggers: logCount, logDoubled, logTotal
+trace("");
+
+trace("Decrementing...");
+decrement();  // count = 2, triggers: logCount, logDoubled, logTotal
+trace("");
+
+trace("Resetting...");
+reset();  // count = 0, multiplier = 2, triggers: logCount, logDoubled, logTotal
+trace("");
+
+trace("✨ All reactivity features working! ✨");

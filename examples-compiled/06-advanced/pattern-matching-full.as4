@@ -1,0 +1,168 @@
+/**
+ * Pattern Matching - Full Implementation
+ * Demonstrates algebraic data types and pattern matching in AS4
+ */
+
+// ============================================================================
+// Enum Declarations (Algebraic Data Types)
+// ============================================================================
+
+// Simple enum without fields
+enum Color {
+    Red,
+    Green,
+    Blue
+}
+
+// Option type - classic ADT
+enum Option<T> {
+    Some(T),
+    None
+}
+
+// Result type for error handling
+enum Result<T, E> {
+    Ok(T),
+    Err(E)
+}
+
+// More complex enum with multiple fields
+enum Shape {
+    Circle(Number),                    // radius
+    Rectangle(Number, Number),         // width, height
+    Triangle(Number, Number, Number)   // side1, side2, side3
+}
+
+// ============================================================================
+// Pattern Matching Examples
+// ============================================================================
+
+// Example 1: Simple pattern matching on Color
+function colorToString(color: Color): String {
+    match color {
+        Red => "Red",
+        Green => "Green",
+        Blue => "Blue"
+    }
+}
+
+// Example 2: Pattern matching with Option
+function getOrDefault<T>(option: Option<T>, defaultValue: T): T {
+    match option {
+        Some(value) => value,
+        None => defaultValue
+    }
+}
+
+// Example 3: Pattern matching with guard clauses
+function categorizeNumber(n: Number): String {
+    match n {
+        0 => "zero",
+        x if x > 0 => "positive",
+        x if x < 0 => "negative",
+        _ => "unknown"
+    }
+}
+
+// Example 4: Nested pattern matching
+function processResult(result: Result<Number, String>): String {
+    match result {
+        Ok(value) if value > 0 => "Success: " + value,
+        Ok(value) => "Success: zero or negative",
+        Err(msg) => "Error: " + msg
+    }
+}
+
+// Example 5: Pattern matching on shapes
+function calculateArea(shape: Shape): Number {
+    match shape {
+        Circle(radius) => 3.14159 * radius * radius,
+        Rectangle(width, height) => width * height,
+        Triangle(a, b, c) => {
+            // Heron's formula
+            var s = (a + b + c) / 2;
+            return Math.sqrt(s * (s - a) * (s - b) * (s - c));
+        }
+    }
+}
+
+// Example 6: Array destructuring in patterns
+function processArray(arr: Array<Number>): String {
+    match arr {
+        [] => "empty",
+        [single] => "single: " + single,
+        [first, second] => "pair: " + first + ", " + second,
+        [first, ...rest] => "many: first=" + first + ", rest=" + rest.length,
+        _ => "unknown"
+    }
+}
+
+// Example 7: Object destructuring in patterns
+function processPoint(point: Object): String {
+    match point {
+        {x: 0, y: 0} => "origin",
+        {x: px, y: 0} => "on x-axis at " + px,
+        {x: 0, y: py} => "on y-axis at " + py,
+        {x, y} => "point at (" + x + ", " + y + ")"
+    }
+}
+
+// Example 8: Complex nested matching
+function processData(data: Result<Option<Number>, String>): String {
+    match data {
+        Ok(Some(value)) if value > 100 => "Large value: " + value,
+        Ok(Some(value)) => "Small value: " + value,
+        Ok(None) => "No value",
+        Err(msg) => "Error: " + msg
+    }
+}
+
+// ============================================================================
+// Usage Examples
+// ============================================================================
+
+function demo(): void {
+    // Create enum instances
+    var red: Color = Color.Red;
+    var someValue: Option<Number> = Option.Some(42);
+    var noValue: Option<Number> = Option.None;
+    var success: Result<Number, String> = Result.Ok(100);
+    var failure: Result<Number, String> = Result.Err("Something went wrong");
+
+    // Use pattern matching
+    trace("Color: " + colorToString(red));
+    trace("Some value or default: " + getOrDefault(someValue, 0));
+    trace("None or default: " + getOrDefault(noValue, -1));
+    trace("Categorize 5: " + categorizeNumber(5));
+    trace("Categorize -3: " + categorizeNumber(-3));
+    trace("Process success: " + processResult(success));
+    trace("Process failure: " + processResult(failure));
+
+    // Shape calculations
+    var circle = Shape.Circle(5);
+    var rectangle = Shape.Rectangle(4, 6);
+    trace("Circle area: " + calculateArea(circle));
+    trace("Rectangle area: " + calculateArea(rectangle));
+
+    // Array patterns
+    trace("Empty array: " + processArray([]));
+    trace("Single: " + processArray([1]));
+    trace("Pair: " + processArray([1, 2]));
+    trace("Many: " + processArray([1, 2, 3, 4, 5]));
+
+    // Object patterns
+    trace("Origin: " + processPoint({x: 0, y: 0}));
+    trace("X-axis: " + processPoint({x: 5, y: 0}));
+    trace("Point: " + processPoint({x: 3, y: 4}));
+
+    // Nested matching
+    var nested1: Result<Option<Number>, String> = Result.Ok(Option.Some(150));
+    var nested2: Result<Option<Number>, String> = Result.Ok(Option.Some(50));
+    var nested3: Result<Option<Number>, String> = Result.Ok(Option.None);
+    trace("Nested 1: " + processData(nested1));
+    trace("Nested 2: " + processData(nested2));
+    trace("Nested 3: " + processData(nested3));
+}
+
+// Run demo
+demo();

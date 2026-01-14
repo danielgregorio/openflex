@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns="http://openflex.org/mxml/2024"
+             width="100%" height="100%"
+             title="OpenFlex E-Commerce Store">
+
+    <Script>
+        <![CDATA[
+        // Import store state
+        import { store } from "./store.as4";
+
+        // Component state
+        @reactive private var showLoginModal: Boolean = false;
+        @reactive private var showCheckoutModal: Boolean = false;
+
+        private function handleSearch(event: Event): void {
+            const query = event.target.value;
+            store.searchProducts(query);
+        }
+
+        private function handleCategoryChange(category: String): void {
+            store.loadProductsByCategory(category);
+        }
+
+        private function handleAddToCart(product: Product): void {
+            store.addToCart(product, 1);
+            showNotification("Added to cart: " + product.name);
+        }
+
+        private function handleRemoveFromCart(productId: Number): void {
+            store.removeFromCart(productId);
+        }
+
+        private function handleCheckout(): void {
+            if (!store.isLoggedIn) {
+                showLoginModal = true;
+                return;
+            }
+            showCheckoutModal = true;
+        }
+
+        private function showNotification(message: String): void {
+            // Simple notification (in production, use a toast library)
+            console.log("✓", message);
+        }
+        ]]>
+    </Script>
+
+    <Style>
+        <![CDATA[
+        .app-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .cart-button {
+            position: relative;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .cart-button:hover {
+            background: #45a049;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #f44336;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 30px;
+        }
+
+        .sidebar {
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .category-item {
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .category-item:hover {
+            background: #f5f5f5;
+        }
+
+        .category-item.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .products-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            transition: box-shadow 0.3s;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 0 5px;
+            color: #333;
+        }
+
+        .product-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 5px 0;
+        }
+
+        .product-description {
+            font-size: 13px;
+            color: #666;
+            margin: 5px 0 10px;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #45a049;
+        }
+
+        .add-to-cart-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            color: #999;
+        }
+        ]]>
+    </Style>
+
+    <VBox className="app-container">
+        <!-- Header -->
+        <HBox className="header">
+            <Label className="logo" text="🛒 OpenFlex Store" />
+
+            <VBox className="search-bar">
+                <Input
+                    className="search-input"
+                    placeholder="Search products..."
+                    value={store.searchQuery}
+                    input={handleSearch} />
+            </VBox>
+
+            <HBox className="header-actions">
+                <Button
+                    text={store.isLoggedIn ? store.currentUser.name : "Login"}
+                    click={showLoginModal = true}
+                    visible={!store.isLoggedIn} />
+
+                <Button
+                    className="cart-button"
+                    text="Cart"
+                    click={store.setView('cart')}>
+                    <Label
+                        className="cart-badge"
+                        text={store.cartCount}
+                        visible={store.cartCount > 0} />
+                </Button>
+            </HBox>
+        </HBox>
+
+        <!-- Main Content -->
+        <HBox className="main-content">
+            <!-- Sidebar with Categories -->
+            <VBox className="sidebar">
+                <Label text="Categories" style="font-weight: bold; margin-bottom: 10px;" />
+                <UL className="category-list">
+                    <LI
+                        className="category-item"
+                        text="All Products"
+                        click={handleCategoryChange('')} />
+
+                    <Repeater items={store.categories}>
+                        <LI
+                            className="category-item"
+                            text={item}
+                            click={handleCategoryChange(item)} />
+                    </Repeater>
+                </UL>
+            </VBox>
+
+            <!-- Product Grid -->
+            <VBox className="products-grid" visible={!store.isLoading}>
+                <Repeater items={store.filteredProducts}>
+                    <VBox className="product-card">
+                        <Image
+                            className="product-image"
+                            src={item.image}
+                            alt={item.name} />
+
+                        <Label className="product-name" text={item.name} />
+                        <Label className="product-price" text={item.formattedPrice} />
+                        <Label className="product-description" text={item.description} />
+
+                        <Label
+                            text="★".repeat(item.rating)}
+                            style="color: #ffc107; font-size: 14px; margin: 5px 0;" />
+
+                        <Button
+                            className="add-to-cart-btn"
+                            text={item.inStock ? "Add to Cart" : "Out of Stock"}
+                            click={handleAddToCart(item)}
+                            disabled={!item.inStock} />
+                    </VBox>
+                </Repeater>
+
+                <VBox className="empty-state" visible={store.filteredProducts.length === 0}>
+                    <Label text="No products found" style="font-size: 18px; font-weight: 600;" />
+                    <Label text="Try adjusting your search or filters" />
+                </VBox>
+            </VBox>
+
+            <!-- Loading State -->
+            <VBox className="loading" visible={store.isLoading}>
+                <Label text="Loading products..." />
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- Login Modal -->
+    <Modal visible={showLoginModal} title="Login to Your Account">
+        <LoginForm
+            onSuccess={() => { showLoginModal = false; }}
+            onCancel={() => { showLoginModal = false; }} />
+    </Modal>
+
+    <!-- Checkout Modal -->
+    <Modal visible={showCheckoutModal} title="Checkout">
+        <CheckoutForm
+            cart={store.cart}
+            total={store.formattedCartTotal}
+            onComplete={() => { showCheckoutModal = false; }}
+            onCancel={() => { showCheckoutModal = false; }} />
+    </Modal>
+</Application>

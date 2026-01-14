@@ -1,0 +1,61 @@
+// Complete OpenFlex Neo Demo
+// Showcasing all working features
+
+// 1. Functions with type annotations
+function calculateTotal(price: Number, quantity: Number): Number {
+    return price * quantity;
+}
+
+// 2. Variables (const and var)
+const TAX_RATE: Number = 0.1;
+var subtotal: Number = calculateTotal(25, 3);
+var tax: Number = subtotal * TAX_RATE;
+var total: Number = subtotal + tax;
+
+// 3. Control flow - if/else
+function getDiscount(total: Number): Number {
+    if (total > 100) {
+        return 20;
+    } else if (total > 50) {
+        return 10;
+    } else {
+        return 0;
+    }
+}
+
+// 4. Loops - for loop
+function sumArray(numbers: Array<Number>): Number {
+    var sum: Number = 0;
+    for (var i: Number = 0; i < 5; i++) {
+        sum = sum + i;
+    }
+    return sum;
+}
+
+// 5. Loops - while loop
+function factorial(n: Number): Number {
+    var result: Number = 1;
+    while (n > 1) {
+        result = result * n;
+        n = n - 1;
+    }
+    return result;
+}
+
+// 6. Array literals
+var numbers: Array<Number> = [1, 2, 3, 4, 5];
+
+// 7. String operations
+function formatMessage(name: String, amount: Number): String {
+    return "Hello " + name + ", your total is: " + amount;
+}
+
+// 8. Call expressions
+trace("=== OpenFlex Neo Demo ===");
+trace("Subtotal: " + subtotal);
+trace("Tax: " + tax);
+trace("Total: " + total);
+trace("Discount: " + getDiscount(total));
+trace("Sum: " + sumArray(numbers));
+trace("5! = " + factorial(5));
+trace(formatMessage("Alice", total));

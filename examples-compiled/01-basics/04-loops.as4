@@ -1,0 +1,25 @@
+// Loops - Exemplo de laços de repetição
+
+function main(): void {
+    trace("=== FOR Loop ===");
+    for (var i: Number = 0; i < 5; i++) {
+        trace("Iteração: " + i);
+    }
+
+    trace("");
+    trace("=== WHILE Loop ===");
+    var count: Number = 0;
+    while (count < 3) {
+        trace("Count: " + count);
+        count = count + 1;
+    }
+
+    trace("");
+    trace("=== Array Iteration ===");
+    var fruits: Array<String> = ["Maçã", "Banana", "Laranja"];
+    for (var j: Number = 0; j < 3; j++) {
+        trace("Fruta " + j + ": " + fruits[j]);
+    }
+}
+
+main();

@@ -1,0 +1,354 @@
+/**
+ * Optional Chaining & Nullish Coalescing Demo
+ * Demonstrates ?. and ?? operators for safe property access
+ */
+
+// ============================================================================
+// Optional Chaining (?.) - Safe Property Access
+// ============================================================================
+
+// Without optional chaining (old way - verbose and error-prone)
+var user = {name: "Alice", profile: null};
+
+// This would throw an error if user.profile is null:
+// var email = user.profile.email;
+
+// Old way to safely access:
+var email1 = user && user.profile && user.profile.email;
+trace("Email (old way):", email1); // undefined
+
+// With optional chaining (modern way - clean and safe)
+var email2 = user?.profile?.email;
+trace("Email (new way):", email2); // undefined (no error!)
+
+// Example: Nested object access
+var data = {
+    user: {
+        id: 123,
+        profile: {
+            name: "Bob",
+            settings: {
+                theme: "dark",
+                notifications: true
+            }
+        }
+    }
+};
+
+// Safe access to deeply nested properties
+var theme = data?.user?.profile?.settings?.theme;
+trace("Theme:", theme); // "dark"
+
+// If any intermediate property is missing, returns undefined
+var missing = data?.user?.profile?.preferences?.language;
+trace("Missing property:", missing); // undefined
+
+// ============================================================================
+// Optional Chaining with Arrays
+// ============================================================================
+
+var users = [
+    {name: "Alice", age: 30},
+    {name: "Bob", age: 25},
+    null,  // Missing user
+    {name: "Carol", age: 35}
+];
+
+// Safe array access
+var firstUser = users?.[0]?.name;
+trace("First user:", firstUser); // "Alice"
+
+var thirdUser = users?.[2]?.name;
+trace("Third user (null):", thirdUser); // undefined (no error!)
+
+// Dynamic property access
+var index = 1;
+var secondUser = users?.[index]?.name;
+trace("Second user:", secondUser); // "Bob"
+
+// ============================================================================
+// Optional Function Calls
+// ============================================================================
+
+var obj = {
+    greet: function() {
+        return "Hello!";
+    },
+    inner: null
+};
+
+// Safe method call
+var greeting = obj?.greet?.();
+trace("Greeting:", greeting); // "Hello!"
+
+// Call on undefined/null function
+var result = obj?.inner?.missing?.();
+trace("Missing function:", result); // undefined (no error!)
+
+// Callback pattern
+function processData(callback: Function): void {
+    // Safely call callback if it exists
+    var result = callback?.("some data");
+    trace("Callback result:", result ?? "No callback provided");
+}
+
+processData(function(data: String): String {
+    return "Processed: " + data;
+}); // Processed: some data
+
+processData(null); // No callback provided
+
+// ============================================================================
+// Nullish Coalescing (??) - Default Values
+// ============================================================================
+
+// Difference between || and ??:
+// || returns right side for ANY falsy value (0, "", false, null, undefined)
+// ?? returns right side ONLY for null or undefined
+
+var count = 0;
+var name = "";
+var active = false;
+
+// Using || (old way - problematic with 0, "", false)
+var displayCount1 = count || 10;
+trace("Count with ||:", displayCount1); // 10 (wrong! 0 is falsy)
+
+// Using ?? (new way - only null/undefined)
+var displayCount2 = count ?? 10;
+trace("Count with ??:", displayCount2); // 0 (correct!)
+
+// String example
+var displayName1 = name || "Anonymous";
+trace("Name with ||:", displayName1); // "Anonymous" (wrong! "" is falsy)
+
+var displayName2 = name ?? "Anonymous";
+trace("Name with ??:", displayName2); // "" (correct!)
+
+// Boolean example
+var isActive1 = active || true;
+trace("Active with ||:", isActive1); // true (wrong! false is falsy)
+
+var isActive2 = active ?? true;
+trace("Active with ??:", isActive2); // false (correct!)
+
+// Proper use cases for ??
+var timeout = null;
+var actualTimeout = timeout ?? 5000;
+trace("Timeout:", actualTimeout); // 5000
+
+var port = undefined;
+var actualPort = port ?? 3000;
+trace("Port:", actualPort); // 3000
+
+// ============================================================================
+// Combining ?. and ??
+// ============================================================================
+
+var config = {
+    server: {
+        host: "localhost"
+        // port is missing
+    }
+};
+
+// Get nested property with default
+var host = config?.server?.host ?? "0.0.0.0";
+trace("Host:", host); // "localhost"
+
+var port = config?.server?.port ?? 8080;
+trace("Port:", port); // 8080 (default)
+
+// Chain multiple defaults
+var value = config?.cache?.maxSize ?? config?.memory?.limit ?? 1000;
+trace("Value with fallbacks:", value); // 1000
+
+// ============================================================================
+// Real-World Examples
+// ============================================================================
+
+// Example 1: API Response Handling
+async function fetchUser(userId: String): Promise<Object> {
+    var response = await fetch("/api/users/" + userId);
+    var json = await response?.json?.();
+
+    return {
+        id: json?.data?.id ?? 0,
+        name: json?.data?.name ?? "Unknown",
+        email: json?.data?.profile?.email ?? "no-email@example.com",
+        role: json?.data?.role ?? "user"
+    };
+}
+
+// Example 2: Configuration with Defaults
+var appConfig = {
+    api: {
+        endpoint: "/api"
+        // timeout missing
+    }
+    // retries missing
+};
+
+const timeout = appConfig?.api?.timeout ?? 5000;
+const retries = appConfig?.retries ?? 3;
+const debug = appConfig?.debug ?? false;
+const endpoint = appConfig?.api?.endpoint ?? "/default";
+
+trace("Config:");
+trace("  Endpoint:", endpoint);   // "/api"
+trace("  Timeout:", timeout);     // 5000
+trace("  Retries:", retries);     // 3
+trace("  Debug:", debug);         // false
+
+// Example 3: User Profile Display
+var currentUser = {
+    id: 456,
+    username: "alice"
+    // profile missing
+};
+
+var displayInfo = {
+    name: currentUser?.profile?.name ?? currentUser?.username ?? "Guest",
+    avatar: currentUser?.profile?.avatar ?? "/default-avatar.png",
+    bio: currentUser?.profile?.bio ?? "No bio available",
+    memberSince: currentUser?.profile?.createdAt ?? currentUser?.createdAt ?? "Unknown"
+};
+
+trace("Display info:");
+trace("  Name:", displayInfo.name);              // "alice"
+trace("  Avatar:", displayInfo.avatar);          // "/default-avatar.png"
+trace("  Bio:", displayInfo.bio);                // "No bio available"
+trace("  Member since:", displayInfo.memberSince); // "Unknown"
+
+// Example 4: Event Handler Safety
+var element = document?.getElementById?.("button");
+var handler = element?.addEventListener?.("click", function() {
+    trace("Button clicked!");
+});
+
+// Example 5: Deep Object Updates
+var state = {
+    ui: {
+        theme: "dark"
+        // sidebar missing
+    }
+};
+
+// Safe read with default
+var sidebarOpen = state?.ui?.sidebar?.open ?? false;
+trace("Sidebar open:", sidebarOpen); // false
+
+// Example 6: Optional Chaining in Conditions
+if (user?.profile?.settings?.notifications) {
+    trace("Notifications are enabled");
+} else {
+    trace("Notifications are disabled or not configured");
+}
+
+// Example 7: Array Operations
+var items = [{id: 1}, {id: 2}, null, {id: 4}];
+
+var ids = [];
+for (var i = 0; i < items.length; i++) {
+    // Safe ID extraction
+    var id = items?.[i]?.id ?? -1;
+    ids.push(id);
+}
+
+trace("IDs:", ids); // [1, 2, -1, 4]
+
+// Example 8: Function Composition
+var utils = {
+    string: {
+        capitalize: function(str: String): String {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+    }
+};
+
+var text = "hello";
+var capitalized = utils?.string?.capitalize?.(text) ?? text;
+trace("Capitalized:", capitalized); // "Hello"
+
+// Missing function
+var missing = utils?.math?.round?.(3.14) ?? 3.14;
+trace("Missing function result:", missing); // 3.14
+
+// ============================================================================
+// Advanced Patterns
+// ============================================================================
+
+// Pattern 1: Lazy evaluation with ??
+var cache = null;
+const getValue = cache ?? (cache = expensiveComputation());
+// Only computes if cache is null/undefined
+
+// Pattern 2: Multiple fallback sources
+const lang =
+    navigator?.language ??
+    navigator?.userLanguage ??
+    "en-US";
+
+// Pattern 3: Safe destructuring
+const {name: userName, email: userEmail} = data?.user ?? {};
+// If data.user is null, destructures from empty object instead of erroring
+
+// Pattern 4: Optional chaining with nullish in variable declarations
+const maxRetries = config?.network?.maxRetries ??
+                   config?.maxRetries ??
+                   3;
+
+// Pattern 5: Conditional property access
+const prop = condition ? obj?.a?.b : obj?.x?.y;
+
+// ============================================================================
+// Best Practices
+// ============================================================================
+
+trace("\n=== Best Practices ===\n");
+
+// ✅ DO: Use ?. when accessing potentially undefined properties
+var goodAccess = response?.data?.items;
+
+// ❌ DON'T: Overuse when you KNOW property exists
+// var badAccess = definitelyExists?.property; // Unnecessary
+
+// ✅ DO: Use ?? for default values with 0, "", false
+var goodDefault = settings?.count ?? 0;
+
+// ❌ DON'T: Use || when 0, "", false are valid values
+// var badDefault = settings?.count || 0; // Wrong if count is 0!
+
+// ✅ DO: Combine ?. and ?? for robust code
+var robustValue = config?.feature?.enabled ?? false;
+
+// ✅ DO: Use for API response handling
+var safeData = apiResponse?.body?.data ?? [];
+
+// ✅ DO: Chain for deep access
+var deepValue = a?.b?.c?.d?.e ?? "default";
+
+trace("Best practices demonstrated!");
+
+// ============================================================================
+// Demo Summary
+// ============================================================================
+
+function printSummary(): void {
+    trace("\n=== Optional Chaining & Nullish Coalescing Demo ===\n");
+    trace("Demonstrated:");
+    trace("  ✓ Optional chaining (?.) for safe property access");
+    trace("  ✓ Optional chaining with arrays (?.[index])");
+    trace("  ✓ Optional function calls (func?.())");
+    trace("  ✓ Nullish coalescing (??) for default values");
+    trace("  ✓ Difference between || and ??");
+    trace("  ✓ Combining ?. and ?? operators");
+    trace("  ✓ Real-world patterns and best practices");
+    trace("\nBenefits:");
+    trace("  • Cleaner code - less verbose than manual checks");
+    trace("  • Safer code - no more 'Cannot read property of undefined'");
+    trace("  • More precise - ?? only triggers on null/undefined");
+    trace("  • Better defaults - 0, '', false are valid values");
+}
+
+printSummary();

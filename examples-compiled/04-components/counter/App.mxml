@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Counter - OpenFlex Neo">
+
+    <fx:Script>
+        // Built-in reactivity - no imports needed!
+        @reactive var count: Number = 0;
+
+        // Computed values (automatically reactive)
+        @computed var doubled: Number {
+            return count * 2;
+        }
+
+        @computed var isEven: Boolean {
+            return count % 2 === 0;
+        }
+
+        // Simple, clean functions
+        function increment(): void {
+            count++;  // Just increment - automatically updates UI!
+        }
+
+        function decrement(): void {
+            count--;
+        }
+
+        function reset(): void {
+            count = 0;
+        }
+    </fx:Script>
+
+    <fx:Style>
+        .counter-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+
+        .info-text {
+            font-size: 14px;
+            color: #666;
+        }
+    </fx:Style>
+
+    <!-- Neo components (no prefix!) -->
+    <VBox gap="{24}" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%">
+
+        <Panel title="Counter Demo - OpenFlex Neo" width="{400}">
+            <VBox gap="{16}" padding="{20}">
+
+                <!-- Display -->
+                <HBox gap="{8}" horizontalAlign="center">
+                    <Label text="Count:" fontSize="{18}" />
+                    <Label text="{count}" styleClass="counter-display" />
+                </HBox>
+
+                <!-- Computed values -->
+                <VBox gap="{4}">
+                    <Label text="Doubled: {doubled}" styleClass="info-text" />
+                    <Label text="Is Even: {isEven}" styleClass="info-text" />
+                </VBox>
+
+                <!-- Controls -->
+                <HBox gap="{8}" horizontalAlign="center">
+                    <Button label="−" click="{decrement}" width="{60}" />
+                    <Button label="Reset" click="{reset}" width="{80}" />
+                    <Button label="+" click="{increment}" width="{60}" />
+                </HBox>
+
+                <!-- Footer -->
+                <Label text="Built with Neo 🆕" fontSize="{12}" color="#999" />
+
+            </VBox>
+        </Panel>
+
+    </VBox>
+
+</Application>

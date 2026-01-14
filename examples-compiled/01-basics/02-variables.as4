@@ -1,0 +1,27 @@
+// Variáveis e Tipos - Exemplo de declaração de variáveis
+
+function main(): void {
+    // Tipos básicos
+    const name: String = "OpenFlex";
+    const version: Number = 4;
+    const isReady: Boolean = true;
+
+    // Arrays
+    const languages: Array = ["ActionScript", "JavaScript", "TypeScript"];
+
+    // Objetos
+    const config: Object = {
+        name: "OpenFlex",
+        version: 4,
+        features: ["Reactive", "Modern", "Fast"]
+    };
+
+    // Imprimir valores
+    trace("Nome:", name);
+    trace("Versão:", version);
+    trace("Pronto:", isReady);
+    trace("Linguagens:", languages.join(", "));
+    trace("Config:", config.name, "-", config.version);
+}
+
+main();
