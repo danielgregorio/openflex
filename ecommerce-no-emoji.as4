@@ -1,0 +1,494 @@
+/**
+ * OpenFlex E-Commerce Store
+ * Complete production-ready online store application
+ *
+ * Features:
+ * - Product catalog with search/filter
+ * - Reactive shopping cart
+ * - Async API integration
+ * - User authentication
+ * - Checkout workflow
+ */
+
+// ============================================================================
+// Data Models
+// ============================================================================
+
+class Product {
+    id: Number;
+    name: String;
+    description: String;
+    price: Number;
+    category: String;
+    image: String;
+    stock: Number;
+    rating: Number;
+
+    constructor(data: Object) {
+        this.id = data.id;
+        this.name = data.name;
+        this.description = data.description;
+        this.price = data.price;
+        this.category = data.category;
+        this.image = data.image;
+        this.stock = data.stock ?? 0;
+        this.rating = data.rating ?? 0;
+    }
+
+    get inStock(): Boolean {
+        return this.stock > 0;
+    }
+
+    get formattedPrice(): String {
+        return "$" + this.price.toFixed(2);
+    }
+}
+
+class CartItem {
+    product: Product;
+    quantity: Number;
+
+    constructor(product: Product, quantity: Number = 1) {
+        this.product = product;
+        this.quantity = quantity;
+    }
+
+    get total(): Number {
+        return this.product.price * this.quantity;
+    }
+
+    get formattedTotal(): String {
+        return "$" + this.total.toFixed(2);
+    }
+}
+
+class User {
+    id: Number;
+    email: String;
+    name: String;
+    token: String;
+
+    constructor(data: Object) {
+        this.id = data.id;
+        this.email = data.email;
+        this.name = data.name;
+        this.token = data.token;
+    }
+}
+
+// ============================================================================
+// API Service (Async/Await Integration)
+// ============================================================================
+
+class StoreAPI {
+    private baseUrl: String = "/api";
+    private token: String = "";
+
+    setAuthToken(token: String): void {
+        this.token = token;
+        localStorage.setItem("auth_token", token);
+    }
+
+    getAuthToken(): String {
+        if (!this.token) {
+            this.token = localStorage.getItem("auth_token") ?? "";
+        }
+        return this.token;
+    }
+
+    private async request(endpoint: String, options: Object = {}): Promise<Object> {
+        const url = this.baseUrl + endpoint;
+        const token = this.getAuthToken();
+
+        const headers = {
+            "Content-Type": "application/json",
+            ...(options.headers ?? {})
+        };
+
+        if (token) {
+            headers["Authorization"] = "Bearer " + token;
+        }
+
+        try {
+            const response = await fetch(url, {
+                ...options,
+                headers: headers
+            });
+
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status + ": " + response.statusText);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("API Error:", error);
+            throw error;
+        }
+    }
+
+    // Product operations
+    async getProducts(category: String = ""): Promise<Array<Product>> {
+        const endpoint = category ? "/products?category=" + category : "/products";
+        const data = await this.request(endpoint);
+        return data.products?.map((p) => new Product(p)) ?? [];
+    }
+
+    async getProduct(id: Number): Promise<Product> {
+        const data = await this.request("/products/" + id);
+        return new Product(data.product);
+    }
+
+    async searchProducts(query: String): Promise<Array<Product>> {
+        const data = await this.request("/products/search?q=" + encodeURIComponent(query));
+        return data.products?.map((p) => new Product(p)) ?? [];
+    }
+
+    // User operations
+    async login(email: String, password: String): Promise<User> {
+        const data = await this.request("/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password })
+        });
+
+        const user = new User(data.user);
+        this.setAuthToken(user.token);
+        return user;
+    }
+
+    async register(email: String, password: String, name: String): Promise<User> {
+        const data = await this.request("/auth/register", {
+            method: "POST",
+            body: JSON.stringify({ email, password, name })
+        });
+
+        const user = new User(data.user);
+        this.setAuthToken(user.token);
+        return user;
+    }
+
+    async getCurrentUser(): Promise<User> {
+        const data = await this.request("/auth/me");
+        return new User(data.user);
+    }
+
+    // Order operations
+    async createOrder(items: Array<CartItem>, shippingAddress: Object): Promise<Object> {
+        const orderData = {
+            items: items.map((item) => ({
+                productId: item.product.id,
+                quantity: item.quantity,
+                price: item.product.price
+            })),
+            shippingAddress: shippingAddress
+        };
+
+        const data = await this.request("/orders", {
+            method: "POST",
+            body: JSON.stringify(orderData)
+        });
+
+        return data.order;
+    }
+
+    async getOrders(): Promise<Array<Object>> {
+        const data = await this.request("/orders");
+        return data.orders ?? [];
+    }
+}
+
+// ============================================================================
+// Store State Management (Reactivity)
+// ============================================================================
+
+class StoreState {
+    // Reactive state
+    @reactive products: Array<Product> = [];
+    @reactive cart: Array<CartItem> = [];
+    @reactive currentUser: User = null;
+    @reactive isLoading: Boolean = false;
+    @reactive searchQuery: String = "";
+    @reactive selectedCategory: String = "";
+    @reactive currentView: String = "catalog";  // catalog, cart, checkout, account
+
+    private api: StoreAPI;
+
+    constructor() {
+        this.api = new StoreAPI();
+        this.loadCartFromStorage();
+    }
+
+    // Computed properties
+    @computed get filteredProducts(): Array<Product> {
+        var result = this.products;
+
+        // Filter by category
+        if (this.selectedCategory) {
+            result = result.filter((p) => p.category === this.selectedCategory);
+        }
+
+        // Filter by search query
+        if (this.searchQuery) {
+            const query = this.searchQuery.toLowerCase();
+            result = result.filter((p) =>
+                p.name.toLowerCase().includes(query) ||
+                p.description.toLowerCase().includes(query)
+            );
+        }
+
+        return result;
+    }
+
+    @computed get cartTotal(): Number {
+        return this.cart.reduce((sum, item) => sum + item.total, 0);
+    }
+
+    @computed get cartCount(): Number {
+        return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    @computed get formattedCartTotal(): String {
+        return "$" + this.cartTotal.toFixed(2);
+    }
+
+    @computed get isLoggedIn(): Boolean {
+        return this.currentUser !== null;
+    }
+
+    @computed get categories(): Array<String> {
+        const cats = new Set();
+        this.products.forEach((p) => cats.add(p.category));
+        return Array.from(cats);
+    }
+
+    // Actions
+    async loadProducts(): Promise<void> {
+        this.isLoading = true;
+        try {
+            this.products = await this.api.getProducts();
+        } catch (error) {
+            console.error("Failed to load products:", error);
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async loadProductsByCategory(category: String): Promise<void> {
+        this.isLoading = true;
+        this.selectedCategory = category;
+        try {
+            this.products = await this.api.getProducts(category);
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async searchProducts(query: String): Promise<void> {
+        this.searchQuery = query;
+        if (!query) {
+            await this.loadProducts();
+            return;
+        }
+
+        this.isLoading = true;
+        try {
+            this.products = await this.api.searchProducts(query);
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    addToCart(product: Product, quantity: Number = 1): void {
+        // Check if product already in cart
+        const existing = this.cart.find((item) => item.product.id === product.id);
+
+        if (existing) {
+            existing.quantity += quantity;
+        } else {
+            this.cart.push(new CartItem(product, quantity));
+        }
+
+        this.saveCartToStorage();
+    }
+
+    removeFromCart(productId: Number): void {
+        this.cart = this.cart.filter((item) => item.product.id !== productId);
+        this.saveCartToStorage();
+    }
+
+    updateCartQuantity(productId: Number, quantity: Number): void {
+        const item = this.cart.find((item) => item.product.id === productId);
+        if (item) {
+            if (quantity <= 0) {
+                this.removeFromCart(productId);
+            } else {
+                item.quantity = quantity;
+                this.saveCartToStorage();
+            }
+        }
+    }
+
+    clearCart(): void {
+        this.cart = [];
+        this.saveCartToStorage();
+    }
+
+    async login(email: String, password: String): Promise<Boolean> {
+        try {
+            this.currentUser = await this.api.login(email, password);
+            return true;
+        } catch (error) {
+            console.error("Login failed:", error);
+            return false;
+        }
+    }
+
+    async register(email: String, password: String, name: String): Promise<Boolean> {
+        try {
+            this.currentUser = await this.api.register(email, password, name);
+            return true;
+        } catch (error) {
+            console.error("Registration failed:", error);
+            return false;
+        }
+    }
+
+    logout(): void {
+        this.currentUser = null;
+        this.api.setAuthToken("");
+        localStorage.removeItem("auth_token");
+    }
+
+    async checkout(shippingAddress: Object): Promise<Object> {
+        if (!this.isLoggedIn) {
+            throw new Error("Must be logged in to checkout");
+        }
+
+        if (this.cart.length === 0) {
+            throw new Error("Cart is empty");
+        }
+
+        try {
+            const order = await this.api.createOrder(this.cart, shippingAddress);
+            this.clearCart();
+            return order;
+        } catch (error) {
+            console.error("Checkout failed:", error);
+            throw error;
+        }
+    }
+
+    setView(view: String): void {
+        this.currentView = view;
+    }
+
+    // Persistence
+    private saveCartToStorage(): void {
+        const cartData = this.cart.map((item) => ({
+            productId: item.product.id,
+            product: {
+                id: item.product.id,
+                name: item.product.name,
+                price: item.product.price,
+                image: item.product.image,
+                stock: item.product.stock
+            },
+            quantity: item.quantity
+        }));
+
+        localStorage.setItem("shopping_cart", JSON.stringify(cartData));
+    }
+
+    private loadCartFromStorage(): void {
+        const stored = localStorage.getItem("shopping_cart");
+        if (stored) {
+            try {
+                const cartData = JSON.parse(stored);
+                this.cart = cartData.map((item) =>
+                    new CartItem(new Product(item.product), item.quantity)
+                );
+            } catch (error) {
+                console.error("Failed to load cart from storage:", error);
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Global Store Instance
+// ============================================================================
+
+const store = new StoreState();
+
+// ============================================================================
+// Initialize Application
+// ============================================================================
+
+async function initializeStore(): Promise<void> {
+    console.log("[Cart] OpenFlex E-Commerce Store");
+    console.log("Initializing...");
+
+    // Load initial products
+    await store.loadProducts();
+
+    // Try to restore user session
+    const token = store.api.getAuthToken();
+    if (token) {
+        try {
+            store.currentUser = await store.api.getCurrentUser();
+            console.log("OK User session restored:", store.currentUser.name);
+        } catch (error) {
+            console.log("Session expired, please log in");
+            store.logout();
+        }
+    }
+
+    console.log("OK Store initialized");
+    console.log("  Products loaded:", store.products.length);
+    console.log("  Cart items:", store.cartCount);
+    console.log("  Categories:", store.categories.join(", "));
+}
+
+// ============================================================================
+// Demo/Testing Functions
+// ============================================================================
+
+function runStoreDemo(): void {
+    console.log("\n=== Store Demo ===\n");
+
+    // Demo: Add products to cart
+    console.log("Demo: Adding products to cart");
+    if (store.products.length > 0) {
+        store.addToCart(store.products[0], 2);
+        console.log("Added:", store.products[0].name, "x2");
+
+        if (store.products.length > 1) {
+            store.addToCart(store.products[1], 1);
+            console.log("Added:", store.products[1].name, "x1");
+        }
+    }
+
+    console.log("\nCart Summary:");
+    console.log("  Items:", store.cartCount);
+    console.log("  Total:", store.formattedCartTotal);
+
+    // Demo: Search
+    console.log("\nDemo: Search functionality");
+    store.searchQuery = "test";
+    console.log("  Search results for 'test':", store.filteredProducts.length);
+
+    // Demo: Category filter
+    if (store.categories.length > 0) {
+        console.log("\nDemo: Category filtering");
+        store.selectedCategory = store.categories[0];
+        console.log("  Products in", store.selectedCategory + ":", store.filteredProducts.length);
+    }
+
+    console.log("\n=== Demo Complete ===");
+}
+
+// Run initialization
+initializeStore().then(() => {
+    runStoreDemo();
+}).catch((error) => {
+    console.error("Failed to initialize store:", error);
+});
