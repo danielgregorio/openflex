@@ -112,11 +112,33 @@ module.exports = grammar({
     class_body: $ => seq(
       '{',
       repeat(choice(
-        seq($.variable_declaration, ';'),  // Add semicolon at call site
-        $.function_declaration,
-        $.constructor_declaration
+        $.method_declaration,            // Methods (no 'function' keyword)
+        $.constructor_declaration,
+        seq($.property_declaration, ';')  // Properties
       )),
       '}'
+    ),
+
+    // Method declaration for class members (no 'function' keyword)
+    method_declaration: $ => seq(
+      optional(field('decorators', $.decorator_list)),
+      optional(field('visibility', $.visibility)),
+      optional('static'),
+      optional('async'),
+      field('name', $.identifier),
+      field('parameters', $.parameter_list),
+      optional(seq(':', field('return_type', $.type))),
+      field('body', $.block)
+    ),
+
+    // Property declaration for class members (no var/const keyword)
+    property_declaration: $ => seq(
+      optional($.decorator_list),
+      optional($.visibility),
+      optional('static'),
+      field('name', $.identifier),
+      optional(seq(':', field('type', $.type))),
+      optional(seq('=', field('value', $.expression)))
     ),
 
     constructor_declaration: $ => seq(

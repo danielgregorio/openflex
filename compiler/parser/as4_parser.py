@@ -1160,24 +1160,178 @@ class ASTVisitor:
         body_node = next((c for c in node.children if c.type == 'class_body'), None)
         if body_node:
             for child in body_node.children:
-                if child.type == 'variable_declaration':
-                    # Convert variable declaration to property declaration
+                if child.type == 'property_declaration':
+                    # Property declaration (no var/const keyword)
+                    prop_decl = self.visit_property_declaration(child)
+                    if prop_decl:
+                        members.append(prop_decl)
+                elif child.type == 'method_declaration':
+                    # Method declaration (no function keyword)
+                    method_decl = self.visit_method_declaration(child)
+                    if method_decl:
+                        members.append(method_decl)
+                elif child.type == 'variable_declaration':
+                    # Fallback: old-style variable declaration
                     var_decl = self.visit_variable_declaration(child)
                     if var_decl:
                         members.append(var_decl)
                 elif child.type == 'function_declaration':
+                    # Fallback: old-style function declaration
                     func_decl = self.visit_function_declaration(child)
                     if func_decl:
                         members.append(func_decl)
                 elif child.type == 'constructor_declaration':
-                    # TODO: Handle constructor separately if needed
-                    pass
+                    # Constructor
+                    ctor = self.visit_constructor_declaration(child)
+                    if ctor:
+                        members.append(ctor)
 
         return ClassDeclaration(
             name=name,
             super_class=super_class,
             implements=implements,
             members=members,
+            loc=self._make_location(node)
+        )
+
+    def visit_property_declaration(self, node) -> Optional[VariableDeclaration]:
+        """Visit property_declaration node (class members without var/const)"""
+        # Extract decorators
+        decorators = []
+        for child in node.children:
+            if child.type == 'decorator_list':
+                decorators = self.visit_decorator_list(child)
+                break
+
+        # Extract visibility
+        visibility = None
+        for child in node.children:
+            if child.type == 'visibility':
+                visibility = self._get_text(child.children[0])
+                break
+
+        # Extract name
+        name = None
+        for child in node.children:
+            if child.type == 'identifier':
+                name = self._get_text(child)
+                break
+
+        if not name:
+            return None
+
+        # Extract type annotation
+        type_annotation = None
+        type_node = node.child_by_field_name('type')
+        if type_node:
+            type_annotation = self._get_text(type_node)
+
+        # Extract initializer
+        initializer = None
+        value_node = node.child_by_field_name('value')
+        if value_node:
+            initializer = self.visit_expression(value_node)
+
+        return VariableDeclaration(
+            name=name,
+            var_type=type_annotation,
+            initializer=initializer,
+            is_const=False,  # Properties are mutable by default
+            decorators=decorators,
+            loc=self._make_location(node)
+        )
+
+    def visit_method_declaration(self, node) -> Optional[FunctionDeclaration]:
+        """Visit method_declaration node (class methods without 'function' keyword)"""
+        # Extract decorators
+        decorators = []
+        decorators_node = node.child_by_field_name('decorators')
+        if decorators_node:
+            decorators = self.visit_decorator_list(decorators_node)
+
+        # Extract visibility
+        visibility = None
+        visibility_node = node.child_by_field_name('visibility')
+        if visibility_node:
+            visibility = self._get_text(visibility_node.children[0])
+
+        # Check for async
+        is_async = any(self._get_text(c) == 'async' for c in node.children if c.type == 'async')
+
+        # Extract name
+        name = None
+        name_node = node.child_by_field_name('name')
+        if name_node:
+            name = self._get_text(name_node)
+
+        if not name:
+            return None
+
+        # Extract parameters
+        params = []
+        params_node = node.child_by_field_name('parameters')
+        if params_node:
+            for child in params_node.children:
+                if child.type == 'parameter':
+                    param = self.visit_parameter(child)
+                    if param:
+                        params.append(param)
+
+        # Extract return type
+        return_type = None
+        return_type_node = node.child_by_field_name('return_type')
+        if return_type_node:
+            return_type = self._get_text(return_type_node)
+
+        # Extract body
+        body = None
+        body_node = node.child_by_field_name('body')
+        if body_node:
+            body = self.visit_block(body_node)
+
+        return FunctionDeclaration(
+            name=name,
+            params=params,
+            return_type=return_type,
+            body=body,
+            is_async=is_async,
+            decorators=decorators,
+            loc=self._make_location(node)
+        )
+
+    def visit_constructor_declaration(self, node) -> Optional[FunctionDeclaration]:
+        """Visit constructor_declaration node"""
+        # Extract visibility
+        visibility = None
+        for child in node.children:
+            if child.type == 'visibility':
+                visibility = self._get_text(child.children[0])
+                break
+
+        # Extract parameters
+        params = []
+        for child in node.children:
+            if child.type == 'parameter_list':
+                for param_child in child.children:
+                    if param_child.type == 'parameter':
+                        param = self.visit_parameter(param_child)
+                        if param:
+                            params.append(param)
+
+        # Extract body
+        body = None
+        for child in node.children:
+            if child.type == 'block':
+                body = self.visit_block(child)
+                break
+
+        return FunctionDeclaration(
+            name='constructor',
+            params=params,
+            return_type=None,
+            body=body,
+            is_async=False,
+            decorators=[],
             loc=self._make_location(node)
         )
 
