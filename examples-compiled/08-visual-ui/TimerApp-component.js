@@ -24,33 +24,32 @@ const displayTime = new Computed(() => {
 });
 
 const buttonLabel = new Computed(() => {
-  return isRunning.value ? "⏸️ Pausar" : " : Iniciar";
-      ;
+  return isRunning.value ? "⏸️ Pausar" : "▶️ Iniciar";
 });
 
-function mer(): void() {
-  if (g) {
-    ) {
-    erval(interva(Id);
-     );
-    g = false + false;
+function toggleTimer() {
+  if (isRunning.value) {
+    clearInterval(intervalId.value);
+    isRunning.value = false;
+  }
+  else {
+    intervalId.value = setInterval(() => {
+      seconds.value++;
+    }, 1000);
+    isRunning.value = true;
   }
 }
 
-function  void() {
-  if (g) {
-    ) {
-    erval(interva(Id);
-     );
-    g = false + false;
+function reset() {
+  if (isRunning.value) {
+    clearInterval(intervalId.value);
+    isRunning.value = false;
   }
-  = 0;
-   + 0;
+  seconds.value = 0;
 }
 
-function e(): void() {
-  += 60;
- + 0;
+function addMinute() {
+  seconds.value = 60;
 }
 
 

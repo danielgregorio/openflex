@@ -103,9 +103,13 @@ class JSCodeGenerator:
                 return f"{self._indent()}{keyword} {name} = new Signal({value});"
             elif is_computed:
                 # Wrap in Computed
-                # Check if initializer is already an ArrowFunction (from @computed var x: T { ... })
-                from compiler.parser.ast import ArrowFunction
-                if isinstance(var_decl.initializer, ArrowFunction):
+                # Check if initializer is a BlockStatement (from @computed var x: T { ... })
+                from compiler.parser.ast import ArrowFunction, BlockStatement
+                if isinstance(var_decl.initializer, BlockStatement):
+                    # Block from computed_variable_declaration - convert to arrow function
+                    block_code = self._generate_block_statement(var_decl.initializer)
+                    return f"{self._indent()}{keyword} {name} = new Computed(() => {block_code});"
+                elif isinstance(var_decl.initializer, ArrowFunction):
                     # Already an arrow function, just use it directly
                     return f"{self._indent()}{keyword} {name} = new Computed({value});"
                 else:

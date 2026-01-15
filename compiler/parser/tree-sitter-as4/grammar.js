@@ -24,6 +24,7 @@ module.exports = grammar({
     [$.union_type],
     [$.match_expression, $.match_statement],
     [$.if_statement],
+    [$.computed_variable_declaration, $.variable_declaration],
   ],
 
   rules: {
@@ -39,7 +40,8 @@ module.exports = grammar({
     // Statements
     _statement: $ => choice(
       $.import_statement,
-      seq($.variable_declaration, ';'),  // Add semicolon at call site
+      prec.dynamic(2, $.computed_variable_declaration),  // @computed/@effect with block (higher priority)
+      prec.dynamic(1, seq($.variable_declaration, ';')),  // Regular var/const with semicolon (lower priority)
       $.function_declaration,
       $.class_declaration,
       $.interface_declaration,
@@ -73,6 +75,17 @@ module.exports = grammar({
       $.identifier,
       repeat(seq('.', choice($.identifier, '*')))
     ),
+
+    // Computed/effect variable with inline block (no semicolon needed)
+    computed_variable_declaration: $ => prec(2, seq(
+      $.decorator_list,  // Must have decorators
+      optional($.visibility),
+      optional('static'),
+      choice('var', 'const'),
+      field('name', $.identifier),
+      optional(seq(':', field('type', $.type))),
+      field('body', $.block)  // Inline block for computed expression
+    )),
 
     // Variable declarations with decorators (no semicolon - added at call sites)
     variable_declaration: $ => seq(

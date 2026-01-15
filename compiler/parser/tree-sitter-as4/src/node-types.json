@@ -126,6 +126,10 @@
           "named": true
         },
         {
+          "type": "computed_variable_declaration",
+          "named": true
+        },
+        {
           "type": "conditional_compilation_block",
           "named": true
         },
@@ -313,6 +317,56 @@
     "fields": {}
   },
   {
+    "type": "computed_variable_declaration",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "decorator_list",
+          "named": true
+        },
+        {
+          "type": "visibility",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "condition_expression",
     "named": true,
     "fields": {},
@@ -349,6 +403,10 @@
         },
         {
           "type": "class_declaration",
+          "named": true
+        },
+        {
+          "type": "computed_variable_declaration",
           "named": true
         },
         {
@@ -595,6 +653,10 @@
           "named": true
         },
         {
+          "type": "computed_variable_declaration",
+          "named": true
+        },
+        {
           "type": "conditional_compilation_block",
           "named": true
         },
@@ -698,6 +760,10 @@
           "named": true
         },
         {
+          "type": "computed_variable_declaration",
+          "named": true
+        },
+        {
           "type": "conditional_compilation_block",
           "named": true
         },
@@ -798,6 +864,10 @@
         },
         {
           "type": "class_declaration",
+          "named": true
+        },
+        {
+          "type": "computed_variable_declaration",
           "named": true
         },
         {
@@ -997,6 +1067,10 @@
         },
         {
           "type": "class_declaration",
+          "named": true
+        },
+        {
+          "type": "computed_variable_declaration",
           "named": true
         },
         {
@@ -1608,6 +1682,10 @@
           "named": true
         },
         {
+          "type": "computed_variable_declaration",
+          "named": true
+        },
+        {
           "type": "conditional_compilation_block",
           "named": true
         },
@@ -2013,6 +2091,10 @@
         },
         {
           "type": "class_declaration",
+          "named": true
+        },
+        {
+          "type": "computed_variable_declaration",
           "named": true
         },
         {

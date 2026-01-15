@@ -114,6 +114,7 @@ class ASTVisitor:
 
     def __init__(self, source: str, filename: str):
         self.source = source
+        self.source_bytes = bytes(source, 'utf-8')  # Store bytes for correct byte indexing
         self.filename = filename
 
     def _make_location(self, node) -> SourceLocation:
@@ -127,8 +128,9 @@ class ASTVisitor:
         )
 
     def _get_text(self, node) -> str:
-        """Get text content of node"""
-        return self.source[node.start_byte:node.end_byte]
+        """Get text content of node using byte offsets"""
+        # Use byte offsets on bytes, then decode to string
+        return self.source_bytes[node.start_byte:node.end_byte].decode('utf-8')
 
     def visit_program(self, node) -> Program:
         """Visit source_file node"""
@@ -188,6 +190,7 @@ class ASTVisitor:
         handlers = {
             'import_statement': self.visit_import,
             'variable_declaration': self.visit_variable_declaration,
+            'computed_variable_declaration': self.visit_computed_variable_declaration,
             'function_declaration': self.visit_function_declaration,
             'class_declaration': self.visit_class_declaration,
             'interface_declaration': self.visit_interface_declaration,
@@ -310,6 +313,76 @@ class ASTVisitor:
                         break
         if init_node:
             initializer = self.visit_expression(init_node)
+
+        return VariableDeclaration(
+            name=name,
+            var_type=var_type,
+            initializer=initializer,
+            is_const=is_const,
+            decorators=decorators,
+            visibility=visibility,
+            is_static=is_static,
+            loc=self._make_location(node)
+        )
+
+    def visit_computed_variable_declaration(self, node) -> VariableDeclaration:
+        """Visit computed_variable_declaration node (for @computed/@effect with inline blocks)"""
+        # Extract decorators
+        decorators = []
+        decorator_list = node.child_by_field_name('decorators')
+        if not decorator_list:
+            # Fallback: find decorator nodes manually
+            for child in node.children:
+                if child.type == 'decorator_list':
+                    decorator_list = child
+                    break
+        if decorator_list:
+            decorators = self.visit_decorator_list(decorator_list)
+
+        # Extract visibility
+        visibility = "public"
+        for child in node.children:
+            if self._get_text(child) in ('public', 'private', 'protected'):
+                visibility = self._get_text(child)
+                break
+
+        # Extract static
+        is_static = any(self._get_text(c) == 'static' for c in node.children)
+
+        # Extract var/const
+        is_const = any(self._get_text(c) == 'const' for c in node.children)
+
+        # Extract name
+        name_node = node.child_by_field_name('name')
+        if not name_node:
+            name_node = next((c for c in node.children if c.type == 'identifier'), None)
+        name = self._get_text(name_node) if name_node else "unknown"
+
+        # Extract type (look for ':' followed by type node)
+        var_type = None
+        type_node = node.child_by_field_name('type')
+        if not type_node:
+            # Fallback: find ':' then get next 'type' node
+            for i, child in enumerate(node.children):
+                if self._get_text(child) == ':' and i + 1 < len(node.children):
+                    next_node = node.children[i + 1]
+                    if next_node.type == 'type':
+                        type_node = next_node
+                        break
+        if type_node:
+            var_type = self.visit_type(type_node)
+
+        # Extract body (the block for computed expressions)
+        # For computed variables, the block contains the computation logic
+        body_node = node.child_by_field_name('body')
+        if not body_node:
+            # Fallback: find block node
+            body_node = next((c for c in node.children if c.type == 'block'), None)
+
+        # The initializer for computed vars is the block itself
+        initializer = None
+        if body_node:
+            initializer = self.visit_block(body_node)
 
         return VariableDeclaration(
             name=name,
