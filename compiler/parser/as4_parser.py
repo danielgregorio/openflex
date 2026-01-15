@@ -650,7 +650,7 @@ class ASTVisitor:
                     left = self.visit_expression(child)
                 else:
                     right = self.visit_expression(child)
-            elif self._get_text(child) in ('+', '-', '*', '/', '%', '==', '!=', '<', '>', '<=', '>=', '&&', '||', '='):
+            elif self._get_text(child) in ('+', '-', '*', '/', '%', '===', '!==', '==', '!=', '<', '>', '<=', '>=', '&&', '||', '='):
                 operator = self._get_text(child)
 
         return BinaryExpression(

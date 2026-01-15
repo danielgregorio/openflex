@@ -6,7 +6,7 @@ Compiles MXML files to Web Components with Reactivity
 
 import sys
 import os
-from compiler.enhanced_mxml_compiler import EnhancedMXMLCompiler
+from compiler.neo_mxml_compiler import NeoMXMLCompiler
 
 
 def main():
@@ -40,7 +40,7 @@ def main():
         mxml_source = f.read()
 
     # Compile
-    compiler = EnhancedMXMLCompiler()
+    compiler = NeoMXMLCompiler()
     try:
         js_output = compiler.compile(mxml_source, input_file)
 

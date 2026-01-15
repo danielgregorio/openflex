@@ -333,20 +333,31 @@ module.exports = grammar({
     ),
 
     binary_expression: $ => choice(
-      prec.left(10, seq($.expression, '*', $.expression)),
-      prec.left(10, seq($.expression, '/', $.expression)),
-      prec.left(9, seq($.expression, '+', $.expression)),
-      prec.left(9, seq($.expression, '-', $.expression)),
-      prec.left(7, seq($.expression, '<', $.expression)),
-      prec.left(7, seq($.expression, '>', $.expression)),
+      // Assignment (lowest precedence) - MUST BE LAST
+      prec.right(1, seq($.expression, '=', $.expression)),
+      // Logical OR
+      prec.left(2, seq($.expression, '||', $.expression)),
+      // Logical AND
+      prec.left(3, seq($.expression, '&&', $.expression)),
+      // Nullish coalescing
+      prec.left(4, seq($.expression, '??', $.expression)),
+      // Equality (strict first, then loose)
+      prec.left(6, seq($.expression, token('==='), $.expression)),
+      prec.left(6, seq($.expression, token('!=='), $.expression)),
+      prec.left(6, seq($.expression, token('=='), $.expression)),
+      prec.left(6, seq($.expression, token('!='), $.expression)),
+      // Relational
       prec.left(7, seq($.expression, '<=', $.expression)),
       prec.left(7, seq($.expression, '>=', $.expression)),
-      prec.left(6, seq($.expression, '==', $.expression)),
-      prec.left(6, seq($.expression, '!=', $.expression)),
-      prec.left(4, seq($.expression, '??', $.expression)),  // Nullish coalescing
-      prec.left(3, seq($.expression, '&&', $.expression)),
-      prec.left(2, seq($.expression, '||', $.expression)),
-      prec.right(1, seq($.expression, '=', $.expression)),
+      prec.left(7, seq($.expression, '<', $.expression)),
+      prec.left(7, seq($.expression, '>', $.expression)),
+      // Additive
+      prec.left(9, seq($.expression, '+', $.expression)),
+      prec.left(9, seq($.expression, '-', $.expression)),
+      // Multiplicative
+      prec.left(10, seq($.expression, '*', $.expression)),
+      prec.left(10, seq($.expression, '/', $.expression)),
+      prec.left(10, seq($.expression, '%', $.expression)),
     ),
 
     unary_expression: $ => prec.left(13, choice(

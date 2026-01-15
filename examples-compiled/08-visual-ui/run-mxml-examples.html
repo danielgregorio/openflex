@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenFlex Neo - MXML Examples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .examples {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .example-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .example-card h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .example-card p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .example-card .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .features {
+            max-width: 1200px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .features h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 10px 0;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .features li:before {
+            content: "✓";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .features li:last-child {
+            border-bottom: none;
+        }
+
+        .code-sample {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .code-sample .keyword {
+            color: #569cd6;
+        }
+
+        .code-sample .string {
+            color: #ce9178;
+        }
+
+        .code-sample .comment {
+            color: #6a9955;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🆕 OpenFlex Neo</h1>
+        <p>MXML Framework com Reatividade Completa</p>
+    </div>
+
+    <div class="examples">
+        <div class="example-card">
+            <h2>🔢 Counter App</h2>
+            <p>
+                Aplicativo de contador com reatividade completa. Demonstra:
+                <br>• @reactive signals
+                <br>• @computed properties
+                <br>• Data binding bidirecional
+                <br>• Event handlers
+            </p>
+            <div class="buttons">
+                <a href="counter-test.html" class="btn btn-primary">▶ Executar</a>
+                <a href="../counter/App.mxml" class="btn btn-secondary" target="_blank">📄 Ver MXML</a>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <h2>✅ Todo List App</h2>
+            <p>
+                Lista de tarefas completa. Demonstra:
+                <br>• Repeater com dataProvider
+                <br>• TextInput com two-way binding
+                <br>• Array manipulation
+                <br>• Computed properties
+            </p>
+            <div class="buttons">
+                <a href="todolist-test.html" class="btn btn-primary">▶ Executar</a>
+                <a href="TodoListApp.mxml" class="btn btn-secondary" target="_blank">📄 Ver MXML</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="features">
+        <h2>🚀 Features do OpenFlex Neo MXML</h2>
+        <ul>
+            <li>Sintaxe MXML declarativa (como Adobe Flex)</li>
+            <li>Componentes Neo: VBox, HBox, Panel, Button, Label, TextInput, CheckBox, Repeater</li>
+            <li>Data Binding automático com {expression}</li>
+            <li>Reatividade granular com @reactive e @computed</li>
+            <li>Event handlers: click="{functionName}"</li>
+            <li>Two-way binding para TextInput</li>
+            <li>Repeater para loops de arrays</li>
+            <li>Estilos CSS inline e fx:Style</li>
+            <li>Compilação para Web Components nativos</li>
+            <li>Zero dependências no runtime</li>
+        </ul>
+
+        <div class="code-sample">
+<span class="comment">// Exemplo MXML:</span>
+<span class="keyword">&lt;Application</span> xmlns:fx=<span class="string">"http://openflex.dev/core"</span> xmlns=<span class="string">"http://openflex.dev/neo"</span><span class="keyword">&gt;</span>
+    <span class="keyword">&lt;fx:Script&gt;</span>
+        <span class="keyword">@reactive</span> var count: Number = 0;
+
+        <span class="keyword">@computed</span> var doubled: Number {
+            return count * 2;
+        }
+
+        <span class="keyword">function</span> increment(): void {
+            count++;
+        }
+    <span class="keyword">&lt;/fx:Script&gt;</span>
+
+    <span class="keyword">&lt;VBox</span> gap=<span class="string">"{20}"</span><span class="keyword">&gt;</span>
+        <span class="keyword">&lt;Label</span> text=<span class="string">"Count: {count}"</span> <span class="keyword">/&gt;</span>
+        <span class="keyword">&lt;Label</span> text=<span class="string">"Doubled: {doubled}"</span> <span class="keyword">/&gt;</span>
+        <span class="keyword">&lt;Button</span> label=<span class="string">"Increment"</span> click=<span class="string">"{increment}"</span> <span class="keyword">/&gt;</span>
+    <span class="keyword">&lt;/VBox&gt;</span>
+<span class="keyword">&lt;/Application&gt;</span>
+        </div>
+    </div>
+
+    <script>
+        console.log('✅ OpenFlex Neo MXML Examples ready!');
+    </script>
+</body>
+</html>

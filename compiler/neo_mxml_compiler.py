@@ -188,6 +188,30 @@ class NeoMXMLCompiler:
                 attr = binding['attribute']
                 expr = binding['expression']
                 template = binding['template']
+                is_style = binding.get('is_style', False)
+                is_two_way = binding.get('is_two_way', False)
+                is_repeater = binding.get('is_repeater', False)
+
+                # Repeater especial
+                if is_repeater:
+                    lines.append(f"    // Repeater: {elem_id}")
+                    lines.append(f"    createEffect(() => {{")
+                    lines.append(f"      const el = this.shadowRoot.getElementById('{elem_id}');")
+                    lines.append(f"      if (!el) return;")
+                    lines.append(f"      ")
+                    lines.append(f"      // Limpar conteúdo anterior")
+                    lines.append(f"      el.innerHTML = '';")
+                    lines.append(f"      ")
+                    lines.append(f"      // Renderizar itens do array")
+                    lines.append(f"      const items = {expr}.value || [];")
+                    lines.append(f"      items.forEach((item, index) => {{")
+                    lines.append(f"        const itemEl = document.createElement('div');")
+                    lines.append(f"        itemEl.className = 'repeater-item';")
+                    lines.append(f"        itemEl.textContent = item.text || JSON.stringify(item);")
+                    lines.append(f"        el.appendChild(itemEl);")
+                    lines.append(f"      }});")
+                    lines.append(f"    }});")
+                    continue
 
                 # Detectar se a expressão é uma variável reativa
                 if expr in self.reactive_vars:
@@ -196,18 +220,122 @@ class NeoMXMLCompiler:
 
                     # Se template tem binding simples {expr}, usar direto
                     if template == f'{{{expr}}}':
-                        lines.append(f"      if (el) el.{attr} = {expr}.value;")
+                        if is_style:
+                            # Atributos de estilo (width, height, etc)
+                            lines.append(f"      if (el) el.style.{attr} = {expr}.value + 'px';")
+                        elif attr == 'visible':
+                            # Visibilidade
+                            lines.append(f"      if (el) el.style.display = {expr}.value ? 'block' : 'none';")
+                        else:
+                            # Atributo normal
+                            lines.append(f"      if (el) el.{attr} = {expr}.value;")
                     else:
                         # Template complexo: "Count: {count}"
                         template_js = template.replace(f'{{{expr}}}', f"${{{expr}.value}}")
                         lines.append(f"      if (el) el.{attr} = `{template_js}`;")
 
                     lines.append(f"    }});")
+
+                    # Two-way binding adicional
+                    if is_two_way:
+                        lines.append(f"    ")
+                        lines.append(f"    // Two-way binding para {elem_id}")
+                        lines.append(f"    const el_{elem_id} = this.shadowRoot.getElementById('{elem_id}');")
+                        lines.append(f"    if (el_{elem_id}) {{")
+                        lines.append(f"      el_{elem_id}.addEventListener('input', (e) => {{")
+                        lines.append(f"        {expr}.value = e.target.value;")
+                        lines.append(f"      }});")
+                        lines.append(f"    }}")
+
             lines.append("  }")
 
         lines.append("}")
 
         return lines
+
+    def _process_attributes(self, element: ET.Element, elem_id: str) -> Dict[str, str]:
+        """Processa atributos do elemento, detectando bindings"""
+        static_attrs = {}
+
+        for attr_name, attr_value in element.attrib.items():
+            # Ignorar atributos especiais já processados
+            if attr_name in ['text', 'label', 'click', 'placeholder', 'title', 'dataProvider']:
+                continue
+
+            # Detectar binding
+            if '{' in attr_value and '}' in attr_value:
+                match = re.search(r'\{([^}]+)\}', attr_value)
+                if match:
+                    expr = match.group(1).strip()
+                    # Se é apenas {expr}, binding direto
+                    if attr_value == f'{{{expr}}}':
+                        self.bindings.append({
+                            'id': elem_id,
+                            'attribute': attr_name,
+                            'expression': expr,
+                            'template': attr_value,
+                            'is_style': attr_name in ['width', 'height', 'gap', 'padding']
+                        })
+                    else:
+                        # Template string
+                        self.bindings.append({
+                            'id': elem_id,
+                            'attribute': attr_name,
+                            'expression': expr,
+                            'template': attr_value,
+                            'is_style': False
+                        })
+            else:
+                # Atributo estático
+                static_attrs[attr_name] = attr_value
+
+        return static_attrs
+
+    def _build_style_string(self, attrs: Dict[str, str]) -> str:
+        """Constrói string de estilo inline a partir dos atributos"""
+        styles = []
+
+        def add_size_attr(name: str, value: str):
+            """Adiciona atributo de tamanho (px apenas se não tiver % ou outra unidade)"""
+            if '%' in value or 'px' in value or 'em' in value or 'rem' in value:
+                styles.append(f"{name}: {value}")
+            else:
+                styles.append(f"{name}: {value}px")
+
+        # Dimensões
+        if 'width' in attrs:
+            add_size_attr('width', attrs['width'])
+        if 'height' in attrs:
+            add_size_attr('height', attrs['height'])
+
+        # Espaçamento
+        if 'gap' in attrs:
+            add_size_attr('gap', attrs['gap'])
+        if 'padding' in attrs:
+            add_size_attr('padding', attrs['padding'])
+
+        # Fonte
+        if 'fontSize' in attrs:
+            add_size_attr('font-size', attrs['fontSize'])
+        if 'color' in attrs:
+            styles.append(f"color: {attrs['color']}")
+
+        if styles:
+            return f" style='{'; '.join(styles)}'"
+        return ""
+
+    def _get_alignment_classes(self, attrs: Dict[str, str]) -> str:
+        """Retorna classes CSS para alinhamento"""
+        classes = []
+
+        if 'horizontalAlign' in attrs:
+            classes.append(f"h-align-{attrs['horizontalAlign']}")
+        if 'verticalAlign' in attrs:
+            classes.append(f"v-align-{attrs['verticalAlign']}")
+
+        if classes:
+            return " " + " ".join(classes)
+        return ""
 
     def _generate_html_from_element(self, element: ET.Element, indent: int = 0) -> List[str]:
         """Gera HTML recursivamente a partir do elemento XML"""
@@ -223,21 +351,46 @@ class NeoMXMLCompiler:
 
         # Processar baseado no tipo de componente
         if tag == 'Application':
-            lines.append(f"{prefix}<div class='neo-application'>")
+            elem_id = f"app_{self.component_counter}"
+            self.component_counter += 1
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            style_str = self._build_style_string(static_attrs)
+
+            lines.append(f"{prefix}<div id='{elem_id}' class='neo-application'{style_str}>")
             for child in element:
                 lines.extend(self._generate_html_from_element(child, indent + 2))
             lines.append(f"{prefix}</div>")
 
         elif tag in ['VBox', 'HBox']:
+            elem_id = f"{'vbox' if tag == 'VBox' else 'hbox'}_{self.component_counter}"
+            self.component_counter += 1
+
             css_class = 'neo-vbox' if tag == 'VBox' else 'neo-hbox'
-            lines.append(f"{prefix}<div class='{css_class}'>")
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            style_str = self._build_style_string(static_attrs)
+            align_classes = self._get_alignment_classes(static_attrs)
+
+            full_class = f"{css_class}{align_classes}"
+            lines.append(f"{prefix}<div id='{elem_id}' class='{full_class}'{style_str}>")
             for child in element:
                 lines.extend(self._generate_html_from_element(child, indent + 2))
             lines.append(f"{prefix}</div>")
 
         elif tag == 'Panel':
+            elem_id = f"panel_{self.component_counter}"
+            self.component_counter += 1
+
             title = element.get('title', '')
-            lines.append(f"{prefix}<div class='neo-panel'>")
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            style_str = self._build_style_string(static_attrs)
+
+            lines.append(f"{prefix}<div id='{elem_id}' class='neo-panel'{style_str}>")
             if title:
                 lines.append(f"{prefix}  <div class='neo-panel-header'>{title}</div>")
             lines.append(f"{prefix}  <div class='neo-panel-body'>")
@@ -250,6 +403,11 @@ class NeoMXMLCompiler:
             text = element.get('text', '')
             elem_id = f"label_{self.component_counter}"
             self.component_counter += 1
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            style_str = self._build_style_string(static_attrs)
+            class_attr = f" class='{static_attrs['styleClass']}'" if 'styleClass' in static_attrs else " class='neo-label'"
 
             # Detectar data binding
             if '{' in text and '}' in text:
@@ -264,15 +422,19 @@ class NeoMXMLCompiler:
                         'template': text
                     })
                     # Placeholder no HTML (será atualizado por reatividade)
-                    lines.append(f"{prefix}<span id='{elem_id}' class='neo-label'></span>")
+                    lines.append(f"{prefix}<span id='{elem_id}'{class_attr}{style_str}></span>")
             else:
-                lines.append(f"{prefix}<span id='{elem_id}' class='neo-label'>{text}</span>")
+                lines.append(f"{prefix}<span id='{elem_id}'{class_attr}{style_str}>{text}</span>")
 
         elif tag == 'Button':
             label = element.get('label', 'Button')
             click = element.get('click', '')
             elem_id = f"btn_{self.component_counter}"
             self.component_counter += 1
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            style_str = self._build_style_string(static_attrs)
 
             # Detectar event handler
             if click:
@@ -284,29 +446,83 @@ class NeoMXMLCompiler:
                     'handler': handler
                 })
 
-            lines.append(f"{prefix}<button id='{elem_id}' class='neo-button'>{label}</button>")
+            lines.append(f"{prefix}<button id='{elem_id}' class='neo-button'{style_str}>{label}</button>")
 
         elif tag == 'TextInput':
             elem_id = f"input_{self.component_counter}"
             self.component_counter += 1
             placeholder = element.get('placeholder', '')
-            lines.append(f"{prefix}<input type='text' id='{elem_id}' class='neo-textinput' placeholder='{placeholder}' />")
+            text_binding = element.get('text', '')
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            style_str = self._build_style_string(static_attrs)
+
+            # Two-way binding para text
+            if text_binding and '{' in text_binding and '}' in text_binding:
+                match = re.search(r'\{([^}]+)\}', text_binding)
+                if match:
+                    var_name = match.group(1).strip()
+                    # Adicionar binding bidirecional
+                    self.bindings.append({
+                        'id': elem_id,
+                        'attribute': 'value',
+                        'expression': var_name,
+                        'template': text_binding,
+                        'is_two_way': True
+                    })
+
+            lines.append(f"{prefix}<input type='text' id='{elem_id}' class='neo-textinput' placeholder='{placeholder}'{style_str} />")
 
         elif tag == 'CheckBox':
             elem_id = f"checkbox_{self.component_counter}"
             self.component_counter += 1
-            lines.append(f"{prefix}<input type='checkbox' id='{elem_id}' class='neo-checkbox' />")
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            style_str = self._build_style_string(static_attrs)
+
+            lines.append(f"{prefix}<input type='checkbox' id='{elem_id}' class='neo-checkbox'{style_str} />")
 
         elif tag == 'Box':
-            lines.append(f"{prefix}<div class='neo-box'>")
+            elem_id = f"box_{self.component_counter}"
+            self.component_counter += 1
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            style_str = self._build_style_string(static_attrs)
+
+            lines.append(f"{prefix}<div id='{elem_id}' class='neo-box'{style_str}>")
             for child in element:
                 lines.extend(self._generate_html_from_element(child, indent + 2))
             lines.append(f"{prefix}</div>")
 
         elif tag == 'Repeater':
-            # Repeater será implementado com template + loop
+            # Repeater com dataProvider
             elem_id = f"repeater_{self.component_counter}"
             self.component_counter += 1
+
+            data_provider = element.get('dataProvider', '')
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+
+            # Detectar binding no dataProvider
+            if data_provider and '{' in data_provider and '}' in data_provider:
+                match = re.search(r'\{([^}]+)\}', data_provider)
+                if match:
+                    array_var = match.group(1).strip()
+
+                    # Guardar informação do Repeater para gerar código dinâmico
+                    self.bindings.append({
+                        'id': elem_id,
+                        'attribute': 'repeater',
+                        'expression': array_var,
+                        'template': '',
+                        'is_repeater': True,
+                        'child_template': element  # Guardar template dos filhos
+                    })
+
             lines.append(f"{prefix}<div id='{elem_id}' class='neo-repeater'>")
             lines.append(f"{prefix}  <!-- Repeater content will be dynamically generated -->")
             lines.append(f"{prefix}</div>")

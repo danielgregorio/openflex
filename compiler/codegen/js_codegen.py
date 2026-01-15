@@ -32,7 +32,9 @@ class JSCodeGenerator:
         # Add runtime import if needed
         if self.has_reactivity:
             lines.append("// OpenFlex Reactivity Runtime")
-            lines.append("const { Signal, Computed, createEffect } = require('./runtime/openflex-runtime.js');")
+            lines.append("const { Signal, Computed, createEffect } = (typeof window !== 'undefined' && window.OpenFlexRuntime)")
+            lines.append("  ? window.OpenFlexRuntime")
+            lines.append("  : require('./runtime/openflex-runtime.js');")
             lines.append("")
 
         # Generate each declaration
