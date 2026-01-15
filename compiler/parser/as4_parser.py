@@ -572,11 +572,25 @@ class ASTVisitor:
                     raw='0',
                     loc=self._make_location(node)
                 )
-            return NumberLiteral(
-                value=float(stripped),
-                raw=text,
-                loc=self._make_location(node)
-            )
+
+            # Try to convert to float, but handle invalid number nodes gracefully
+            try:
+                num_value = float(stripped)
+                return NumberLiteral(
+                    value=num_value,
+                    raw=text,
+                    loc=self._make_location(node)
+                )
+            except ValueError:
+                # Tree-sitter incorrectly labeled this as a number node
+                # This happens when parsing errors occur
+                print(f"WARNING: Skipping invalid number node '{stripped}' at {self._make_location(node)}")
+                # Return a placeholder to allow parsing to continue
+                return NumberLiteral(
+                    value=0,
+                    raw='0',
+                    loc=self._make_location(node)
+                )
 
         elif node.type == 'string':
             text = self._get_text(node)
