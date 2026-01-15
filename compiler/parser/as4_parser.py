@@ -150,6 +150,32 @@ class ASTVisitor:
                 else:
                     declarations.append(stmt)
 
+        # Post-processing: Associate BlockStatements with @computed/@effect VariableDeclarations
+        # This handles the syntax: @computed var name: Type { return expr; }
+        # where the block_statement comes as a separate sibling node
+        from compiler.parser.ast import VariableDeclaration, BlockStatement, ArrowFunction
+        i = 0
+        while i < len(declarations):
+            decl = declarations[i]
+            if isinstance(decl, VariableDeclaration):
+                # Check if this is @computed or @effect without initializer
+                is_computed_or_effect = any(d.name in ('computed', 'effect') for d in decl.decorators)
+                if is_computed_or_effect and decl.initializer is None:
+                    # Check if next declaration is a BlockStatement
+                    if i + 1 < len(declarations) and isinstance(declarations[i + 1], BlockStatement):
+                        block = declarations[i + 1]
+                        # Wrap the block in an ArrowFunction
+                        arrow_func = ArrowFunction(
+                            params=[],
+                            body=block,
+                            is_async=False,
+                            loc=block.loc
+                        )
+                        decl.initializer = arrow_func
+                        # Remove the separate BlockStatement from declarations
+                        declarations.pop(i + 1)
+            i += 1
+
         return Program(
             imports=imports,
             declarations=declarations,

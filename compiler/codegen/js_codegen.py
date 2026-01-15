@@ -100,8 +100,15 @@ class JSCodeGenerator:
                 # Wrap in Signal
                 return f"{self._indent()}{keyword} {name} = new Signal({value});"
             elif is_computed:
-                # Wrap in Computed with arrow function
-                return f"{self._indent()}{keyword} {name} = new Computed(() => {value});"
+                # Wrap in Computed
+                # Check if initializer is already an ArrowFunction (from @computed var x: T { ... })
+                from compiler.parser.ast import ArrowFunction
+                if isinstance(var_decl.initializer, ArrowFunction):
+                    # Already an arrow function, just use it directly
+                    return f"{self._indent()}{keyword} {name} = new Computed({value});"
+                else:
+                    # Wrap in arrow function
+                    return f"{self._indent()}{keyword} {name} = new Computed(() => {value});"
             else:
                 return f"{self._indent()}{keyword} {name} = {value};"
         else:
