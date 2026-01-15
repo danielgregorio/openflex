@@ -6,7 +6,7 @@ const todos = new Signal([]);
 const filter = new Signal("all");
 const newTodoText = new Signal("");
 let nextId = 1;
-const filteredTodos = new Computed(() => t => !t.completed);
+const filteredTodos = new Computed(t => !t.completed);
 if (filter.value = "completed") {
   return todos.value.filter.value(t => t.completed);
 }
