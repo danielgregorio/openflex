@@ -4,8 +4,56 @@
 
 // Polyfill for Node.js
 const trace = typeof console !== 'undefined' ? console.log : () => {};
-// OpenFlex Reactivity Runtime
-const { Signal, Computed, createEffect } = require('./runtime/openflex-runtime.js');
+
+// OpenFlex Reactivity Runtime (inline for browser compatibility)
+class Signal {
+    constructor(initialValue) {
+        this._value = initialValue;
+        this._subscribers = [];
+    }
+
+    get value() {
+        if (typeof currentEffect !== 'undefined' && currentEffect) {
+            this._subscribers.push(currentEffect);
+        }
+        return this._value;
+    }
+
+    set value(newValue) {
+        if (this._value !== newValue) {
+            this._value = newValue;
+            this._subscribers.forEach(effect => effect());
+        }
+    }
+}
+
+class Computed {
+    constructor(fn) {
+        this._fn = fn;
+        this._value = undefined;
+        this._dirty = true;
+        this._subscribers = [];
+    }
+
+    get value() {
+        if (this._dirty) {
+            this._value = this._fn();
+            this._dirty = false;
+        }
+        if (typeof currentEffect !== 'undefined' && currentEffect) {
+            this._subscribers.push(currentEffect);
+        }
+        return this._value;
+    }
+}
+
+let currentEffect = null;
+
+function createEffect(fn) {
+    currentEffect = fn;
+    fn();
+    currentEffect = null;
+}
 
 const count = new Signal(0);
 
