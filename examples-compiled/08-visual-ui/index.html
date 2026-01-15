@@ -369,6 +369,20 @@
                     <button class="btn btn-code" onclick="showCode('FormApp')">📄 Ver Código</button>
                 </div>
             </div>
+
+            <!-- Flex Classic Demo - DESTAQUE -->
+            <div class="example-card" style="background: linear-gradient(135deg, #708090 0%, #556B7F 100%); color: white; grid-column: span 2;">
+                <div class="example-icon">🎨</div>
+                <h3 class="example-title" style="color: white;">Flex Classic Theme Demo ⭐</h3>
+                <p class="example-description" style="color: rgba(255,255,255,0.9);">
+                    <strong>NOVO!</strong> Visual clássico do Adobe Flex 3/4 - gradientes cinza, botões 3D, painéis chanfrados.
+                    Aplicação completa com formulário e data grid demonstrando o tema nostálgico do Flex.
+                </p>
+                <div class="example-buttons">
+                    <a href="flex-classic-demo.html" class="btn btn-run" target="_blank" style="background: white; color: #2c3e50;">▶ Ver Demo</a>
+                    <button class="btn btn-code" onclick="showCode('FlexClassicDemo')" style="background: rgba(255,255,255,0.2);">📄 Ver Código</button>
+                </div>
+            </div>
         </div>
 
         <div class="footer">
@@ -412,7 +426,8 @@
             'QuizApp': 'QuizApp.mxml',
             'DashboardApp': 'DashboardApp.mxml',
             'ColorPickerApp': 'ColorPickerApp.mxml',
-            'FormApp': 'FormApp.mxml'
+            'FormApp': 'FormApp.mxml',
+            'FlexClassicDemo': 'FlexClassicDemo.mxml'
         };
 
         async function showCode(appName) {
@@ -454,7 +469,7 @@
                 .replace(/@(\w+)/g, '<span class="keyword">@$1</span>');
         }
 
-        console.log('✨ OpenFlex Neo - Galeria carregada! 9 exemplos MXML disponíveis.');
+        console.log('✨ OpenFlex Neo - Galeria carregada! 10 exemplos MXML disponíveis (incluindo Flex Classic Theme!).');
     </script>
 </body>
 </html>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Flex Classic Demo - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var firstName: String = "";
+        @reactive var lastName: String = "";
+        @reactive var email: String = "";
+        @reactive var subscribe: Boolean = true;
+        @reactive var items: Array = [
+            { id: 1, name: "Item Alpha", status: "Active" },
+            { id: 2, name: "Item Beta", status: "Pending" },
+            { id: 3, name: "Item Gamma", status: "Complete" }
+        ];
+
+        @computed var fullName: String {
+            if (firstName.length === 0 && lastName.length === 0) {
+                return "N/A";
+            }
+            return firstName + " " + lastName;
+        }
+
+        @computed var isFormValid: Boolean {
+            return firstName.length > 0 && lastName.length > 0 && email.length > 0;
+        }
+
+        function submitForm(): void {
+            alert("Form submitted!\nName: " + fullName + "\nEmail: " + email);
+        }
+
+        function clearForm(): void {
+            firstName = "";
+            lastName = "";
+            email = "";
+            subscribe = true;
+        }
+
+        function addItem(): void {
+            const newId = items.length + 1;
+            items = [...items, {
+                id: newId,
+                name: "Item " + String.fromCharCode(64 + newId),
+                status: "New"
+            }];
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        /* Estilos customizados podem ir aqui */
+        .title-text {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .info-text {
+            font-size: 11px;
+            color: #666666;
+        }
+    </fx:Style>
+
+    <VBox gap="{10}" width="100%" height="100%">
+
+        <!-- Header -->
+        <Panel title="📋 Flex Classic Application Demo" width="{800}">
+            <VBox gap="{15}">
+                <Label text="Bem-vindo ao OpenFlex Neo com visual clássico do Adobe Flex 3/4!"
+                       styleClass="title-text" />
+                <Label text="Este exemplo demonstra o tema Flex Classic: gradientes cinza, botões 3D e painéis chanfrados."
+                       styleClass="info-text" />
+            </VBox>
+        </Panel>
+
+        <HBox gap="{10}">
+
+            <!-- Form Panel -->
+            <Panel title="User Registration" width="{400}">
+                <VBox gap="{10}">
+
+                    <Label text="First Name:" />
+                    <TextInput placeholder="Enter first name"
+                               value="{firstName}" />
+
+                    <Label text="Last Name:" />
+                    <TextInput placeholder="Enter last name"
+                               value="{lastName}" />
+
+                    <Label text="Email Address:" />
+                    <TextInput type="email"
+                               placeholder="user@example.com"
+                               value="{email}" />
+
+                    <HBox gap="{5}">
+                        <CheckBox checked="{subscribe}" />
+                        <Label text="Subscribe to newsletter" />
+                    </HBox>
+
+                    <Box height="{1}" backgroundColor="#999999" />
+
+                    <HBox gap="{5}">
+                        <Label text="Full Name:" styleClass="title-text" />
+                        <Label text="{fullName}" />
+                    </HBox>
+
+                    <HBox gap="{10}">
+                        <Button label="Submit" click="{submitForm}" disabled="{!isFormValid}" />
+                        <Button label="Clear" click="{clearForm}" />
+                    </HBox>
+
+                </VBox>
+            </Panel>
+
+            <!-- Data Panel -->
+            <Panel title="Data List" width="{380}">
+                <VBox gap="{10}">
+
+                    <Label text="Items in Collection:" styleClass="title-text" />
+
+                    <VBox gap="{5}">
+                        <Repeater dataProvider="{items}">
+                            <HBox gap="{10}" horizontalAlign="space-between"
+                                  styleClass="repeater-item">
+                                <Label text="{'#' + item.id + ': ' + item.name}" />
+                                <Label text="{item.status}"
+                                       color="{item.status === 'Complete' ? '#27ae60' : '#7f8c8d'}" />
+                            </HBox>
+                        </Repeater>
+                    </VBox>
+
+                    <Button label="Add New Item" click="{addItem}" />
+
+                    <Label text="{'Total Items: ' + items.length}"
+                           styleClass="info-text" />
+
+                </VBox>
+            </Panel>
+
+        </HBox>
+
+        <!-- Footer -->
+        <Panel title="About">
+            <VBox gap="{5}">
+                <Label text="🎨 OpenFlex Neo - Flex Classic Theme"
+                       styleClass="title-text" />
+                <Label text="Inspirado no design icônico do Adobe Flex 3 e Flex 4"
+                       styleClass="info-text" />
+                <Label text="Gradientes sutis • Botões 3D • Painéis chanfrados • Visual nostálgico"
+                       styleClass="info-text" />
+            </VBox>
+        </Panel>
+
+    </VBox>
+
+</Application>

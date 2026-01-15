@@ -122,3 +122,14 @@ function untrack(fn) {
   currentEffect = prevEffect;
   return result;
 }
+
+// Export to window for browser usage
+if (typeof window !== 'undefined') {
+  window.OpenFlexRuntime = {
+    Signal,
+    Computed,
+    createEffect,
+    batch,
+    untrack
+  };
+}
