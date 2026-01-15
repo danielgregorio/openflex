@@ -71,6 +71,26 @@
         .clear-btn:hover {
             background: #7f8c8d;
         }
+        .view-source-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .view-source-btn:hover {
+            background: #2980b9;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
         .info {
             background: #e8f5e9;
             padding: 15px;
@@ -99,13 +119,16 @@
     <div class="example-selector">
         <label for="example-select"><strong>Escolha uma aplicação:</strong></label>
         <select id="example-select">
-            <option value="01-blog-jsonplaceholder.js">📝 Blog (JSONPlaceholder API)</option>
-            <option value="02-pokedex-pokeapi.js">🎮 Pokédex (PokeAPI)</option>
-            <option value="03-countries-restcountries.js">🌍 Países (REST Countries API)</option>
+            <option value="01-blog-jsonplaceholder.js" data-source="01-blog-jsonplaceholder.as4">📝 Blog (JSONPlaceholder API)</option>
+            <option value="02-pokedex-pokeapi.js" data-source="02-pokedex-pokeapi.as4">🎮 Pokédex (PokeAPI)</option>
+            <option value="03-countries-restcountries.js" data-source="03-countries-restcountries.as4">🌍 Países (REST Countries API)</option>
         </select>
         <p style="color: #27ae60; margin-top: 10px; font-size: 0.9em;">✅ Todas as APIs são públicas e gratuitas!</p>
         <button class="run-btn" onclick="runExample()">▶️ Executar Aplicação</button>
-        <button class="clear-btn" onclick="clearOutput()">🗑️ Limpar Saída</button>
+        <div class="button-group">
+            <button class="view-source-btn" onclick="viewSource()">📄 Ver Código Fonte (.as4)</button>
+            <button class="clear-btn" onclick="clearOutput()">🗑️ Limpar Saída</button>
+        </div>
     </div>
 
     <h2>Saída do Console:</h2>
@@ -127,6 +150,18 @@
 
         function clearOutput() {
             document.getElementById('output').textContent = '';
+        }
+
+        function viewSource() {
+            const select = document.getElementById('example-select');
+            const selectedOption = select.options[select.selectedIndex];
+            const sourceFile = selectedOption.getAttribute('data-source');
+
+            if (sourceFile) {
+                window.open(sourceFile, '_blank');
+            } else {
+                alert('Arquivo fonte não disponível para este exemplo.');
+            }
         }
 
         async function runExample() {

@@ -1,0 +1,202 @@
+package {
+    /**
+     * Todo List Visual Reativa
+     * Demonstra lista de tarefas completa com inputs, checkboxes e filtros
+     * Interface 100% reativa com Signals
+     */
+    public class TodoListApp {
+        // Estado reativo
+        private static var todos:Signal<Array>;
+        private static var filter:Signal<String>;
+        private static var nextId:int = 1;
+        
+        // Computed: Tarefas filtradas
+        private static function getFilteredTodos():Array {
+            const all = todos.value;
+            const currentFilter = filter.value;
+            
+            if (currentFilter === "active") {
+                return all.filter(t => !t.completed);
+            } else if (currentFilter === "completed") {
+                return all.filter(t => t.completed);
+            }
+            return all; // "all"
+        }
+        
+        // Actions
+        private static function addTodo(text:String):void {
+            if (text.trim() === "") return;
+            
+            todos.value = [...todos.value, {
+                id: nextId++,
+                text: text.trim(),
+                completed: false
+            }];
+        }
+        
+        private static function toggleTodo(id:int):void {
+            todos.value = todos.value.map(todo =>
+                todo.id === id ? { ...todo, completed: !todo.completed } : todo
+            );
+        }
+        
+        private static function deleteTodo(id:int):void {
+            todos.value = todos.value.filter(t => t.id !== id);
+        }
+        
+        private static function clearCompleted():void {
+            todos.value = todos.value.filter(t => !t.completed);
+        }
+        
+        private static function setFilter(newFilter:String):void {
+            filter.value = newFilter;
+        }
+        
+        // Render UI
+        private static function createApp():void {
+            const app = document.getElementById("app");
+            
+            // Container principal
+            app.innerHTML = `
+                <div style="max-width: 700px; margin: 50px auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h1 style="text-align: center; color: #2c3e50; margin-bottom: 30px;">
+                        ✅ Lista de Tarefas Reativa
+                    </h1>
+                    
+                    <!-- Input para nova tarefa -->
+                    <div style="margin-bottom: 30px;">
+                        <input 
+                            id="todo-input" 
+                            type="text" 
+                            placeholder="Digite uma nova tarefa..." 
+                            style="width: 100%; padding: 15px; font-size: 16px; border: 2px solid #3498db; border-radius: 8px; box-sizing: border-box;"
+                        />
+                    </div>
+                    
+                    <!-- Filtros -->
+                    <div id="filters" style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
+                        <button data-filter="all" class="filter-btn active">Todas</button>
+                        <button data-filter="active" class="filter-btn">Ativas</button>
+                        <button data-filter="completed" class="filter-btn">Completas</button>
+                    </div>
+                    
+                    <!-- Lista de tarefas -->
+                    <div id="todo-list" style="margin-bottom: 20px;"></div>
+                    
+                    <!-- Estatísticas e ações -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 2px solid #ecf0f1;">
+                        <div id="stats" style="color: #7f8c8d;"></div>
+                        <button id="clear-completed" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                            🗑️ Limpar Completas
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Event handlers - Input
+            const input = document.getElementById("todo-input");
+            input.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    addTodo(input.value);
+                    input.value = "";
+                }
+            });
+            
+            // Event handlers - Filtros
+            document.querySelectorAll(".filter-btn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    const filterValue = e.target.getAttribute("data-filter");
+                    setFilter(filterValue);
+                });
+            });
+            
+            // Event handlers - Clear completed
+            document.getElementById("clear-completed").addEventListener("click", clearCompleted);
+            
+            // Global functions for onclick handlers
+            window.toggleTodo = toggleTodo;
+            window.deleteTodo = deleteTodo;
+            
+            // Setup reactive effects
+            const todoList = document.getElementById("todo-list");
+            const stats = document.getElementById("stats");
+            
+            // Effect: Render todo list
+            createEffect(() => {
+                const filtered = getFilteredTodos();
+                
+                if (filtered.length === 0) {
+                    todoList.innerHTML = "<p style=\"text-align: center; color: #95a5a6; font-style: italic; padding: 20px;\">Nenhuma tarefa para exibir</p>";
+                } else {
+                    todoList.innerHTML = filtered.map(todo => `
+                        <div style="display: flex; align-items: center; padding: 15px; margin-bottom: 10px; background: ${todo.completed ? "#ecf0f1" : "#f8f9fa"}; border-radius: 8px; border-left: 4px solid ${todo.completed ? "#95a5a6" : "#3498db"};">
+                            <input 
+                                type="checkbox" 
+                                ${todo.completed ? "checked" : ""} 
+                                onchange="window.toggleTodo(${todo.id})"
+                                style="width: 20px; height: 20px; cursor: pointer; margin-right: 15px;"
+                            />
+                            <span style="flex: 1; font-size: 16px; color: ${todo.completed ? "#95a5a6" : "#2c3e50"}; text-decoration: ${todo.completed ? "line-through" : "none"};">
+                                ${todo.text}
+                            </span>
+                            <button 
+                                onclick="window.deleteTodo(${todo.id})"
+                                style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 14px;"
+                            >
+                                ❌
+                            </button>
+                        </div>
+                    `).join("");
+                }
+            });
+            
+            // Effect: Update stats
+            createEffect(() => {
+                const total = todos.value.length;
+                const active = todos.value.filter(t => !t.completed).length;
+                const completed = total - active;
+                
+                stats.innerHTML = `
+                    <strong>${total}</strong> total | 
+                    <strong style="color: #3498db;">${active}</strong> ativas | 
+                    <strong style="color: #27ae60;">${completed}</strong> completas
+                `;
+            });
+            
+            // Effect: Update active filter button
+            createEffect(() => {
+                document.querySelectorAll(".filter-btn").forEach(btn => {
+                    if (btn.getAttribute("data-filter") === filter.value) {
+                        btn.classList.add("active");
+                        btn.style.background = "#3498db";
+                        btn.style.color = "white";
+                    } else {
+                        btn.classList.remove("active");
+                        btn.style.background = "#ecf0f1";
+                        btn.style.color = "#2c3e50";
+                    }
+                });
+            });
+        }
+        
+        // Main
+        public static function main():void {
+            trace("✅ Iniciando Todo List Visual...");
+            
+            // Initialize state
+            todos = new Signal([]);
+            filter = new Signal("all");
+            
+            // Wait for DOM to be ready
+            if (typeof document !== "undefined") {
+                if (document.readyState === "loading") {
+                    document.addEventListener("DOMContentLoaded", createApp);
+                } else {
+                    createApp();
+                }
+            }
+            
+            trace("✅ App iniciado com sucesso!");
+        }
+    }
+}

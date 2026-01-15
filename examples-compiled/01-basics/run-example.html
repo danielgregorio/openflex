@@ -69,6 +69,26 @@
         .clear-btn:hover {
             background: #c0392b;
         }
+        .view-source-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .view-source-btn:hover {
+            background: #229954;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -77,11 +97,14 @@
     <div class="example-selector">
         <label for="example-select"><strong>Escolha um exemplo:</strong></label>
         <select id="example-select">
-            <option value="01-hello-world.js">01 - Hello World (Básico)</option>
-            <option value="06-complete-basics.js">02 - Exemplo Completo (Todos os recursos)</option>
+            <option value="01-hello-world.js" data-source="01-hello-world.as4">01 - Hello World (Básico)</option>
+            <option value="06-complete-basics.js" data-source="06-complete-basics.as4">02 - Exemplo Completo (Todos os recursos)</option>
         </select>
         <button class="run-btn" onclick="runExample()">▶️ Executar Exemplo</button>
-        <button class="clear-btn" onclick="clearOutput()">🗑️ Limpar Saída</button>
+        <div class="button-group">
+            <button class="view-source-btn" onclick="viewSource()">📄 Ver Código Fonte (.as4)</button>
+            <button class="clear-btn" onclick="clearOutput()">🗑️ Limpar Saída</button>
+        </div>
     </div>
 
     <h2>Saída do Console:</h2>
@@ -103,6 +126,19 @@
 
         function clearOutput() {
             document.getElementById('output').textContent = '';
+        }
+
+        function viewSource() {
+            const select = document.getElementById('example-select');
+            const selectedOption = select.options[select.selectedIndex];
+            const sourceFile = selectedOption.getAttribute('data-source');
+
+            if (sourceFile) {
+                // Abrir em nova aba
+                window.open(sourceFile, '_blank');
+            } else {
+                alert('Arquivo fonte não disponível para este exemplo.');
+            }
         }
 
         async function runExample() {

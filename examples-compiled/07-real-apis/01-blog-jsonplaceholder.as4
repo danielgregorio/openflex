@@ -1,0 +1,100 @@
+package {
+    /**
+     * Blog com JSONPlaceholder API
+     * Demonstra consumo de API REST pública
+     * API: https://jsonplaceholder.typicode.com
+     */
+    public class BlogApp {
+        private static const API_URL:String = "https://jsonplaceholder.typicode.com";
+        
+        // Buscar posts
+        private static async function getPosts():Array {
+            try {
+                const response = await fetch(API_URL + "/posts");
+                const posts = await response.json();
+                return posts.slice(0, 10); // Primeiros 10 posts
+            } catch (error) {
+                trace("Erro ao buscar posts:", error.message);
+                return [];
+            }
+        }
+        
+        // Buscar usuário por ID
+        private static async function getUser(userId:int):Object {
+            try {
+                const response = await fetch(API_URL + "/users/" + userId);
+                return await response.json();
+            } catch (error) {
+                trace("Erro ao buscar usuário:", error.message);
+                return null;
+            }
+        }
+        
+        // Buscar comentários de um post
+        private static async function getComments(postId:int):Array {
+            try {
+                const response = await fetch(API_URL + "/posts/" + postId + "/comments");
+                const comments = await response.json();
+                return comments.slice(0, 3); // Primeiros 3 comentários
+            } catch (error) {
+                trace("Erro ao buscar comentários:", error.message);
+                return [];
+            }
+        }
+        
+        // Exibir um post completo
+        private static async function displayPost(post:Object):void {
+            trace("\n======================================================================");
+            trace("📝 " + post.title.toUpperCase());
+            trace("======================================================================");
+            
+            // Buscar autor
+            const user = await getUser(post.userId);
+            if (user) {
+                trace("👤 Autor: " + user.name + " (@" + user.username + ")");
+                trace("📧 Email: " + user.email);
+                trace("🌐 Website: " + user.website);
+            }
+            
+            trace("\n💬 Conteúdo:");
+            trace(post.body);
+            
+            // Buscar comentários
+            const comments = await getComments(post.id);
+            if (comments.length > 0) {
+                trace("\n💭 Comentários (" + comments.length + "):");
+                for (const comment of comments) {
+                    trace("\n  • " + comment.name);
+                    trace("    Por: " + comment.email);
+                    trace("    \"" + comment.body.substring(0, 80) + "...\"");
+                }
+            }
+        }
+        
+        // Main
+        public static async function main():void {
+            trace("🌐 Blog com JSONPlaceholder API");
+            trace("Consumindo API REST pública real!\n");
+            
+            // Buscar posts
+            trace("📥 Buscando posts...\n");
+            const posts = await getPosts();
+            
+            if (posts.length === 0) {
+                trace("❌ Nenhum post encontrado.");
+                return;
+            }
+            
+            trace("✅ " + posts.length + " posts encontrados!\n");
+            
+            // Exibir primeiros 3 posts completos
+            for (let i = 0; i < Math.min(3, posts.length); i++) {
+                await displayPost(posts[i]);
+            }
+            
+            trace("\n======================================================================");
+            trace("✅ Exemplo concluído com sucesso!");
+            trace("======================================================================");
+        }
+    }
+}

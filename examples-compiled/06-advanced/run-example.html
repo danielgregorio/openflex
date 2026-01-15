@@ -69,6 +69,26 @@
         .clear-btn:hover {
             background: #7f8c8d;
         }
+        .view-source-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .view-source-btn:hover {
+            background: #229954;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -77,12 +97,15 @@
     <div class="example-selector">
         <label for="example-select"><strong>Escolha um exemplo:</strong></label>
         <select id="example-select">
-            <option value="advanced-demo.js">Advanced Demo (Classes, Herança, Generics)</option>
-            <option value="pattern-matching-full.js">Pattern Matching Completo</option>
+            <option value="advanced-demo.js" data-source="advanced-demo.as4">Advanced Demo (Classes, Herança, Generics)</option>
+            <option value="pattern-matching-full.js" data-source="pattern-matching-full.as4">Pattern Matching Completo</option>
         </select>
         <p style="color: #27ae60; margin-top: 10px; font-size: 0.9em;">✅ Todos os exemplos testados e funcionando!</p>
         <button class="run-btn" onclick="runExample()">▶️ Executar Exemplo</button>
-        <button class="clear-btn" onclick="clearOutput()">🗑️ Limpar Saída</button>
+        <div class="button-group">
+            <button class="view-source-btn" onclick="viewSource()">📄 Ver Código Fonte (.as4)</button>
+            <button class="clear-btn" onclick="clearOutput()">🗑️ Limpar Saída</button>
+        </div>
     </div>
 
     <h2>Saída do Console:</h2>
@@ -104,6 +127,18 @@
 
         function clearOutput() {
             document.getElementById('output').textContent = '';
+        }
+
+        function viewSource() {
+            const select = document.getElementById('example-select');
+            const selectedOption = select.options[select.selectedIndex];
+            const sourceFile = selectedOption.getAttribute('data-source');
+
+            if (sourceFile) {
+                window.open(sourceFile, '_blank');
+            } else {
+                alert('Arquivo fonte não disponível para este exemplo.');
+            }
         }
 
         async function runExample() {

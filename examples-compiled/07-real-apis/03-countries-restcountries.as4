@@ -1,0 +1,146 @@
+package {
+    /**
+     * Explorador de Países - REST Countries API
+     * Demonstra consumo de API de dados geográficos
+     * API: https://restcountries.com
+     */
+    public class CountriesApp {
+        private static const API_URL:String = "https://restcountries.com/v3.1";
+        
+        // Buscar países por região
+        private static async function getCountriesByRegion(region:String):Array {
+            try {
+                const response = await fetch(API_URL + "/region/" + region);
+                return await response.json();
+            } catch (error) {
+                trace("Erro ao buscar países:", error.message);
+                return [];
+            }
+        }
+        
+        // Buscar país por nome
+        private static async function getCountryByName(name:String):Object {
+            try {
+                const response = await fetch(API_URL + "/name/" + name);
+                const countries = await response.json();
+                return countries[0]; // Primeiro resultado
+            } catch (error) {
+                trace("Erro ao buscar país:", error.message);
+                return null;
+            }
+        }
+        
+        // Exibir informações de um país
+        private static function displayCountry(country:Object):void {
+            trace("\n======================================================================");
+            trace("🌍 " + country.name.common.toUpperCase());
+            trace("======================================================================");
+            
+            // Nome oficial
+            if (country.name.official !== country.name.common) {
+                trace("📜 Nome Oficial: " + country.name.official);
+            }
+            
+            // Capital
+            if (country.capital && country.capital.length > 0) {
+                trace("🏛️  Capital: " + country.capital.join(", "));
+            }
+            
+            // Região e sub-região
+            trace("🗺️  Região: " + country.region);
+            if (country.subregion) {
+                trace("📍 Sub-região: " + country.subregion);
+            }
+            
+            // População
+            const population = country.population.toLocaleString();
+            trace("👥 População: " + population + " habitantes");
+            
+            // Área
+            if (country.area) {
+                const area = country.area.toLocaleString();
+                trace("📏 Área: " + area + " km²");
+            }
+            
+            // Idiomas
+            if (country.languages) {
+                const langs = Object.values(country.languages).join(", ");
+                trace("🗣️  Idiomas: " + langs);
+            }
+            
+            // Moedas
+            if (country.currencies) {
+                const curs = Object.entries(country.currencies)
+                    .map(([code, curr]) => curr.name + " (" + code + ")")
+                    .join(", ");
+                trace("💰 Moedas: " + curs);
+            }
+            
+            // Fuso horário
+            if (country.timezones) {
+                trace("🕐 Fusos Horários: " + country.timezones.join(", "));
+            }
+            
+            // Fronteiras
+            if (country.borders && country.borders.length > 0) {
+                trace("🔗 Fronteiras: " + country.borders.length + " países");
+            }
+            
+            // Emoji da bandeira
+            if (country.flag) {
+                trace("\n🏴 Bandeira: " + country.flag);
+            }
+        }
+        
+        // Exibir resumo de região
+        private static function displayRegionSummary(region:String, countries:Array):void {
+            trace("\n🌍 RESUMO DA REGIÃO: " + region.toUpperCase());
+            trace("======================================================================");
+            trace("📊 Total de países: " + countries.length);
+            
+            // País mais populoso
+            const mostPopulous = countries.reduce((max, c) => 
+                c.population > max.population ? c : max
+            );
+            trace("👥 Mais populoso: " + mostPopulous.name.common + 
+                  " (" + mostPopulous.population.toLocaleString() + " hab)");
+            
+            // Maior país
+            const largest = countries.reduce((max, c) => 
+                (c.area || 0) > (max.area || 0) ? c : max
+            );
+            if (largest.area) {
+                trace("📏 Maior em área: " + largest.name.common + 
+                      " (" + largest.area.toLocaleString() + " km²)");
+            }
+            
+            // População total
+            const totalPop = countries.reduce((sum, c) => sum + c.population, 0);
+            trace("🌐 População total: " + totalPop.toLocaleString() + " habitantes");
+        }
+        
+        // Main
+        public static async function main():void {
+            trace("🌍 Explorador de Países - REST Countries API");
+            trace("Consumindo dados geográficos reais!\n");
+            
+            // Buscar países da América do Sul
+            trace("📥 Buscando países da América do Sul...");
+            const southAmerica = await getCountriesByRegion("south america");
+            
+            if (southAmerica.length > 0) {
+                displayRegionSummary("América do Sul", southAmerica);
+                
+                // Exibir 3 primeiros países em detalhe
+                trace("\n\n📋 DETALHES DOS PAÍSES:");
+                for (let i = 0; i < Math.min(3, southAmerica.length); i++) {
+                    displayCountry(southAmerica[i]);
+                }
+            }
+            
+            trace("\n======================================================================");
+            trace("✅ Exploração concluída!");
+            trace("======================================================================");
+        }
+    }
+}

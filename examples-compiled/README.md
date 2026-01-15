@@ -88,6 +88,32 @@ Padrões avançados:
 
 ---
 
+### 🌐 [07-real-apis/](./07-real-apis/)
+**Nível: Intermediário/Avançado**
+
+Aplicações que consomem APIs públicas reais:
+- **Blog**: JSONPlaceholder API (posts, usuários, comentários)
+- **Pokédex**: PokeAPI (dados de Pokémon completos)
+- **Países**: REST Countries API (informações geográficas)
+
+✨ Todos os exemplos fazem requisições HTTP reais e processam dados JSON!
+
+---
+
+### 🎨 [08-visual-ui/](./08-visual-ui/)
+**Nível: Intermediário**
+
+Interfaces visuais reativas com DOM manipulation:
+- **Contador Visual**: Botões, displays, animações
+- **Todo List**: Inputs, checkboxes, filtros
+- Estado reativo com Signals
+- Event handlers
+- Updates automáticos da UI
+
+✨ Exemplos com UIs reais, não apenas console.log!
+
+---
+
 ## 🚦 Guia de Aprendizado
 
 ### Para Iniciantes
@@ -109,6 +135,29 @@ Padrões avançados:
 ```
 
 ## 🏃 Como Executar os Exemplos
+
+### 🚀 Quick Start (Mais Rápido!)
+
+Agora você pode iniciar o servidor com um único comando!
+
+**Windows:**
+```bash
+cd examples-compiled/
+start.bat
+```
+
+**Linux/Mac:**
+```bash
+cd examples-compiled/
+./start.sh
+# ou
+python3 start.py
+```
+
+O script vai:
+- ✅ Levantar servidor HTTP automaticamente
+- ✅ Abrir o navegador com a página principal
+- ✅ Mostrar todas as categorias disponíveis
 
 ### Opção 1: Node.js (Recomendado para aprender)
 
@@ -192,6 +241,23 @@ Cada pasta com exemplos JavaScript tem um arquivo `run-example.html` que permite
 - ✅ Executar no navegador
 - ✅ Ver saída do console em tempo real
 - ✅ Interface amigável e colorida
+- ✅ **NOVO:** Botão "📄 Ver Código Fonte (.as4)" para ver o código OpenFlex original!
+
+### Botões "View Source"
+
+**Todos os exemplos agora incluem acesso direto ao código fonte!**
+
+Quando você executa um exemplo no navegador, você verá um botão verde **"📄 Ver Código Fonte (.as4)"** que:
+
+- Abre o arquivo ActionScript 4 original em uma nova aba
+- Permite comparar o código fonte com o JavaScript compilado
+- Facilita o aprendizado mostrando como OpenFlex funciona
+
+**Como usar:**
+1. Execute qualquer exemplo no navegador
+2. Clique no botão verde "📄 Ver Código Fonte (.as4)"
+3. Compare o código .as4 original com o resultado no navegador
+4. Aprenda como OpenFlex compila para JavaScript moderno!
 
 ### Screenshots e GIFs
 

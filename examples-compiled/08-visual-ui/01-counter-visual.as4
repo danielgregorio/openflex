@@ -1,0 +1,120 @@
+package {
+    /**
+     * Contador Visual Reativo
+     * Demonstra interface visual com botões e display reativo
+     * Usa Signals para reatividade fine-grained
+     */
+    public class CounterVisualApp {
+        // Estado reativo
+        private static var count:Signal<int>;
+        private static var history:Signal<Array>;
+        
+        // Actions
+        private static function increment():void {
+            count.value = count.value + 1;
+            addToHistory("Incrementado");
+        }
+        
+        private static function decrement():void {
+            count.value = count.value - 1;
+            addToHistory("Decrementado");
+        }
+        
+        private static function reset():void {
+            count.value = 0;
+            history.value = [];
+            addToHistory("Reset");
+        }
+        
+        private static function addToHistory(action:String):void {
+            const timestamp = new Date().toLocaleTimeString();
+            history.value = [...history.value, { 
+                action: action, 
+                count: count.value, 
+                time: timestamp 
+            }];
+        }
+        
+        // Render UI
+        private static function createApp():void {
+            const app = document.getElementById("app");
+            
+            // Container principal
+            app.innerHTML = `
+                <div style="max-width: 600px; margin: 50px auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h1 style="text-align: center; color: #2c3e50; margin-bottom: 30px;">
+                        🔢 Contador Reativo
+                    </h1>
+                    
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <div id="count-display" style="font-size: 72px; font-weight: bold; color: #3498db; margin-bottom: 20px;">
+                            0
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                            <button id="btn-decrement">➖ Decrementar</button>
+                            <button id="btn-increment">➕ Incrementar</button>
+                            <button id="btn-reset">🔄 Reset</button>
+                        </div>
+                    </div>
+                    
+                    <div id="history-container" style="border-top: 2px solid #ecf0f1; padding-top: 20px;">
+                        <h3 style="color: #7f8c8d; margin-bottom: 15px;">📜 Histórico:</h3>
+                        <div id="history-list" style="max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            `;
+            
+            // Attach event handlers
+            document.getElementById("btn-increment").addEventListener("click", increment);
+            document.getElementById("btn-decrement").addEventListener("click", decrement);
+            document.getElementById("btn-reset").addEventListener("click", reset);
+            
+            // Setup reactive effects
+            const display = document.getElementById("count-display");
+            const historyList = document.getElementById("history-list");
+            
+            // Effect: Update counter display
+            createEffect(() => {
+                display.textContent = count.value;
+                display.style.transform = "scale(1.2)";
+                setTimeout(() => {
+                    display.style.transform = "scale(1)";
+                }, 150);
+            });
+            
+            // Effect: Update history list
+            createEffect(() => {
+                if (history.value.length === 0) {
+                    historyList.innerHTML = "<p style=\"color: #95a5a6; font-style: italic;\">Nenhuma ação ainda</p>";
+                } else {
+                    historyList.innerHTML = history.value.reverse().map(item =>
+                        `<div style="padding: 10px; margin-bottom: 10px; background: #ecf0f1; border-radius: 6px;">
+                            <strong>${item.action}</strong>: ${item.count} <span style="float: right; color: #7f8c8d; font-size: 0.85em;">${item.time}</span>
+                        </div>`
+                    ).join("");
+                }
+            });
+        }
+        
+        // Main
+        public static function main():void {
+            trace("🎨 Iniciando Contador Visual...");
+            
+            // Initialize state
+            count = new Signal(0);
+            history = new Signal([]);
+            
+            // Wait for DOM to be ready
+            if (typeof document !== "undefined") {
+                if (document.readyState === "loading") {
+                    document.addEventListener("DOMContentLoaded", createApp);
+                } else {
+                    createApp();
+                }
+            }
+            
+            trace("✅ App iniciado com sucesso!");
+        }
+    }
+}

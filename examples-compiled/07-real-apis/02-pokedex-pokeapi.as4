@@ -1,0 +1,96 @@
+package {
+    /**
+     * Pokédex com PokeAPI
+     * Demonstra consumo de API de Pokémon
+     * API: https://pokeapi.co
+     */
+    public class PokedexApp {
+        private static const API_URL:String = "https://pokeapi.co/api/v2";
+        
+        // Buscar Pokémon por ID ou nome
+        private static async function getPokemon(idOrName):Object {
+            try {
+                const response = await fetch(API_URL + "/pokemon/" + idOrName);
+                return await response.json();
+            } catch (error) {
+                trace("Erro ao buscar Pokémon:", error.message);
+                return null;
+            }
+        }
+        
+        // Buscar informações de espécie (para descrição)
+        private static async function getSpecies(id:int):Object {
+            try {
+                const response = await fetch(API_URL + "/pokemon-species/" + id);
+                return await response.json();
+            } catch (error) {
+                trace("Erro ao buscar espécie:", error.message);
+                return null;
+            }
+        }
+        
+        // Exibir Pokémon detalhado
+        private static async function displayPokemon(pokemon:Object):void {
+            trace("\n======================================================================");
+            trace("🔴 #" + pokemon.id + " - " + pokemon.name.toUpperCase());
+            trace("======================================================================");
+            
+            // Tipos
+            const types = pokemon.types.map(t => t.type.name).join(", ");
+            trace("🏷️  Tipos: " + types);
+            
+            // Stats
+            trace("\n📊 Stats:");
+            for (const stat of pokemon.stats) {
+                const name = stat.stat.name.padEnd(20);
+                const value = String(stat.base_stat).padStart(3);
+                const bar = "█".repeat(Math.floor(stat.base_stat / 10));
+                trace("  " + name + ": " + value + " " + bar);
+            }
+            
+            // Habilidades
+            const abilities = pokemon.abilities.map(a => a.ability.name).join(", ");
+            trace("\n⚡ Habilidades: " + abilities);
+            
+            // Dimensões
+            trace("\n📏 Altura: " + (pokemon.height / 10) + " m");
+            trace("⚖️  Peso: " + (pokemon.weight / 10) + " kg");
+            
+            // Buscar descrição
+            const species = await getSpecies(pokemon.id);
+            if (species && species.flavor_text_entries) {
+                // Pegar primeira descrição em inglês
+                const entry = species.flavor_text_entries.find(e => e.language.name === "en");
+                if (entry) {
+                    trace("\n📝 Descrição:");
+                    trace("  " + entry.flavor_text.replace("\n", " "));
+                }
+            }
+        }
+        
+        // Main
+        public static async function main():void {
+            trace("🔴 Pokédex - PokeAPI");
+            trace("Consumindo API oficial de Pokémon!\n");
+            
+            // Lista de Pokémon para buscar
+            const pokemonList = ["pikachu", "charizard", "mewtwo", "eevee", "dragonite"];
+            
+            trace("📥 Buscando " + pokemonList.length + " Pokémon...\n");
+            
+            // Buscar e exibir cada Pokémon
+            for (const name of pokemonList) {
+                const pokemon = await getPokemon(name);
+                if (pokemon) {
+                    await displayPokemon(pokemon);
+                } else {
+                    trace("❌ Pokémon não encontrado: " + name);
+                }
+            }
+            
+            trace("\n======================================================================");
+            trace("✅ Pokédex completa!");
+            trace("======================================================================");
+        }
+    }
+}
