@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenFlex - Galeria de Exemplos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .category-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .category-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .category-description {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .category-level {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .level-beginner {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .level-intermediate {
+            background: #f39c12;
+            color: white;
+        }
+
+        .level-advanced {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .examples-count {
+            color: #95a5a6;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+
+        .quick-start {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .quick-start h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .quick-start code {
+            background: #f8f9fa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+        }
+
+        .quick-start pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 OpenFlex</h1>
+            <p class="subtitle">Galeria Completa de Exemplos ActionScript 4.0</p>
+        </header>
+
+        <div class="quick-start">
+            <h2>💡 Como Usar</h2>
+            <p><strong>Você está servindo esta pasta corretamente!</strong></p>
+            <p>Clique em qualquer categoria abaixo para explorar os exemplos interativos.</p>
+            <p style="margin-top: 10px;"><strong>Ou execute direto no terminal:</strong></p>
+            <pre>cd 01-basics
+node 01-hello-world.js</pre>
+        </div>
+
+        <div class="categories">
+            <a href="01-basics/run-example.html" class="category-card">
+                <div class="category-icon">🚀</div>
+                <div class="category-title">01. Básicos</div>
+                <div class="category-description">
+                    Fundamentos do OpenFlex: variáveis, funções, loops e condicionais.
+                    Perfeito para começar!
+                </div>
+                <span class="category-level level-beginner">Iniciante</span>
+                <div class="examples-count">2 exemplos interativos</div>
+            </a>
+
+            <a href="02-modern-js/run-example.html" class="category-card">
+                <div class="category-icon">✨</div>
+                <div class="category-title">02. JavaScript Moderno</div>
+                <div class="category-description">
+                    Pattern matching, destructuring, optional chaining, async/await e mais.
+                </div>
+                <span class="category-level level-intermediate">Intermediário</span>
+                <div class="examples-count">4 exemplos interativos</div>
+            </a>
+
+            <a href="03-reactive/run-example.html" class="category-card">
+                <div class="category-icon">⚡</div>
+                <div class="category-title">03. Programação Reativa</div>
+                <div class="category-description">
+                    Signals, computed values, effects e watchers. Sistema reativo completo!
+                </div>
+                <span class="category-level level-intermediate">Intermediário</span>
+                <div class="examples-count">2 exemplos interativos</div>
+            </a>
+
+            <a href="04-components/README.md" class="category-card">
+                <div class="category-icon">🎨</div>
+                <div class="category-title">04. Componentes MXML</div>
+                <div class="category-description">
+                    Componentes reutilizáveis com MXML. Counter, forms e muito mais.
+                </div>
+                <span class="category-level level-intermediate">Intermediário</span>
+                <div class="examples-count">2 componentes</div>
+            </a>
+
+            <a href="05-full-apps/README.md" class="category-card">
+                <div class="category-icon">🏪</div>
+                <div class="category-title">05. Aplicações Completas</div>
+                <div class="category-description">
+                    E-commerce e CMS completos com API mock, state management e muito mais.
+                </div>
+                <span class="category-level level-advanced">Avançado</span>
+                <div class="examples-count">2 apps completos</div>
+            </a>
+
+            <a href="06-advanced/README.md" class="category-card">
+                <div class="category-icon">🎯</div>
+                <div class="category-title">06. Avançado</div>
+                <div class="category-description">
+                    Generics, HOF, design patterns, memoization e padrões avançados.
+                </div>
+                <span class="category-level level-advanced">Avançado</span>
+                <div class="examples-count">2 demos avançados</div>
+            </a>
+        </div>
+
+        <footer>
+            <p><strong>📖 Documentação Completa:</strong> <a href="README.md" style="color: white;">README.md</a></p>
+            <p style="margin-top: 10px;">OpenFlex ActionScript 4.0 - Compilador de próxima geração</p>
+        </footer>
+    </div>
+</body>
+</html>
