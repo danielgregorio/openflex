@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /**
  * Mock API Server for OpenFlex E-Commerce Example
+
+// Polyfill for Node.js
+const trace = typeof console !== 'undefined' ? console.log : () => {};
  * Provides realistic REST API for development and testing
  */
 
