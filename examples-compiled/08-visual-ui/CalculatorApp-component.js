@@ -43,7 +43,7 @@ function pressOperator(op) {
 
 function calculate() {
   const current = parseFloat(display.value);
-  let result = 0;
+  let = 0;
   if (operation.value === "+") {
     result = previousValue.value + current;
   }
