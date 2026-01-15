@@ -7,21 +7,15 @@ function main(): void {
     const isReady: Boolean = true;
 
     // Arrays
-    const languages: Array = ["ActionScript", "JavaScript", "TypeScript"];
-
-    // Objetos
-    const config: Object = {
-        name: "OpenFlex",
-        version: 4,
-        features: ["Reactive", "Modern", "Fast"]
-    };
+    const lang1: String = "ActionScript";
+    const lang2: String = "JavaScript";
+    const lang3: String = "TypeScript";
 
     // Imprimir valores
     trace("Nome:", name);
     trace("Versão:", version);
     trace("Pronto:", isReady);
-    trace("Linguagens:", languages.join(", "));
-    trace("Config:", config.name, "-", config.version);
+    trace("Linguagens:", lang1, lang2, lang3);
 }
 
 main();

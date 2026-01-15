@@ -1,0 +1,13 @@
+// Variáveis - Exemplo simples
+
+function showTypes(): void {
+    const name: String = "OpenFlex";
+    const version: Number = 4;
+    const ready: Boolean = true;
+
+    trace("Project:", name);
+    trace("Version:", version);
+    trace("Ready:", ready);
+}
+
+showTypes();
