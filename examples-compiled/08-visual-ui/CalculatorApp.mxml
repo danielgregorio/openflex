@@ -35,7 +35,7 @@
 
         function calculate(): void {
             const current = parseFloat(display);
-            let result = 0;
+            var result: Number = 0;
 
             if (operation === "+") {
                 result = previousValue + current;
