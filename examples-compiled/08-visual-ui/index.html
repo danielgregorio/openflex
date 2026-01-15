@@ -154,39 +154,49 @@
         <div class="examples-grid">
             <div class="example-card">
                 <div class="example-icon">🔢</div>
-                <h3 class="example-title">Contador Reativo</h3>
+                <h3 class="example-title">Contador Reativo MXML</h3>
                 <p class="example-description">
-                    Um contador interativo com botões de incrementar/decrementar e histórico de ações.
+                    Um contador com interface declarativa MXML (como Adobe Flex) e reatividade completa.
                 </p>
                 <ul class="example-features">
-                    <li>Botões visuais funcionais</li>
-                    <li>Display numérico grande com animações</li>
-                    <li>Histórico de todas as ações</li>
-                    <li>Estado reativo (Signals)</li>
-                    <li>Updates automáticos da UI</li>
+                    <li>✅ Interface em MXML puro (VBox, Panel, Button, Label)</li>
+                    <li>✅ Data binding automático: {count}</li>
+                    <li>✅ @reactive signals e @computed properties</li>
+                    <li>✅ Event handlers: click="{increment}"</li>
+                    <li>✅ Estilos CSS inline e fx:Style</li>
                 </ul>
-                <a href="01-counter-visual.html" class="btn-open" target="_blank">
-                    🚀 Abrir Contador
-                </a>
+                <div style="display: flex; gap: 10px;">
+                    <a href="counter-test.html" class="btn-open" target="_blank">
+                        🚀 Abrir App
+                    </a>
+                    <a href="../counter/App.mxml" class="btn-open" style="background: #7f8c8d;" target="_blank">
+                        📄 Ver MXML
+                    </a>
+                </div>
             </div>
 
             <div class="example-card">
                 <div class="example-icon">✅</div>
-                <h3 class="example-title">Lista de Tarefas</h3>
+                <h3 class="example-title">Lista de Tarefas MXML</h3>
                 <p class="example-description">
-                    Todo List completa com adicionar, remover, marcar como completo e filtros.
+                    Todo List com Repeater, TextInput two-way binding e componentes Neo.
                 </p>
                 <ul class="example-features">
-                    <li>Input para adicionar tarefas</li>
-                    <li>Checkboxes funcionais</li>
-                    <li>Filtros (Todas/Ativas/Completas)</li>
-                    <li>Estatísticas em tempo real</li>
-                    <li>Remover tarefas completadas</li>
-                    <li>Interface totalmente reativa</li>
+                    <li>✅ Repeater com dataProvider para loops</li>
+                    <li>✅ TextInput com two-way binding</li>
+                    <li>✅ Computed properties (total, completadas)</li>
+                    <li>✅ CheckBox para marcar completo</li>
+                    <li>✅ Array manipulation reativo</li>
+                    <li>✅ Zero innerHTML - tudo MXML!</li>
                 </ul>
-                <a href="02-todo-list-visual.html" class="btn-open" target="_blank">
-                    🚀 Abrir Todo List
-                </a>
+                <div style="display: flex; gap: 10px;">
+                    <a href="todolist-test.html" class="btn-open" target="_blank">
+                        🚀 Abrir App
+                    </a>
+                    <a href="TodoListApp.mxml" class="btn-open" style="background: #7f8c8d;" target="_blank">
+                        📄 Ver MXML
+                    </a>
+                </div>
             </div>
         </div>
 

@@ -4,12 +4,12 @@
     xmlns="http://openflex.dev/neo"
     title="Todo List Reativa - OpenFlex Neo">
 
-    <fx:Script>
+    <fx:Script><![CDATA[
         // Estado reativo
         @reactive var todos: Array = [];
         @reactive var filter: String = "all";
         @reactive var newTodoText: String = "";
-        
+
         var nextId: Number = 1;
         
         // Valores computados
@@ -74,7 +74,7 @@
                 addTodo();
             }
         }
-    </fx:Script>
+    ]]></fx:Script>
 
     <fx:Style>
         .filter-btn {

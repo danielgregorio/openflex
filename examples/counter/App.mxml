@@ -4,7 +4,7 @@
     xmlns="http://openflex.dev/neo"
     title="Counter - OpenFlex Neo">
 
-    <fx:Script>
+    <fx:Script><![CDATA[
         // Built-in reactivity - no imports needed!
         @reactive var count: Number = 0;
 
@@ -29,7 +29,7 @@
         function reset(): void {
             count = 0;
         }
-    </fx:Script>
+    ]]></fx:Script>
 
     <fx:Style>
         .counter-display {

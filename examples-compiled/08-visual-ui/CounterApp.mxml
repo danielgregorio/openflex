@@ -4,43 +4,43 @@
     xmlns="http://openflex.dev/neo"
     title="Contador Visual Reativo - OpenFlex Neo">
 
-    <fx:Script>
+    <fx:Script><![CDATA[
         // Reatividade built-in - sem imports necessários!
         @reactive var count: Number = 0;
         @reactive var history: Array = [];
-        
+
         // Valores computados (automaticamente reativos)
         @computed var isPositive: Boolean {
             return count > 0;
         }
-        
+
         @computed var isNegative: Boolean {
             return count < 0;
         }
-        
+
         @computed var countColor: String {
             if (count > 0) return "#27ae60";
             if (count < 0) return "#e74c3c";
             return "#3498db";
         }
-        
+
         // Ações
         function increment(): void {
             count++;
             addToHistory("Incrementado");
         }
-        
+
         function decrement(): void {
             count--;
             addToHistory("Decrementado");
         }
-        
+
         function reset(): void {
             count = 0;
             history = [];
             addToHistory("Reset");
         }
-        
+
         function addToHistory(action: String): void {
             const timestamp = new Date().toLocaleTimeString();
             history = [...history, {
@@ -49,7 +49,7 @@
                 time: timestamp
             }];
         }
-    </fx:Script>
+    ]]></fx:Script>
 
     <fx:Style>
         .counter-display {
