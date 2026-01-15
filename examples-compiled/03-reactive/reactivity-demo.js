@@ -66,4 +66,3 @@ setMessage("Reactivity is awesome!");
 trace("");
 
 trace("✨ Reactivity working perfectly! ✨");
-);

@@ -165,4 +165,3 @@ trace("2^5 = 32");
 trace("");
 
 trace("✨ All features working perfectly! ✨");
-);
