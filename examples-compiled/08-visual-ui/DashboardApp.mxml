@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Dashboard - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var users: Number = 1247;
+        @reactive var revenue: Number = 45678;
+        @reactive var orders: Number = 823;
+        @reactive var growth: Number = 12.5;
+
+        @computed var revenueFormatted: String {
+            return "R$ " + revenue.toLocaleString('pt-BR');
+        }
+
+        @computed var growthColor: String {
+            return growth >= 0 ? "#27ae60" : "#e74c3c";
+        }
+
+        @computed var growthIcon: String {
+            return growth >= 0 ? "📈" : "📉";
+        }
+
+        function simulateUpdate(): void {
+            users += Math.floor(Math.random() * 10);
+            revenue += Math.floor(Math.random() * 1000);
+            orders += Math.floor(Math.random() * 5);
+            growth = (Math.random() * 20) - 5;  // -5 to +15
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        .dashboard {
+            background: #f5f6fa;
+            padding: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+
+        .stat-change {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .chart-placeholder {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .update-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .update-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </fx:Style>
+
+    <VBox gap="{0}" width="100%" height="100%" styleClass="dashboard">
+        <VBox gap="{30}">
+            <HBox horizontalAlign="space-between" verticalAlign="center">
+                <Label text="📊 Dashboard Executivo" fontSize="{32}" fontWeight="bold" color="#2c3e50" />
+                <Button label="🔄 Atualizar Dados" click="{simulateUpdate}" styleClass="update-btn" />
+            </HBox>
+
+            <HBox gap="{20}">
+                <Box styleClass="stat-card">
+                    <VBox gap="{5}">
+                        <Label text="👥" styleClass="stat-icon" />
+                        <Label text="Usuários Ativos" styleClass="stat-label" />
+                        <Label text="{users.toLocaleString()}" styleClass="stat-value" />
+                        <Label text="+15% vs mês anterior" fontSize="{12}" color="#27ae60" />
+                    </VBox>
+                </Box>
+
+                <Box styleClass="stat-card">
+                    <VBox gap="{5}">
+                        <Label text="💰" styleClass="stat-icon" />
+                        <Label text="Receita Total" styleClass="stat-label" />
+                        <Label text="{revenueFormatted}" styleClass="stat-value" />
+                        <Label text="{growthIcon + ' ' + growth.toFixed(1) + '%'}"
+                               styleClass="stat-change" color="{growthColor}" />
+                    </VBox>
+                </Box>
+
+                <Box styleClass="stat-card">
+                    <VBox gap="{5}">
+                        <Label text="🛒" styleClass="stat-icon" />
+                        <Label text="Pedidos" styleClass="stat-label" />
+                        <Label text="{orders.toLocaleString()}" styleClass="stat-value" />
+                        <Label text="+8% vs mês anterior" fontSize="{12}" color="#27ae60" />
+                    </VBox>
+                </Box>
+
+                <Box styleClass="stat-card">
+                    <VBox gap="{5}">
+                        <Label text="📈" styleClass="stat-icon" />
+                        <Label text="Taxa de Conversão" styleClass="stat-label" />
+                        <Label text="3.2%" styleClass="stat-value" />
+                        <Label text="+0.5% vs mês anterior" fontSize="{12}" color="#27ae60" />
+                    </VBox>
+                </Box>
+            </HBox>
+
+            <HBox gap="{20}">
+                <Box styleClass="chart-placeholder" width="60%">
+                    <VBox gap="{20}">
+                        <Label text="📊 Gráfico de Vendas" fontSize="{20}" fontWeight="bold" />
+                        <Label text="[Gráfico seria renderizado aqui]" fontSize="{14}" color="#95a5a6" />
+                        <Label text="Receita: Janeiro a Dezembro 2024" fontSize="{12}" color="#7f8c8d" />
+                    </VBox>
+                </Box>
+
+                <Box styleClass="chart-placeholder" width="40%">
+                    <VBox gap="{20}">
+                        <Label text="🎯 Metas do Mês" fontSize="{20}" fontWeight="bold" />
+                        <VBox gap="{15}" horizontalAlign="left">
+                            <Label text="✅ Vendas: 92% (R$ 46K de R$ 50K)" fontSize="{14}" />
+                            <Label text="✅ Novos Usuários: 104% (1300 de 1250)" fontSize="{14}" />
+                            <Label text="⏳ Conversão: 89% (3.2% de 3.6%)" fontSize="{14}" />
+                        </VBox>
+                    </VBox>
+                </Box>
+            </HBox>
+        </VBox>
+    </VBox>
+
+</Application>

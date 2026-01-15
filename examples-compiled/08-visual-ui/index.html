@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenFlex - Interfaces Visuais</title>
+    <title>OpenFlex Neo - Galeria de Exemplos MXML</title>
     <style>
         * {
             margin: 0;
@@ -12,221 +12,449 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 40px 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
-        h1 {
+        .header {
             text-align: center;
             color: white;
-            margin-bottom: 40px;
-            font-size: 3em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 56px;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 20px;
+            opacity: 0.95;
         }
 
         .examples-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 30px;
-            margin-bottom: 40px;
+            margin-bottom: 60px;
         }
 
         .example-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
         }
 
         .example-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         }
 
         .example-icon {
-            font-size: 4em;
-            text-align: center;
+            font-size: 64px;
             margin-bottom: 20px;
+            text-align: center;
         }
 
         .example-title {
-            font-size: 1.8em;
+            font-size: 24px;
+            font-weight: bold;
             color: #2c3e50;
             margin-bottom: 15px;
             text-align: center;
         }
 
         .example-description {
+            font-size: 15px;
             color: #7f8c8d;
-            margin-bottom: 20px;
-            line-height: 1.6;
-            text-align: center;
-        }
-
-        .example-features {
-            list-style: none;
             margin-bottom: 25px;
+            line-height: 1.6;
+            min-height: 100px;
         }
 
-        .example-features li {
-            padding: 8px 0;
-            color: #555;
-            border-bottom: 1px solid #ecf0f1;
+        .example-buttons {
+            display: flex;
+            gap: 10px;
         }
 
-        .example-features li:before {
-            content: '✓ ';
-            color: #27ae60;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-
-        .btn-open {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            background: #3498db;
-            color: white;
-            text-align: center;
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
             text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            transition: background 0.3s ease;
+            text-align: center;
+            display: inline-block;
         }
 
-        .btn-open:hover {
-            background: #2980b9;
+        .btn-run {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
-        .info-box {
-            background: white;
+        .btn-run:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-code {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .btn-code:hover {
+            background: #34495e;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: #1e1e1e;
+            margin: 2% auto;
+            padding: 0;
             border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s;
         }
 
-        .info-box h2 {
-            color: #2c3e50;
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0 10px;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            opacity: 0.8;
+        }
+
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: calc(90vh - 120px);
+        }
+
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #d4d4d4;
+        }
+
+        /* Syntax highlighting */
+        .xml-tag { color: #569cd6; }
+        .xml-attr-name { color: #9cdcfe; }
+        .xml-attr-value { color: #ce9178; }
+        .xml-comment { color: #6a9955; }
+        .keyword { color: #c586c0; }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 60px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+        }
+
+        .footer h3 {
+            font-size: 24px;
             margin-bottom: 15px;
         }
 
-        .info-box p {
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-
-        .highlight {
-            background: #e8f5e9;
-            padding: 15px;
-            border-left: 4px solid #27ae60;
-            border-radius: 4px;
-            margin-top: 15px;
+        .footer p {
+            font-size: 16px;
+            line-height: 1.8;
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎨 OpenFlex - Interfaces Visuais Reativas</h1>
-
-        <div class="info-box">
-            <h2>💡 Sobre Estes Exemplos</h2>
-            <p>
-                <strong>Finalmente interfaces visuais REAIS!</strong> Ao contrário dos outros exemplos que usam apenas <code>trace()</code>,
-                estes criam <strong>UIs visuais interativas</strong> no navegador com botões, inputs e animações.
-            </p>
-            <div class="highlight">
-                <strong>✨ Reatividade em Ação:</strong> Todos os exemplos usam o sistema de reatividade do OpenFlex
-                (Signals, Effects) para atualizar a interface automaticamente quando o estado muda!
-            </div>
+        <div class="header">
+            <h1>🆕 OpenFlex Neo</h1>
+            <p>Galeria Completa de Exemplos MXML com Reatividade</p>
         </div>
 
         <div class="examples-grid">
+            <!-- Counter App -->
             <div class="example-card">
                 <div class="example-icon">🔢</div>
-                <h3 class="example-title">Contador Reativo MXML</h3>
+                <h3 class="example-title">Contador Reativo</h3>
                 <p class="example-description">
-                    Um contador com interface declarativa MXML (como Adobe Flex) e reatividade completa.
+                    Contador com @reactive signals, @computed properties e data binding. Demonstra reatividade granular e updates automáticos da UI.
                 </p>
-                <ul class="example-features">
-                    <li>✅ Interface em MXML puro (VBox, Panel, Button, Label)</li>
-                    <li>✅ Data binding automático: {count}</li>
-                    <li>✅ @reactive signals e @computed properties</li>
-                    <li>✅ Event handlers: click="{increment}"</li>
-                    <li>✅ Estilos CSS inline e fx:Style</li>
-                </ul>
-                <div style="display: flex; gap: 10px;">
-                    <a href="counter-test.html" class="btn-open" target="_blank">
-                        🚀 Abrir App
-                    </a>
-                    <a href="../counter/App.mxml" class="btn-open" style="background: #7f8c8d;" target="_blank">
-                        📄 Ver MXML
-                    </a>
+                <div class="example-buttons">
+                    <a href="counter-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
+                    <button class="btn btn-code" onclick="showCode('CounterApp')">📄 Ver Código</button>
                 </div>
             </div>
 
+            <!-- Todo List -->
             <div class="example-card">
                 <div class="example-icon">✅</div>
-                <h3 class="example-title">Lista de Tarefas MXML</h3>
+                <h3 class="example-title">Lista de Tarefas</h3>
                 <p class="example-description">
-                    Todo List com Repeater, TextInput two-way binding e componentes Neo.
+                    Todo list com Repeater, TextInput two-way binding e array manipulation reativa. Mostra loops dinâmicos e estados complexos.
                 </p>
-                <ul class="example-features">
-                    <li>✅ Repeater com dataProvider para loops</li>
-                    <li>✅ TextInput com two-way binding</li>
-                    <li>✅ Computed properties (total, completadas)</li>
-                    <li>✅ CheckBox para marcar completo</li>
-                    <li>✅ Array manipulation reativo</li>
-                    <li>✅ Zero innerHTML - tudo MXML!</li>
-                </ul>
-                <div style="display: flex; gap: 10px;">
-                    <a href="todolist-test.html" class="btn-open" target="_blank">
-                        🚀 Abrir App
-                    </a>
-                    <a href="TodoListApp.mxml" class="btn-open" style="background: #7f8c8d;" target="_blank">
-                        📄 Ver MXML
-                    </a>
+                <div class="example-buttons">
+                    <a href="todolist-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
+                    <button class="btn btn-code" onclick="showCode('TodoListApp')">📄 Ver Código</button>
+                </div>
+            </div>
+
+            <!-- Calculator -->
+            <div class="example-card">
+                <div class="example-icon">🧮</div>
+                <h3 class="example-title">Calculadora</h3>
+                <p class="example-description">
+                    Calculadora funcional completa com grid layout e operações básicas (+, -, ×, ÷). Interface moderna e responsiva.
+                </p>
+                <div class="example-buttons">
+                    <a href="calculator-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
+                    <button class="btn btn-code" onclick="showCode('CalculatorApp')">📄 Ver Código</button>
+                </div>
+            </div>
+
+            <!-- Timer -->
+            <div class="example-card">
+                <div class="example-icon">⏱️</div>
+                <h3 class="example-title">Cronômetro</h3>
+                <p class="example-description">
+                    Cronômetro com controles de play/pause, reset e formatação de tempo (HH:MM:SS). Usa setInterval com reatividade.
+                </p>
+                <div class="example-buttons">
+                    <a href="timer-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
+                    <button class="btn btn-code" onclick="showCode('TimerApp')">📄 Ver Código</button>
+                </div>
+            </div>
+
+            <!-- Temperature Converter -->
+            <div class="example-card">
+                <div class="example-icon">🌡️</div>
+                <h3 class="example-title">Conversor de Temperatura</h3>
+                <p class="example-description">
+                    Conversor C°/F°/K com slider interativo, emojis dinâmicos e cores que mudam conforme a temperatura.
+                </p>
+                <div class="example-buttons">
+                    <a href="temperature-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
+                    <button class="btn btn-code" onclick="showCode('TemperatureApp')">📄 Ver Código</button>
+                </div>
+            </div>
+
+            <!-- Quiz -->
+            <div class="example-card">
+                <div class="example-icon">🎯</div>
+                <h3 class="example-title">Quiz Interativo</h3>
+                <p class="example-description">
+                    Quiz de múltipla escolha com 5 questões, progress bar, pontuação e tela de resultado com gerenciamento de estado complexo.
+                </p>
+                <div class="example-buttons">
+                    <a href="quiz-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
+                    <button class="btn btn-code" onclick="showCode('QuizApp')">📄 Ver Código</button>
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="example-card">
+                <div class="example-icon">📊</div>
+                <h3 class="example-title">Dashboard Executivo</h3>
+                <p class="example-description">
+                    Dashboard com cards de métricas (usuários, receita, pedidos), formatação de números e atualização dinâmica. Layout profissional.
+                </p>
+                <div class="example-buttons">
+                    <a href="dashboard-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
+                    <button class="btn btn-code" onclick="showCode('DashboardApp')">📄 Ver Código</button>
+                </div>
+            </div>
+
+            <!-- Color Picker -->
+            <div class="example-card">
+                <div class="example-icon">🎨</div>
+                <h3 class="example-title">Seletor de Cores</h3>
+                <p class="example-description">
+                    Color picker com sliders RGB, preview em tempo real, conversão HEX/RGB e cores aleatórias. Interface intuitiva e visual.
+                </p>
+                <div class="example-buttons">
+                    <a href="colorpicker-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
+                    <button class="btn btn-code" onclick="showCode('ColorPickerApp')">📄 Ver Código</button>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="example-card">
+                <div class="example-icon">📝</div>
+                <h3 class="example-title">Formulário de Contato</h3>
+                <p class="example-description">
+                    Formulário com validação em tempo real, mensagens de erro, checkbox e feedback visual. Demonstra validação reativa profissional.
+                </p>
+                <div class="example-buttons">
+                    <a href="form-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
+                    <button class="btn btn-code" onclick="showCode('FormApp')">📄 Ver Código</button>
                 </div>
             </div>
         </div>
 
-        <div class="info-box">
-            <h2>🔧 Como Funcionam</h2>
-            <p><strong>1. Reatividade (Signals):</strong></p>
-            <pre style="background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto;">
-const count = new Signal(0);  // Estado reativo
-
-createEffect(() => {
-    display.textContent = count.value;  // Atualiza automaticamente
-});
-
-count.value = 5;  // UI atualiza sozinha!
-            </pre>
-
-            <p style="margin-top: 20px;"><strong>2. DOM Manipulation:</strong></p>
-            <pre style="background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto;">
-button.addEventListener('click', () => {
-    count.value++;  // Muda o estado
-    // UI atualiza automaticamente via effect!
-});
-            </pre>
-        </div>
-
-        <div style="text-align: center; margin-top: 40px;">
-            <a href="../index.html" style="color: white; text-decoration: none; font-size: 18px;">
-                ← Voltar para Galeria Principal
-            </a>
+        <div class="footer">
+            <h3>🚀 Sobre OpenFlex Neo MXML</h3>
+            <p>
+                Framework declarativo com sintaxe MXML (como Adobe Flex) e sistema de reatividade granular.
+                Compila para Web Components nativos com zero dependências no runtime.
+                <br><br>
+                <strong>Features:</strong> @reactive signals • @computed properties • Data binding {expression} •
+                Event handlers • Repeaters • Two-way binding • Componentes Neo (VBox, HBox, Panel, Button, etc)
+            </p>
         </div>
     </div>
+
+    <!-- Modal para código fonte -->
+    <div id="codeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Código Fonte MXML</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="code-container">
+                    <pre><code id="codeContent"></code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('codeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const codeContent = document.getElementById('codeContent');
+
+        const mxmlFiles = {
+            'CounterApp': '../counter/App.mxml',
+            'TodoListApp': 'TodoListApp.mxml',
+            'CalculatorApp': 'CalculatorApp.mxml',
+            'TimerApp': 'TimerApp.mxml',
+            'TemperatureApp': 'TemperatureApp.mxml',
+            'QuizApp': 'QuizApp.mxml',
+            'DashboardApp': 'DashboardApp.mxml',
+            'ColorPickerApp': 'ColorPickerApp.mxml',
+            'FormApp': 'FormApp.mxml'
+        };
+
+        async function showCode(appName) {
+            modalTitle.textContent = `📄 ${appName}.mxml`;
+            codeContent.textContent = 'Carregando código...';
+            modal.style.display = 'block';
+
+            try {
+                const response = await fetch(mxmlFiles[appName]);
+                const code = await response.text();
+                const highlighted = highlightXML(code);
+                codeContent.innerHTML = highlighted;
+            } catch (error) {
+                codeContent.textContent = 'Erro ao carregar: ' + error.message;
+            }
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) closeModal();
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') closeModal();
+        });
+
+        function highlightXML(code) {
+            return code
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/(&lt;\/?[\w:]+)/g, '<span class="xml-tag">$1</span>')
+                .replace(/(\w+)=/g, '<span class="xml-attr-name">$1</span>=')
+                .replace(/="([^"]*)"/g, '=<span class="xml-attr-value">"$1"</span>')
+                .replace(/(&lt;!--.*?--&gt;)/g, '<span class="xml-comment">$1</span>')
+                .replace(/@(\w+)/g, '<span class="keyword">@$1</span>');
+        }
+
+        console.log('✨ OpenFlex Neo - Galeria carregada! 9 exemplos MXML disponíveis.');
+    </script>
 </body>
 </html>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Conversor de Temperatura - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var celsius: Number = 0;
+
+        @computed var fahrenheit: Number {
+            return (celsius * 9/5) + 32;
+        }
+
+        @computed var kelvin: Number {
+            return celsius + 273.15;
+        }
+
+        @computed var temperatureColor: String {
+            if (celsius < 0) return "#3498db";      // Azul (frio)
+            if (celsius < 20) return "#2ecc71";     // Verde (ameno)
+            if (celsius < 35) return "#f39c12";     // Laranja (quente)
+            return "#e74c3c";                       // Vermelho (muito quente)
+        }
+
+        @computed var temperatureEmoji: String {
+            if (celsius < 0) return "❄️";
+            if (celsius < 10) return "🥶";
+            if (celsius < 20) return "😌";
+            if (celsius < 30) return "😊";
+            if (celsius < 35) return "🥵";
+            return "🔥";
+        }
+
+        @computed var description: String {
+            if (celsius < 0) return "Congelante!";
+            if (celsius < 10) return "Muito frio";
+            if (celsius < 20) return "Fresco";
+            if (celsius < 25) return "Agradável";
+            if (celsius < 30) return "Quente";
+            if (celsius < 35) return "Muito quente";
+            return "Escaldante!";
+        }
+
+        function setCelsius(value: Number): void {
+            celsius = value;
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        .temp-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            min-width: 200px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .temp-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .temp-value {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .temp-unit {
+            font-size: 18px;
+            color: #7f8c8d;
+            font-weight: normal;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #3498db, #2ecc71, #f39c12, #e74c3c);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .emoji-display {
+            font-size: 120px;
+            margin: 20px 0;
+        }
+
+        .description {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </fx:Style>
+
+    <VBox gap="{20}" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%"
+          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+
+        <Panel title="🌡️ Conversor de Temperatura" width="{800}" padding="{40}">
+            <VBox gap="{40}" horizontalAlign="center">
+
+                <VBox gap="{20}" horizontalAlign="center">
+                    <Label text="{temperatureEmoji}" styleClass="emoji-display" />
+                    <Label text="{description}" styleClass="description" color="{temperatureColor}" />
+                </VBox>
+
+                <VBox gap="{15}" width="100%">
+                    <Label text="Ajuste a temperatura (°C)" fontSize="{16}" fontWeight="bold" />
+                    <TextInput type="range" min="-50" max="50" value="{celsius}"
+                               styleClass="slider" />
+                </VBox>
+
+                <HBox gap="{20}" horizontalAlign="center">
+                    <Box styleClass="temp-card">
+                        <Label text="Celsius" fontSize="{14}" color="#7f8c8d" />
+                        <Label text="{Math.round(celsius * 10) / 10}" styleClass="temp-value" color="{temperatureColor}" />
+                        <Label text="°C" styleClass="temp-unit" />
+                    </Box>
+
+                    <Box styleClass="temp-card">
+                        <Label text="Fahrenheit" fontSize="{14}" color="#7f8c8d" />
+                        <Label text="{Math.round(fahrenheit * 10) / 10}" styleClass="temp-value" color="{temperatureColor}" />
+                        <Label text="°F" styleClass="temp-unit" />
+                    </Box>
+
+                    <Box styleClass="temp-card">
+                        <Label text="Kelvin" fontSize="{14}" color="#7f8c8d" />
+                        <Label text="{Math.round(kelvin * 10) / 10}" styleClass="temp-value" color="{temperatureColor}" />
+                        <Label text="K" styleClass="temp-unit" />
+                    </Box>
+                </HBox>
+
+            </VBox>
+        </Panel>
+
+    </VBox>
+
+</Application>
