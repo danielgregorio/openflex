@@ -21,8 +21,16 @@
 
   const conversion = new Signal(3.2);
 
+  const usersFormatted = new Computed(() => {
+    return users.value.toLocaleString('pt-BR');
+  });
+
   const revenueFormatted = new Computed(() => {
     return "R$ " + revenue.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  });
+
+  const ordersFormatted = new Computed(() => {
+    return orders.value.toLocaleString('pt-BR');
   });
 
   const growthFormatted = new Computed(() => {
@@ -60,42 +68,30 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>* {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        .dashboard-container {
-            min-height: 100vh;
+        <style>.app-container {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 40px;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-
-        .dashboard-content {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
         }
 
         .dashboard-title {
-            font-size: 36px;
+            font-size: 42px;
             font-weight: 700;
             color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            margin-bottom: 8px;
+        }
+
+        .dashboard-subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
         }
 
         .update-btn {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.4);
             color: white;
             padding: 14px 32px;
             font-size: 15px;
@@ -103,33 +99,28 @@
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .update-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.35);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
+        .stat-panel {
             background: white;
             border-radius: 16px;
             padding: 28px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            flex: 1;
+            min-width: 240px;
         }
 
-        .stat-card::before {
+        .stat-panel::before {
             content: '';
             position: absolute;
             top: 0;
@@ -139,100 +130,95 @@
             background: linear-gradient(90deg, #667eea, #764ba2);
         }
 
-        .stat-card:hover {
+        .stat-panel:hover {
             transform: translateY(-8px);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
         }
 
         .stat-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
+            font-size: 56px;
+            margin-bottom: 12px;
             display: block;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
 
         .stat-label {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 700;
             color: #6b7280;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-            display: block;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
         }
 
         .stat-value {
-            font-size: 32px;
-            font-weight: 700;
+            font-size: 38px;
+            font-weight: 800;
             color: #111827;
-            margin-bottom: 8px;
-            display: block;
-            line-height: 1.2;
+            margin-bottom: 12px;
+            line-height: 1;
         }
 
         .stat-change {
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: rgba(16, 185, 129, 0.1);
         }
 
         .stat-change.positive {
-            color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+            color: #059669;
         }
 
         .stat-change.negative {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.15);
+            color: #dc2626;
         }
 
-        .bottom-section {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-        }
-
-        .chart-card {
+        .chart-panel {
             background: white;
             border-radius: 16px;
             padding: 32px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            flex: 2;
+            min-height: 400px;
         }
 
-        .chart-title {
-            font-size: 20px;
+        .goals-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            flex: 1;
+            min-width: 320px;
+        }
+
+        .section-title {
+            font-size: 22px;
             font-weight: 700;
             color: #111827;
             margin-bottom: 24px;
-            display: block;
         }
 
         .chart-placeholder {
-            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-            height: 280px;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            height: 300px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #9ca3af;
-            font-size: 16px;
-            font-weight: 500;
             border: 2px dashed #d1d5db;
-        }
-
-        .goals-card {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            color: #9ca3af;
+            font-size: 15px;
+            font-weight: 600;
         }
 
         .goal-item {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #f3f4f6;
         }
 
         .goal-item:last-child {
@@ -241,22 +227,20 @@
             border-bottom: none;
         }
 
-        .goal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
         .goal-name {
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 700;
             color: #374151;
+            margin-bottom: 8px;
         }
 
         .goal-percentage {
-            font-size: 14px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .goal-percentage.success {
             color: #10b981;
         }
 
@@ -264,105 +248,129 @@
             color: #f59e0b;
         }
 
-        .goal-bar {
+        .goal-bar-container {
             width: 100%;
-            height: 8px;
+            height: 12px;
             background: #f3f4f6;
-            border-radius: 4px;
+            border-radius: 6px;
             overflow: hidden;
-            position: relative;
+            margin-bottom: 8px;
         }
 
-        .goal-bar-fill {
+        .goal-bar {
             height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            border-radius: 4px;
-            transition: width 0.6s ease;
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .goal-bar-fill.warning {
+        .goal-bar.success {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .goal-bar.warning {
             background: linear-gradient(90deg, #f59e0b, #d97706);
         }
 
         .goal-details {
-            font-size: 12px;
+            font-size: 13px;
             color: #6b7280;
-            margin-top: 6px;
+            font-weight: 500;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='box_1' class='neo-box'>
-          <div id='box_2' class='neo-box'>
-            <div id='box_3' class='neo-box'>
-              <span id='label_4' class='dashboard-title'>📊 Dashboard Executivo</span>
-              <button id='btn_5' class='neo-button'>🔄 Atualizar Dados</button>
+        <div id='vbox_1' class='neo-vbox' style='width: 100%; height: 100%; gap: 0px'>
+          <div id='vbox_2' class='neo-vbox' style='width: 100%; gap: 40px'>
+            <div id='hbox_3' class='neo-hbox h-align-space-between v-align-center' style='width: 100%'>
+              <div id='vbox_4' class='neo-vbox' style='gap: 8px'>
+                <span id='label_5' class='dashboard-title'>📊 Dashboard Executivo</span>
+                <span id='label_6' class='dashboard-subtitle'>Visão geral das métricas principais</span>
+              </div>
+              <button id='btn_7' class='neo-button'>🔄 Atualizar Dados</button>
             </div>
-            <div id='box_6' class='neo-box'>
-              <div id='box_7' class='neo-box'>
-                <span id='label_8' class='stat-icon'>👥</span>
-                <span id='label_9' class='stat-label'>Usuários Ativos</span>
-                <span id='label_10' class='stat-value'></span>
-                <span id='label_11' class='stat-change positive'>+15% vs mês anterior</span>
+            <div id='hbox_8' class='neo-hbox' style='width: 100%; gap: 24px'>
+              <div id='panel_9' class='neo-panel'>
+                <div class='neo-panel-body'>
+                  <div id='vbox_10' class='neo-vbox' style='gap: 0px'>
+                    <span id='label_11' class='stat-icon'>👥</span>
+                    <span id='label_12' class='stat-label'>Usuários Ativos</span>
+                    <span id='label_13' class='stat-value'></span>
+                    <span id='label_14' class='stat-change positive'>+15% vs mês anterior</span>
+                  </div>
+                </div>
               </div>
-              <div id='box_12' class='neo-box'>
-                <span id='label_13' class='stat-icon'>💰</span>
-                <span id='label_14' class='stat-label'>Receita Total</span>
-                <span id='label_15' class='stat-value'></span>
-                <span id='label_16' class='stat-change positive'></span>
+              <div id='panel_15' class='neo-panel'>
+                <div class='neo-panel-body'>
+                  <div id='vbox_16' class='neo-vbox' style='gap: 0px'>
+                    <span id='label_17' class='stat-icon'>💰</span>
+                    <span id='label_18' class='stat-label'>Receita Total</span>
+                    <span id='label_19' class='stat-value'></span>
+                    <span id='label_20' class='stat-change positive'></span>
+                  </div>
+                </div>
               </div>
-              <div id='box_17' class='neo-box'>
-                <span id='label_18' class='stat-icon'>🛒</span>
-                <span id='label_19' class='stat-label'>Pedidos</span>
-                <span id='label_20' class='stat-value'></span>
-                <span id='label_21' class='stat-change positive'>+8% vs mês anterior</span>
+              <div id='panel_21' class='neo-panel'>
+                <div class='neo-panel-body'>
+                  <div id='vbox_22' class='neo-vbox' style='gap: 0px'>
+                    <span id='label_23' class='stat-icon'>🛒</span>
+                    <span id='label_24' class='stat-label'>Pedidos</span>
+                    <span id='label_25' class='stat-value'></span>
+                    <span id='label_26' class='stat-change positive'>+8% vs mês anterior</span>
+                  </div>
+                </div>
               </div>
-              <div id='box_22' class='neo-box'>
-                <span id='label_23' class='stat-icon'>📈</span>
-                <span id='label_24' class='stat-label'>Taxa de Conversão</span>
-                <span id='label_25' class='stat-value'></span>
-                <span id='label_26' class='stat-change positive'>+0.5% vs mês anterior</span>
+              <div id='panel_27' class='neo-panel'>
+                <div class='neo-panel-body'>
+                  <div id='vbox_28' class='neo-vbox' style='gap: 0px'>
+                    <span id='label_29' class='stat-icon'>📈</span>
+                    <span id='label_30' class='stat-label'>Taxa de Conversão</span>
+                    <span id='label_31' class='stat-value'></span>
+                    <span id='label_32' class='stat-change positive'>+0.5% vs mês anterior</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div id='box_27' class='neo-box'>
-              <div id='box_28' class='neo-box'>
-                <span id='label_29' class='chart-title'>📊 Vendas dos Últimos 12 Meses</span>
-                <div id='box_30' class='neo-box'>
-                  <span id='label_31' class='neo-label'>Gráfico interativo seria renderizado aqui</span>
+            <div id='hbox_33' class='neo-hbox' style='width: 100%; gap: 24px'>
+              <div id='panel_34' class='neo-panel'>
+                <div class='neo-panel-body'>
+                  <div id='vbox_35' class='neo-vbox' style='width: 100%; gap: 0px'>
+                    <span id='label_36' class='section-title'>📊 Vendas dos Últimos 12 Meses</span>
+                    <div id='box_37' class='neo-box'>
+                      <span id='label_38' class='neo-label'>Gráfico interativo seria renderizado aqui</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div id='box_32' class='neo-box'>
-                <span id='label_33' class='chart-title'>🎯 Metas do Mês</span>
-                <div id='box_34' class='neo-box'>
-                  <div id='box_35' class='neo-box'>
-                    <span id='label_36' class='goal-name'>Vendas</span>
-                    <span id='label_37' class='goal-percentage warning'>92%</span>
-                  </div>
-                  <div id='box_38' class='neo-box'>
-                    <div id='box_39' class='neo-box'>
+              <div id='panel_39' class='neo-panel'>
+                <div class='neo-panel-body'>
+                  <div id='vbox_40' class='neo-vbox' style='width: 100%; gap: 0px'>
+                    <span id='label_41' class='section-title'>🎯 Metas do Mês</span>
+                    <div id='vbox_42' class='neo-vbox' style='gap: 0px'>
+                      <span id='label_43' class='goal-name'>Vendas</span>
+                      <span id='label_44' class='goal-percentage warning'>92%</span>
+                      <div id='box_45' class='neo-box'>
+                        <div id='box_46' class='neo-box'>
+                        </div>
+                      </div>
+                      <span id='label_47' class='goal-details'>R$ 46.000 de R$ 50.000</span>
+                    </div>
+                    <div id='vbox_48' class='neo-vbox' style='gap: 0px'>
+                      <span id='label_49' class='goal-name'>Novos Usuários</span>
+                      <span id='label_50' class='goal-percentage success'>104%</span>
+                      <div id='box_51' class='neo-box'>
+                        <div id='box_52' class='neo-box'>
+                        </div>
+                      </div>
+                      <span id='label_53' class='goal-details'>1.300 de 1.250 usuários</span>
+                    </div>
+                    <div id='vbox_54' class='neo-vbox' style='gap: 0px'>
+                      <span id='label_55' class='goal-name'>Conversão</span>
+                      <span id='label_56' class='goal-percentage warning'>89%</span>
+                      <div id='box_57' class='neo-box'>
+                        <div id='box_58' class='neo-box'>
+                        </div>
+                      </div>
+                      <span id='label_59' class='goal-details'>3.2% de 3.6% meta</span>
                     </div>
                   </div>
-                  <span id='label_40' class='goal-details'>R$ 46.000 de R$ 50.000</span>
-                </div>
-                <div id='box_41' class='neo-box'>
-                  <div id='box_42' class='neo-box'>
-                    <span id='label_43' class='goal-name'>Novos Usuários</span>
-                    <span id='label_44' class='goal-percentage'>104%</span>
-                  </div>
-                  <div id='box_45' class='neo-box'>
-                    <div id='box_46' class='neo-box'>
-                    </div>
-                  </div>
-                  <span id='label_47' class='goal-details'>1.300 de 1.250 usuários</span>
-                </div>
-                <div id='box_48' class='neo-box'>
-                  <div id='box_49' class='neo-box'>
-                    <span id='label_50' class='goal-name'>Conversão</span>
-                    <span id='label_51' class='goal-percentage warning'>89%</span>
-                  </div>
-                  <div id='box_52' class='neo-box'>
-                    <div id='box_53' class='neo-box'>
-                    </div>
-                  </div>
-                  <span id='label_54' class='goal-details'>3.2% de 3.6% meta</span>
                 </div>
               </div>
             </div>
@@ -376,33 +384,33 @@
     }
 
     attachEventHandlers() {
-      const el_btn_5 = this.shadowRoot.getElementById('btn_5');
-      if (el_btn_5) el_btn_5.addEventListener('click', () => simulateUpdate());
+      const el_btn_7 = this.shadowRoot.getElementById('btn_7');
+      if (el_btn_7) el_btn_7.addEventListener('click', () => simulateUpdate());
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_10');
-        if (el) el.textContent = users.value.toLocaleString('pt-BR');
+        const el = this.shadowRoot.getElementById('label_13');
+        if (el) el.textContent = usersFormatted.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_15');
+        const el = this.shadowRoot.getElementById('label_19');
         if (el) el.textContent = revenueFormatted.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_16');
+        const el = this.shadowRoot.getElementById('label_20');
         if (el) el.color = growthColor.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_16');
+        const el = this.shadowRoot.getElementById('label_20');
         if (el) el.textContent = growthFormatted.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_20');
-        if (el) el.textContent = orders.value.toLocaleString('pt-BR');
+        const el = this.shadowRoot.getElementById('label_25');
+        if (el) el.textContent = ordersFormatted.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_25');
+        const el = this.shadowRoot.getElementById('label_31');
         if (el) el.textContent = conversionFormatted.value;
       });
     }
