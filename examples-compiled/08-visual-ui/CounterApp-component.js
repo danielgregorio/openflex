@@ -182,7 +182,7 @@
         el.innerHTML = '';
       
         // Renderizar itens do array
-        const items = history.slice().reverse().value || [];
+        const items = history.value.slice().reverse() || [];
         items.forEach((item, index) => {
           const itemEl = document.createElement('div');
           itemEl.className = 'repeater-item';

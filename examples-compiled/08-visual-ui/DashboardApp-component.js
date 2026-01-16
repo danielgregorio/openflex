@@ -34,11 +34,11 @@
   });
 
   const growthFormatted = new Computed(() => {
-    return growth.value >= 0 ? '+' : '' + growth.value.toFixed(1) + '%';
+    return (growth.value >= 0 ? '+' : '') + growth.value.toFixed(1) + '%';
   });
 
   const growthColor = new Computed(() => {
-    return growth.value >= 0 ? '#10b981' : '#ef4444';
+    return (growth.value >= 0 ? '#10b981' : '#ef4444');
   });
 
   const conversionFormatted = new Computed(() => {

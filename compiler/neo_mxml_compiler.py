@@ -241,8 +241,12 @@ class NeoMXMLCompiler:
                     lines.append(f"      el.innerHTML = '';")
                     lines.append(f"      ")
                     lines.append(f"      // Renderizar itens do array")
-                    lines.append(f"      const items = {expr}.value || [];")
-                    lines.append(f"      items.forEach((item, index) => {{")
+                    # Use _add_value_access to correctly handle complex expressions like history.slice()
+                    # Use itemsArray to avoid shadowing if expr is 'items'
+                    expr_with_value = self._add_value_access(expr) if expr not in self.reactive_vars else f"{expr}.value"
+                    items_var = 'itemsArray' if expr.strip() == 'items' else 'items'
+                    lines.append(f"      const {items_var} = {expr_with_value} || [];")
+                    lines.append(f"      {items_var}.forEach((item, index) => {{")
                     lines.append(f"        const itemEl = document.createElement('div');")
                     lines.append(f"        itemEl.className = 'repeater-item';")
                     lines.append(f"        itemEl.textContent = item.text || JSON.stringify(item);")
@@ -275,12 +279,21 @@ class NeoMXMLCompiler:
                                 lines.append(f"      if (el) el.style.{attr} = {expr_with_value};")
                         elif is_style:
                             # Atributos de estilo com px (width, height, etc)
+                            # Check if expression already contains a unit (%, px, em, rem, vh, vw)
+                            has_unit = any(unit in expr for unit in ["'%'", '"%"', "'px'", '"px"', "'em'", '"em"', "'rem'", '"rem"', "'vh'", '"vh"', "'vw'", '"vw"'])
+
                             if expr in self.reactive_vars:
-                                lines.append(f"      if (el) el.style.{attr} = {expr}.value + 'px';")
+                                if has_unit:
+                                    lines.append(f"      if (el) el.style.{attr} = {expr}.value;")
+                                else:
+                                    lines.append(f"      if (el) el.style.{attr} = {expr}.value + 'px';")
                             else:
                                 # Expressão que referencia variáveis reativas
                                 expr_with_value = self._add_value_access(expr)
-                                lines.append(f"      if (el) el.style.{attr} = ({expr_with_value}) + 'px';")
+                                if has_unit:
+                                    lines.append(f"      if (el) el.style.{attr} = {expr_with_value};")
+                                else:
+                                    lines.append(f"      if (el) el.style.{attr} = ({expr_with_value}) + 'px';")
                         elif attr == 'visible':
                             # Visibilidade
                             if expr in self.reactive_vars:

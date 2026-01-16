@@ -190,8 +190,8 @@
         el.innerHTML = '';
       
         // Renderizar itens do array
-        const items = items.value || [];
-        items.forEach((item, index) => {
+        const itemsArray = items.value || [];
+        itemsArray.forEach((item, index) => {
           const itemEl = document.createElement('div');
           itemEl.className = 'repeater-item';
           itemEl.textContent = item.text || JSON.stringify(item);

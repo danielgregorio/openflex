@@ -216,7 +216,7 @@
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('box_7');
-        if (el) el.style.width = (progress.value + '%') + 'px';
+        if (el) el.style.width = progress.value + '%';
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_8');

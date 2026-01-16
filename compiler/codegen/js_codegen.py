@@ -499,7 +499,9 @@ class JSCodeGenerator:
         test = self._generate_expression(cond.test)
         consequent = self._generate_expression(cond.consequent)
         alternate = self._generate_expression(cond.alternate)
-        return f"{test} ? {consequent} : {alternate}"
+        # Always wrap ternary in parentheses to preserve precedence
+        # This ensures (a ? b : c) + d works correctly
+        return f"({test} ? {consequent} : {alternate})"
 
     def _generate_await_expression(self, await_expr: AwaitExpression) -> str:
         """Generate await expression"""
