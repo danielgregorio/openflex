@@ -88,7 +88,7 @@ class MXMLSourceViewer {
         header.className = 'mxml-source-header';
         header.innerHTML = `
             <h3>📄 MXML Source Code</h3>
-            <button class="mxml-close-btn" onclick="mxmlSourceViewer.hide()">✖</button>
+            <button class="mxml-close-btn" onclick="window.mxmlSourceViewer.hide()">✖</button>
         `;
 
         const codeContainer = document.createElement('div');
@@ -99,7 +99,7 @@ class MXMLSourceViewer {
         footer.className = 'mxml-source-footer';
         footer.innerHTML = `
             <span>OpenFlex Neo - Syntax: MXML + ActionScript 4</span>
-            <button onclick="navigator.clipboard.writeText(mxmlSourceViewer.sourceCode)">📋 Copiar Código</button>
+            <button onclick="navigator.clipboard.writeText(window.mxmlSourceViewer.sourceCode); this.textContent='✅ Copiado!';">📋 Copiar Código</button>
         `;
 
         modal.appendChild(header);
