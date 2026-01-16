@@ -278,16 +278,16 @@
         }</style>
       <div id='app_0' class='neo-application'>
         <div id='vbox_1' class='neo-vbox' style='width: 100%; height: 100%; gap: 0px'>
-          <div id='vbox_2' class='neo-vbox' style='width: 100%; gap: 40px'>
+          <div id='vbox_2' class='neo-vbox' style='width: 100%; gap: 40px; max-width: 1600px; margin: 0 auto;'>
             <div id='hbox_3' class='neo-hbox h-align-space-between v-align-center' style='width: 100%'>
               <div id='vbox_4' class='neo-vbox' style='gap: 8px'>
                 <span id='label_5' class='dashboard-title'>📊 Dashboard Executivo</span>
                 <span id='label_6' class='dashboard-subtitle'>Visão geral das métricas principais</span>
               </div>
-              <button id='btn_7' class='neo-button'>🔄 Atualizar Dados</button>
+              <button id='btn_7' class='neo-button update-btn'>🔄 Atualizar Dados</button>
             </div>
             <div id='hbox_8' class='neo-hbox' style='width: 100%; gap: 24px'>
-              <div id='panel_9' class='neo-panel'>
+              <div id='panel_9' class='neo-panel stat-panel'>
                 <div class='neo-panel-body'>
                   <div id='vbox_10' class='neo-vbox' style='gap: 0px'>
                     <span id='label_11' class='stat-icon'>👥</span>
@@ -297,7 +297,7 @@
                   </div>
                 </div>
               </div>
-              <div id='panel_15' class='neo-panel'>
+              <div id='panel_15' class='neo-panel stat-panel'>
                 <div class='neo-panel-body'>
                   <div id='vbox_16' class='neo-vbox' style='gap: 0px'>
                     <span id='label_17' class='stat-icon'>💰</span>
@@ -307,7 +307,7 @@
                   </div>
                 </div>
               </div>
-              <div id='panel_21' class='neo-panel'>
+              <div id='panel_21' class='neo-panel stat-panel'>
                 <div class='neo-panel-body'>
                   <div id='vbox_22' class='neo-vbox' style='gap: 0px'>
                     <span id='label_23' class='stat-icon'>🛒</span>
@@ -317,7 +317,7 @@
                   </div>
                 </div>
               </div>
-              <div id='panel_27' class='neo-panel'>
+              <div id='panel_27' class='neo-panel stat-panel'>
                 <div class='neo-panel-body'>
                   <div id='vbox_28' class='neo-vbox' style='gap: 0px'>
                     <span id='label_29' class='stat-icon'>📈</span>
@@ -329,7 +329,7 @@
               </div>
             </div>
             <div id='hbox_33' class='neo-hbox' style='width: 100%; gap: 24px'>
-              <div id='panel_34' class='neo-panel'>
+              <div id='panel_34' class='neo-panel chart-panel'>
                 <div class='neo-panel-body'>
                   <div id='vbox_35' class='neo-vbox' style='width: 100%; gap: 0px'>
                     <span id='label_36' class='section-title'>📊 Vendas dos Últimos 12 Meses</span>
@@ -339,7 +339,7 @@
                   </div>
                 </div>
               </div>
-              <div id='panel_39' class='neo-panel'>
+              <div id='panel_39' class='neo-panel goals-panel'>
                 <div class='neo-panel-body'>
                   <div id='vbox_40' class='neo-vbox' style='width: 100%; gap: 0px'>
                     <span id='label_41' class='section-title'>🎯 Metas do Mês</span>
@@ -347,7 +347,7 @@
                       <span id='label_43' class='goal-name'>Vendas</span>
                       <span id='label_44' class='goal-percentage warning'>92%</span>
                       <div id='box_45' class='neo-box'>
-                        <div id='box_46' class='neo-box'>
+                        <div id='box_46' class='neo-box' style='width: 92%'>
                         </div>
                       </div>
                       <span id='label_47' class='goal-details'>R$ 46.000 de R$ 50.000</span>
@@ -356,7 +356,7 @@
                       <span id='label_49' class='goal-name'>Novos Usuários</span>
                       <span id='label_50' class='goal-percentage success'>104%</span>
                       <div id='box_51' class='neo-box'>
-                        <div id='box_52' class='neo-box'>
+                        <div id='box_52' class='neo-box' style='width: 100%'>
                         </div>
                       </div>
                       <span id='label_53' class='goal-details'>1.300 de 1.250 usuários</span>
@@ -365,7 +365,7 @@
                       <span id='label_55' class='goal-name'>Conversão</span>
                       <span id='label_56' class='goal-percentage warning'>89%</span>
                       <div id='box_57' class='neo-box'>
-                        <div id='box_58' class='neo-box'>
+                        <div id='box_58' class='neo-box' style='width: 89%'>
                         </div>
                       </div>
                       <span id='label_59' class='goal-details'>3.2% de 3.6% meta</span>

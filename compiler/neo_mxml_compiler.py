@@ -386,9 +386,29 @@ class NeoMXMLCompiler:
         if 'color' in attrs:
             styles.append(f"color: {attrs['color']}")
 
+        # Adicionar style inline do MXML (para casos como style="max-width: 1600px")
+        if 'style' in attrs:
+            styles.append(attrs['style'])
+
         if styles:
             return f" style='{'; '.join(styles)}'"
         return ""
+
+    def _build_class_string(self, base_class: str, attrs: Dict[str, str]) -> str:
+        """Constrói string de classes CSS combinando base + styleClass + alinhamento"""
+        classes = [base_class]
+
+        # Adicionar styleClass se existir
+        if 'styleClass' in attrs:
+            classes.append(attrs['styleClass'])
+
+        # Adicionar classes de alinhamento
+        if 'horizontalAlign' in attrs:
+            classes.append(f"h-align-{attrs['horizontalAlign']}")
+        if 'verticalAlign' in attrs:
+            classes.append(f"v-align-{attrs['verticalAlign']}")
+
+        return f" class='{' '.join(classes)}'"
 
     def _get_alignment_classes(self, attrs: Dict[str, str]) -> str:
         """Retorna classes CSS para alinhamento"""
@@ -454,9 +474,10 @@ class NeoMXMLCompiler:
 
             # Processar atributos
             static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string('neo-panel', static_attrs)
             style_str = self._build_style_string(static_attrs)
 
-            lines.append(f"{prefix}<div id='{elem_id}' class='neo-panel'{style_str}>")
+            lines.append(f"{prefix}<div id='{elem_id}'{class_str}{style_str}>")
             if title:
                 lines.append(f"{prefix}  <div class='neo-panel-header'>{title}</div>")
             lines.append(f"{prefix}  <div class='neo-panel-body'>")
@@ -500,6 +521,7 @@ class NeoMXMLCompiler:
 
             # Processar atributos
             static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string('neo-button', static_attrs)
             style_str = self._build_style_string(static_attrs)
 
             # Detectar event handler
@@ -528,7 +550,7 @@ class NeoMXMLCompiler:
                     # Placeholder no HTML (será atualizado por reatividade)
                     label_content = ''
 
-            lines.append(f"{prefix}<button id='{elem_id}' class='neo-button'{style_str}>{label_content}</button>")
+            lines.append(f"{prefix}<button id='{elem_id}'{class_str}{style_str}>{label_content}</button>")
 
         elif tag == 'TextInput':
             elem_id = f"input_{self.component_counter}"
