@@ -177,6 +177,10 @@
         const el = this.shadowRoot.getElementById('label_21');
         if (el) el.textContent = fullName.value;
       });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_23');
+        if (el) el.disabled = !isFormValid.value;
+      });
       // Repeater: repeater_29
       createEffect(() => {
         const el = this.shadowRoot.getElementById('repeater_29');
@@ -193,6 +197,10 @@
           itemEl.textContent = item.text || JSON.stringify(item);
           el.appendChild(itemEl);
         });
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_31');
+        if (el) el.textContent = 'Total Items: ' + items.value.length;
       });
     }
   }

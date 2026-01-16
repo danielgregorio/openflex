@@ -192,7 +192,7 @@
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_20');
-        if (el) el.color = growthColor.value;
+        if (el) el.style.color = growthColor.value;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_20');

@@ -194,7 +194,7 @@
             font-weight: bold;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%'>
+        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
           <div id='box_2' class='neo-box'>
             <div id='vbox_3' class='neo-vbox'>
               <span id='label_4' class='neo-label'>📝 Formulário de Contato</span>
@@ -218,8 +218,8 @@
                 <span id='label_19' class='neo-label'>Quero receber novidades por email</span>
               </div>
               <div id='vbox_20' class='neo-vbox'>
-                <button id='btn_21' class='neo-button'>📨 Enviar Mensagem</button>
-                <button id='btn_22' class='neo-button'>🔄 Limpar Formulário</button>
+                <button id='btn_21' class='neo-button submit-btn'>📨 Enviar Mensagem</button>
+                <button id='btn_22' class='neo-button reset-btn'>🔄 Limpar Formulário</button>
               </div>
               <span id='label_23' class='neo-label' style='color: #7f8c8d'></span>
             </div>
@@ -248,8 +248,20 @@
 
     setupReactivity() {
       createEffect(() => {
+        const el = this.shadowRoot.getElementById('box_2');
+        if (el) el.style.display = (!submitted.value) ? 'block' : 'none';
+      });
+      createEffect(() => {
         const el = this.shadowRoot.getElementById('input_7');
         if (el) el.value = name.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('input_7');
+        if (el) el.className = 'form-input ' + (nameError.value ? 'form-input-error' : '');
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_8');
+        if (el) el.style.display = (nameError.value.length > 0) ? 'block' : 'none';
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_8');
@@ -260,6 +272,14 @@
         if (el) el.value = email.value;
       });
       createEffect(() => {
+        const el = this.shadowRoot.getElementById('input_11');
+        if (el) el.className = 'form-input ' + (emailError.value ? 'form-input-error' : '');
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_12');
+        if (el) el.style.display = (emailError.value.length > 0) ? 'block' : 'none';
+      });
+      createEffect(() => {
         const el = this.shadowRoot.getElementById('label_12');
         if (el) el.textContent = emailError.value;
       });
@@ -268,12 +288,28 @@
         if (el) el.value = message.value;
       });
       createEffect(() => {
+        const el = this.shadowRoot.getElementById('input_15');
+        if (el) el.className = 'form-textarea ' + (messageError.value ? 'form-input-error' : '');
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_16');
+        if (el) el.style.display = (messageError.value.length > 0) ? 'block' : 'none';
+      });
+      createEffect(() => {
         const el = this.shadowRoot.getElementById('label_16');
         if (el) el.textContent = messageError.value;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('checkbox_18');
         if (el) el.checked = subscribe.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_21');
+        if (el) el.disabled = !isFormValid.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_23');
+        if (el) el.textContent = 'Campos preenchidos: ' + (isNameValid.value ? '✅' : '❌') + ' Nome | ' + (isEmailValid.value ? '✅' : '❌') + ' Email | ' + (isMessageValid.value ? '✅' : '❌') + ' Mensagem';
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('box_24');

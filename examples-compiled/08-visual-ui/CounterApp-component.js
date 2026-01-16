@@ -106,7 +106,7 @@
             margin-bottom: 8px;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%'>
+        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
           <div id='panel_2' class='neo-panel'>
             <div class='neo-panel-header'>🔢 Contador Reativo</div>
             <div class='neo-panel-body'>
@@ -116,9 +116,9 @@
                   <span id='label_6' class='neo-label' style='color: #7f8c8d'></span>
                 </div>
                 <div id='hbox_7' class='neo-hbox h-align-center'>
-                  <button id='btn_8' class='neo-button'>➖ Decrementar</button>
-                  <button id='btn_9' class='neo-button'>🔄 Reset</button>
-                  <button id='btn_10' class='neo-button'>➕ Incrementar</button>
+                  <button id='btn_8' class='neo-button btn-decrement'>➖ Decrementar</button>
+                  <button id='btn_9' class='neo-button btn-reset'>🔄 Reset</button>
+                  <button id='btn_10' class='neo-button btn-increment'>➕ Incrementar</button>
                 </div>
                 <div id='box_11' class='neo-box' style='width: 100%'>
                 </div>
@@ -155,7 +155,23 @@
     setupReactivity() {
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_5');
+        if (el) el.className = `counter-display ${isPositive.value ? 'positive' : (isNegative.value ? 'negative' : 'zero')}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_5');
         if (el) el.textContent = count.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_6');
+        if (el) el.textContent = 'Status: ' + (isPositive.value ? '⬆️ Positivo' : (isNegative.value ? '⬇️ Negativo' : '⚪ Zero'));
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_15');
+        if (el) el.style.display = (history.value.length === 0) ? 'block' : 'none';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_15');
+        if (el) el.textContent = history.value.length === 0 ? 'Nenhuma ação ainda' : '';
       });
       // Repeater: repeater_16
       createEffect(() => {

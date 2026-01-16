@@ -51,7 +51,7 @@
   }
 
   function addMinute() {
-    seconds.value = 60;
+    seconds.value += 60;
   }
 
 
@@ -122,16 +122,16 @@
             transition: all 0.3s;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%'>
+        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
           <div id='box_2' class='neo-box'>
             <div id='vbox_3' class='neo-vbox h-align-center'>
               <span id='label_4' class='neo-label' style='color: #2c3e50'>⏱️ Cronômetro</span>
               <span id='label_5' class='timer-display'></span>
               <div id='hbox_6' class='neo-hbox h-align-center'>
-                <button id='btn_7' class='neo-button'>{buttonLabel}</button>
-                <button id='btn_8' class='neo-button'>🔄 Resetar</button>
+                <button id='btn_7' class='neo-button btn-primary'></button>
+                <button id='btn_8' class='neo-button btn-secondary'>🔄 Resetar</button>
               </div>
-              <button id='btn_9' class='neo-button'>➕ Adicionar 1 Minuto</button>
+              <button id='btn_9' class='neo-button btn-add'>➕ Adicionar 1 Minuto</button>
               <span id='label_10' class='neo-label' style='color: #7f8c8d'></span>
             </div>
           </div>
@@ -156,6 +156,14 @@
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_5');
         if (el) el.textContent = displayTime.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_7');
+        if (el) el.textContent = buttonLabel.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_10');
+        if (el) el.textContent = seconds.value + ' segundos totais';
       });
     }
   }

@@ -142,7 +142,7 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%'>
+        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
           <div id='box_2' class='neo-box'>
             <div id='vbox_3' class='neo-vbox'>
               <span id='label_4' class='neo-label'>🎨 Seletor de Cores</span>
@@ -184,7 +184,7 @@
                 </div>
               </div>
               <div id='hbox_31' class='neo-hbox h-align-center'>
-                <button id='btn_32' class='neo-button'>🎲 Cor Aleatória</button>
+                <button id='btn_32' class='neo-button random-btn'>🎲 Cor Aleatória</button>
               </div>
             </div>
           </div>
@@ -204,23 +204,47 @@
     setupReactivity() {
       createEffect(() => {
         const el = this.shadowRoot.getElementById('box_5');
-        if (el) el.backgroundColor = hexColor.value;
+        if (el) el.style.backgroundColor = hexColor.value;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_6');
-        if (el) el.color = textColor.value;
+        if (el) el.style.color = textColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_6');
+        if (el) el.textContent = hexColor.value.toUpperCase();
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_11');
+        if (el) el.textContent = Math.round(red.value);
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('input_12');
         if (el) el.value = red.value;
       });
       createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_16');
+        if (el) el.textContent = Math.round(green.value);
+      });
+      createEffect(() => {
         const el = this.shadowRoot.getElementById('input_17');
         if (el) el.value = green.value;
       });
       createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_21');
+        if (el) el.textContent = Math.round(blue.value);
+      });
+      createEffect(() => {
         const el = this.shadowRoot.getElementById('input_22');
         if (el) el.value = blue.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_26');
+        if (el) el.textContent = 'HEX: ' + hexColor.value.toUpperCase();
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_29');
+        if (el) el.textContent = 'RGB: ' + rgbColor.value;
       });
     }
   }

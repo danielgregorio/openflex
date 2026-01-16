@@ -113,7 +113,7 @@
             margin-bottom: 10px;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%'>
+        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
           <div id='panel_2' class='neo-panel'>
             <div class='neo-panel-header'>🌡️ Conversor de Temperatura</div>
             <div class='neo-panel-body'>
@@ -164,7 +164,7 @@
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_6');
-        if (el) el.color = temperatureColor.value;
+        if (el) el.style.color = temperatureColor.value;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_6');
@@ -176,15 +176,27 @@
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_13');
-        if (el) el.color = temperatureColor.value;
+        if (el) el.style.color = temperatureColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_13');
+        if (el) el.textContent = Math.round(celsius.value * 10) / 10;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_17');
-        if (el) el.color = temperatureColor.value;
+        if (el) el.style.color = temperatureColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_17');
+        if (el) el.textContent = Math.round(fahrenheit.value * 10) / 10;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_21');
-        if (el) el.color = temperatureColor.value;
+        if (el) el.style.color = temperatureColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_21');
+        if (el) el.textContent = Math.round(kelvin.value * 10) / 10;
       });
     }
   }

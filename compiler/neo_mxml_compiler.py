@@ -266,8 +266,15 @@ class NeoMXMLCompiler:
 
                     # Se template tem binding simples {expr}, usar direto
                     if template == f'{{{expr}}}':
-                        if is_style:
-                            # Atributos de estilo (width, height, etc)
+                        # Atributos de cor devem usar style.color sem unidade
+                        if attr in ['color', 'backgroundColor', 'borderColor']:
+                            if expr in self.reactive_vars:
+                                lines.append(f"      if (el) el.style.{attr} = {expr}.value;")
+                            else:
+                                expr_with_value = self._add_value_access(expr)
+                                lines.append(f"      if (el) el.style.{attr} = {expr_with_value};")
+                        elif is_style:
+                            # Atributos de estilo com px (width, height, etc)
                             if expr in self.reactive_vars:
                                 lines.append(f"      if (el) el.style.{attr} = {expr}.value + 'px';")
                             else:

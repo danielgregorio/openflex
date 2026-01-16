@@ -153,16 +153,16 @@
             border-radius: 6px;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%'>
+        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
           <div id='panel_2' class='neo-panel'>
             <div class='neo-panel-header'>✅ Lista de Tarefas Reativa</div>
             <div class='neo-panel-body'>
               <div id='vbox_3' class='neo-vbox'>
                 <input type='text' id='input_4' class='neo-textinput' placeholder='Digite uma nova tarefa...' />
                 <div id='hbox_5' class='neo-hbox h-align-center'>
-                  <button id='btn_6' class='neo-button'>Todas ({totalCount})</button>
-                  <button id='btn_7' class='neo-button'>Ativas ({activeCount})</button>
-                  <button id='btn_8' class='neo-button'>Completas ({completedCount})</button>
+                  <button id='btn_6' class='neo-button'></button>
+                  <button id='btn_7' class='neo-button'></button>
+                  <button id='btn_8' class='neo-button'></button>
                 </div>
                 <div id='vbox_9' class='neo-vbox'>
                   <span id='label_10' class='neo-label' style='color: #95a5a6'>Nenhuma tarefa para exibir</span>
@@ -174,7 +174,7 @@
                 </div>
                 <div id='hbox_13' class='neo-hbox h-align-space-between v-align-center'>
                   <span id='label_14' class='neo-label' style='color: #7f8c8d'></span>
-                  <button id='btn_15' class='neo-button'>🗑️ Limpar Completas</button>
+                  <button id='btn_15' class='neo-button btn-clear'>🗑️ Limpar Completas</button>
                 </div>
                 <span id='label_16' class='neo-label' style='color: #95a5a6'>✨ Construído com OpenFlex Neo + MXML</span>
               </div>
@@ -190,11 +190,11 @@
 
     attachEventHandlers() {
       const el_btn_6 = this.shadowRoot.getElementById('btn_6');
-      if (el_btn_6) el_btn_6.addEventListener('click', () => () => setFilter('all')());
+      if (el_btn_6) el_btn_6.addEventListener('click', () => setFilter('all'));
       const el_btn_7 = this.shadowRoot.getElementById('btn_7');
-      if (el_btn_7) el_btn_7.addEventListener('click', () => () => setFilter('active')());
+      if (el_btn_7) el_btn_7.addEventListener('click', () => setFilter('active'));
       const el_btn_8 = this.shadowRoot.getElementById('btn_8');
-      if (el_btn_8) el_btn_8.addEventListener('click', () => () => setFilter('completed')());
+      if (el_btn_8) el_btn_8.addEventListener('click', () => setFilter('completed'));
       const el_btn_15 = this.shadowRoot.getElementById('btn_15');
       if (el_btn_15) el_btn_15.addEventListener('click', () => clearCompleted());
     }
@@ -212,6 +212,34 @@
           newTodoText.value = e.target.value;
         });
       }
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_6');
+        if (el) el.className = `filter-btn ${filter.value === 'all' ? 'filter.value-btn-active' : 'filter.value-btn-inactive'}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_6');
+        if (el) el.textContent = `Todas (${totalCount.value})`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_7');
+        if (el) el.className = `filter-btn ${filter.value === 'active' ? 'filter.value-btn-active' : 'filter.value-btn-inactive'}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_7');
+        if (el) el.textContent = `Ativas (${activeCount.value})`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_8');
+        if (el) el.className = `filter-btn ${filter.value === 'completed' ? 'filter.value-btn-active' : 'filter.value-btn-inactive'}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_8');
+        if (el) el.textContent = `Completas (${completedCount.value})`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_10');
+        if (el) el.style.display = (filteredTodos.value.length === 0) ? 'block' : 'none';
+      });
       // Repeater: repeater_11
       createEffect(() => {
         const el = this.shadowRoot.getElementById('repeater_11');
@@ -228,6 +256,10 @@
           itemEl.textContent = item.text || JSON.stringify(item);
           el.appendChild(itemEl);
         });
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_14');
+        if (el) el.textContent = '📊 ' + totalCount.value + ' total | 🔵 ' + activeCount.value + ' ativas | ✅ ' + completedCount.value + ' completas';
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('btn_15');

@@ -151,7 +151,7 @@
             -webkit-text-fill-color: transparent;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%'>
+        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
           <div id='box_2' class='neo-box'>
             <div id='vbox_3' class='neo-vbox'>
               <div id='vbox_4' class='neo-vbox'>
@@ -169,7 +169,7 @@
                 <button id='btn_13' class='neo-button'></button>
               </div>
               <div id='hbox_14' class='neo-hbox h-align-center'>
-                <button id='btn_15' class='neo-button'>Próxima →</button>
+                <button id='btn_15' class='neo-button next-btn'>Próxima →</button>
               </div>
             </div>
           </div>
@@ -179,7 +179,7 @@
               <span id='label_19' class='score-display'></span>
               <span id='label_20' class='neo-label' style='color: #2c3e50'></span>
               <span id='label_21' class='neo-label' style='color: #7f8c8d'></span>
-              <button id='btn_22' class='neo-button'>🔄 Jogar Novamente</button>
+              <button id='btn_22' class='neo-button next-btn'>🔄 Jogar Novamente</button>
             </div>
           </div>
         </div>
