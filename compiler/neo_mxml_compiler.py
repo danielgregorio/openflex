@@ -37,6 +37,16 @@ class NeoMXMLCompiler:
         self.bindings = []  # Lista de bindings {id, attribute, expression}
         self.event_handlers = []  # Lista de event handlers {id, event, handler}
 
+    def _add_value_access(self, expr: str) -> str:
+        """Add .value access to reactive variables in expression"""
+        result = expr
+        for var in self.reactive_vars:
+            # Match the variable as a whole word, not already followed by .value
+            pattern = r'\b' + re.escape(var) + r'(?!\.value)\b'
+            replacement = var + '.value'
+            result = re.sub(pattern, replacement, result)
+        return result
+
     def compile(self, mxml_source: str, filename: str = "<input>") -> str:
         """Compila MXML para JavaScript"""
 
@@ -193,7 +203,19 @@ class NeoMXMLCompiler:
             event = handler_info['event']
             handler = handler_info['handler']
             lines.append(f"    const el_{elem_id} = this.shadowRoot.getElementById('{elem_id}');")
-            lines.append(f"    if (el_{elem_id}) el_{elem_id}.addEventListener('{event}', () => {handler}());")
+
+            # Determinar como gerar o handler
+            if handler.strip().startswith('() =>') or handler.strip().startswith('function'):
+                # Já é uma função, usar diretamente
+                handler_code = handler
+            elif '(' in handler:
+                # É uma chamada de função, envolver em arrow function
+                handler_code = f"() => {handler}"
+            else:
+                # É apenas um nome de função, envolver em arrow function e adicionar ()
+                handler_code = f"() => {handler}()"
+
+            lines.append(f"    if (el_{elem_id}) el_{elem_id}.addEventListener('{event}', {handler_code});")
         lines.append("  }")
 
         if has_reactivity:
@@ -229,8 +251,16 @@ class NeoMXMLCompiler:
                     lines.append(f"    }});")
                     continue
 
-                # Detectar se a expressão é uma variável reativa
-                if expr in self.reactive_vars:
+                # Detectar se a expressão contém variáveis reativas
+                # Verifica se expr é uma variável simples OU se contém variáveis reativas
+                uses_reactive_var = expr in self.reactive_vars or any(var in expr for var in self.reactive_vars)
+
+                if uses_reactive_var:
+                    # Mapear atributos MXML para propriedades DOM
+                    dom_attr = attr
+                    if attr == 'styleClass':
+                        dom_attr = 'className'
+
                     lines.append(f"    createEffect(() => {{")
                     lines.append(f"      const el = this.shadowRoot.getElementById('{elem_id}');")
 
@@ -238,17 +268,37 @@ class NeoMXMLCompiler:
                     if template == f'{{{expr}}}':
                         if is_style:
                             # Atributos de estilo (width, height, etc)
-                            lines.append(f"      if (el) el.style.{attr} = {expr}.value + 'px';")
+                            if expr in self.reactive_vars:
+                                lines.append(f"      if (el) el.style.{attr} = {expr}.value + 'px';")
+                            else:
+                                # Expressão que referencia variáveis reativas
+                                expr_with_value = self._add_value_access(expr)
+                                lines.append(f"      if (el) el.style.{attr} = ({expr_with_value}) + 'px';")
                         elif attr == 'visible':
                             # Visibilidade
-                            lines.append(f"      if (el) el.style.display = {expr}.value ? 'block' : 'none';")
+                            if expr in self.reactive_vars:
+                                lines.append(f"      if (el) el.style.display = {expr}.value ? 'block' : 'none';")
+                            else:
+                                expr_with_value = self._add_value_access(expr)
+                                lines.append(f"      if (el) el.style.display = ({expr_with_value}) ? 'block' : 'none';")
                         else:
-                            # Atributo normal
-                            lines.append(f"      if (el) el.{attr} = {expr}.value;")
+                            # Atributo normal (textContent, value, className, etc)
+                            if expr in self.reactive_vars:
+                                lines.append(f"      if (el) el.{dom_attr} = {expr}.value;")
+                            else:
+                                # Expressão complexa - avaliar diretamente com .value
+                                expr_with_value = self._add_value_access(expr)
+                                lines.append(f"      if (el) el.{dom_attr} = {expr_with_value};")
                     else:
-                        # Template complexo: "Count: {count}"
-                        template_js = template.replace(f'{{{expr}}}', f"${{{expr}.value}}")
-                        lines.append(f"      if (el) el.{attr} = `{template_js}`;")
+                        # Template complexo: "Count: {count}" ou "A) + currentQ.answers[0]"
+                        # Substituir binding mantendo a expressão
+                        if expr in self.reactive_vars:
+                            template_js = template.replace(f'{{{expr}}}', f"${{{expr}.value}}")
+                        else:
+                            # Expressão complexa - avaliar diretamente com .value
+                            expr_with_value = self._add_value_access(expr)
+                            template_js = template.replace(f'{{{expr}}}', f"${{{expr_with_value}}}")
+                        lines.append(f"      if (el) el.{dom_attr} = `{template_js}`;")
 
                     lines.append(f"    }});")
 
@@ -462,7 +512,23 @@ class NeoMXMLCompiler:
                     'handler': handler
                 })
 
-            lines.append(f"{prefix}<button id='{elem_id}' class='neo-button'{style_str}>{label}</button>")
+            # Detectar data binding no label
+            label_content = label
+            if '{' in label and '}' in label:
+                # Extrair expressão
+                match = re.search(r'\{([^}]+)\}', label)
+                if match:
+                    expr = match.group(1).strip()
+                    self.bindings.append({
+                        'id': elem_id,
+                        'attribute': 'textContent',
+                        'expression': expr,
+                        'template': label
+                    })
+                    # Placeholder no HTML (será atualizado por reatividade)
+                    label_content = ''
+
+            lines.append(f"{prefix}<button id='{elem_id}' class='neo-button'{style_str}>{label_content}</button>")
 
         elif tag == 'TextInput':
             elem_id = f"input_{self.component_counter}"

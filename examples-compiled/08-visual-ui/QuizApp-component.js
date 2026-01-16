@@ -163,10 +163,10 @@
               </div>
               <span id='label_8' class='question-text'></span>
               <div id='vbox_9' class='neo-vbox'>
-                <button id='btn_10' class='neo-button'>{'A) ' + currentQ.answers[0]}</button>
-                <button id='btn_11' class='neo-button'>{'B) ' + currentQ.answers[1]}</button>
-                <button id='btn_12' class='neo-button'>{'C) ' + currentQ.answers[2]}</button>
-                <button id='btn_13' class='neo-button'>{'D) ' + currentQ.answers[3]}</button>
+                <button id='btn_10' class='neo-button'></button>
+                <button id='btn_11' class='neo-button'></button>
+                <button id='btn_12' class='neo-button'></button>
+                <button id='btn_13' class='neo-button'></button>
               </div>
               <div id='hbox_14' class='neo-hbox h-align-center'>
                 <button id='btn_15' class='neo-button'>Próxima →</button>
@@ -192,13 +192,13 @@
 
     attachEventHandlers() {
       const el_btn_10 = this.shadowRoot.getElementById('btn_10');
-      if (el_btn_10) el_btn_10.addEventListener('click', () => () => selectAnswer(0)());
+      if (el_btn_10) el_btn_10.addEventListener('click', () => selectAnswer(0));
       const el_btn_11 = this.shadowRoot.getElementById('btn_11');
-      if (el_btn_11) el_btn_11.addEventListener('click', () => () => selectAnswer(1)());
+      if (el_btn_11) el_btn_11.addEventListener('click', () => selectAnswer(1));
       const el_btn_12 = this.shadowRoot.getElementById('btn_12');
-      if (el_btn_12) el_btn_12.addEventListener('click', () => () => selectAnswer(2)());
+      if (el_btn_12) el_btn_12.addEventListener('click', () => selectAnswer(2));
       const el_btn_13 = this.shadowRoot.getElementById('btn_13');
-      if (el_btn_13) el_btn_13.addEventListener('click', () => () => selectAnswer(3)());
+      if (el_btn_13) el_btn_13.addEventListener('click', () => selectAnswer(3));
       const el_btn_15 = this.shadowRoot.getElementById('btn_15');
       if (el_btn_15) el_btn_15.addEventListener('click', () => nextQuestion());
       const el_btn_22 = this.shadowRoot.getElementById('btn_22');
@@ -207,12 +207,68 @@
 
     setupReactivity() {
       createEffect(() => {
+        const el = this.shadowRoot.getElementById('box_2');
+        if (el) el.style.display = (!showResult.value) ? 'block' : 'none';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_5');
+        if (el) el.textContent = 'Questão ' + (currentQuestion.value + 1) + ' de ' + questions.length;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('box_7');
+        if (el) el.style.width = (progress.value + '%') + 'px';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_8');
+        if (el) el.textContent = currentQ.value.question;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_10');
+        if (el) el.className = 'answer-btn ' + (selectedAnswer.value === 0 ? 'answer-btn-selected' : '');
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_10');
+        if (el) el.textContent = 'A) ' + currentQ.value.answers[0];
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_11');
+        if (el) el.className = 'answer-btn ' + (selectedAnswer.value === 1 ? 'answer-btn-selected' : '');
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_11');
+        if (el) el.textContent = 'B) ' + currentQ.value.answers[1];
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_12');
+        if (el) el.className = 'answer-btn ' + (selectedAnswer.value === 2 ? 'answer-btn-selected' : '');
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_12');
+        if (el) el.textContent = 'C) ' + currentQ.value.answers[2];
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_13');
+        if (el) el.className = 'answer-btn ' + (selectedAnswer.value === 3 ? 'answer-btn-selected' : '');
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_13');
+        if (el) el.textContent = 'D) ' + currentQ.value.answers[3];
+      });
+      createEffect(() => {
         const el = this.shadowRoot.getElementById('box_16');
         if (el) el.style.display = showResult.value ? 'block' : 'none';
       });
       createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_19');
+        if (el) el.textContent = scorePercentage.value + '%';
+      });
+      createEffect(() => {
         const el = this.shadowRoot.getElementById('label_20');
         if (el) el.textContent = resultMessage.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_21');
+        if (el) el.textContent = 'Você acertou ' + score.value + ' de ' + questions.length + ' questões';
       });
     }
   }

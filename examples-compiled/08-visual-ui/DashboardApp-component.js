@@ -195,12 +195,24 @@
 
     setupReactivity() {
       createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_11');
+        if (el) el.textContent = users.value.toLocaleString();
+      });
+      createEffect(() => {
         const el = this.shadowRoot.getElementById('label_17');
         if (el) el.textContent = revenueFormatted.value;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_18');
         if (el) el.color = growthColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_18');
+        if (el) el.textContent = growthIcon.value + ' ' + growth.value.toFixed(1) + '%';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_23');
+        if (el) el.textContent = orders.value.toLocaleString();
       });
     }
   }
