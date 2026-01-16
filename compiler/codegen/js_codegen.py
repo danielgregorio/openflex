@@ -411,7 +411,8 @@ class JSCodeGenerator:
 
         # Only add parentheses for complex expressions
         # Simple operators don't need wrapping
-        if binary.operator in ['=', '==', '!=', '===', '!==', '<', '>', '<=', '>=', '&&', '||']:
+        # Include compound assignment operators
+        if binary.operator in ['=', '+=', '-=', '*=', '/=', '%=', '==', '!=', '===', '!==', '<', '>', '<=', '>=', '&&', '||']:
             return f"{left} {binary.operator} {right}"
         else:
             # Arithmetic operators - add parentheses only if needed

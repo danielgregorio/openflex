@@ -46,9 +46,9 @@
   });
 
   function simulateUpdate() {
-    users.value = Math.floor(Math.random() * 50 - 10);
-    revenue.value = Math.floor(Math.random() * 5000 - 1000);
-    orders.value = Math.floor(Math.random() * 20 - 5);
+    users.value += Math.floor(Math.random() * 50 - 10);
+    revenue.value += Math.floor(Math.random() * 5000 - 1000);
+    orders.value += Math.floor(Math.random() * 20 - 5);
     growth.value = Math.random() * 30 - 10;
     conversion.value = 2.5 + Math.random() * 2;
   }

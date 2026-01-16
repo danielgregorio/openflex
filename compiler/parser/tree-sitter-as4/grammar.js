@@ -360,6 +360,12 @@ module.exports = grammar({
     binary_expression: $ => choice(
       // Assignment (lowest precedence) - MUST BE LAST
       prec.right(1, seq($.expression, '=', $.expression)),
+      // Compound assignment operators
+      prec.right(1, seq($.expression, '+=', $.expression)),
+      prec.right(1, seq($.expression, '-=', $.expression)),
+      prec.right(1, seq($.expression, '*=', $.expression)),
+      prec.right(1, seq($.expression, '/=', $.expression)),
+      prec.right(1, seq($.expression, '%=', $.expression)),
       // Logical OR
       prec.left(2, seq($.expression, '||', $.expression)),
       // Logical AND
