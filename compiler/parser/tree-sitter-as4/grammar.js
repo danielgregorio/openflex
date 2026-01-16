@@ -324,7 +324,8 @@ module.exports = grammar({
       $.number,
       $.string,
       $.boolean,
-      $.null
+      $.null,
+      $.regex_literal
     ),
 
     number: $ => /\d+(\.\d+)?/,
@@ -335,6 +336,17 @@ module.exports = grammar({
     ),
     boolean: $ => choice('true', 'false'),
     null: $ => 'null',
+
+    // Regular expression literal: /pattern/flags
+    regex_literal: $ => token(seq(
+      '/',
+      repeat(choice(
+        /[^\\/\n\r]/,  // Any char except /, \, newline
+        /\\./           // Escaped char
+      )),
+      '/',
+      optional(/[gimsuvy]*/),  // Optional flags
+    )),
 
     template_string: $ => seq(
       '`',

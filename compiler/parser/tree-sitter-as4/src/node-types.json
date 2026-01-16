@@ -1268,6 +1268,10 @@
           "named": true
         },
         {
+          "type": "regex_literal",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         }
@@ -2467,6 +2471,10 @@
   {
     "type": "public",
     "named": false
+  },
+  {
+    "type": "regex_literal",
+    "named": true
   },
   {
     "type": "return",

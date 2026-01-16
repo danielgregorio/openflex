@@ -26,7 +26,7 @@
   });
 
   const isEmailValid = new Computed(() => {
-    const emailRegex =  / [s] + [s] + [s];
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email.value);
   });
 

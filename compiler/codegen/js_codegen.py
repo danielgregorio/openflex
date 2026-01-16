@@ -398,6 +398,9 @@ class JSCodeGenerator:
             return "true" if literal.value else "false"
         elif isinstance(literal, NullLiteral):
             return "null"
+        elif hasattr(literal, 'pattern'):  # RegexLiteral
+            # Return the pattern as-is (already includes /pattern/flags format)
+            return literal.pattern
         else:
             return str(literal.value)
 

@@ -26,7 +26,7 @@ from .ast import (
     IfStatement, ForStatement, ForInStatement, ForOfStatement, WhileStatement,
     BinaryExpression, UnaryExpression, CallExpression,
     MemberExpression, Identifier, Literal,
-    NumberLiteral, StringLiteral, BooleanLiteral, NullLiteral,
+    NumberLiteral, StringLiteral, BooleanLiteral, NullLiteral, RegexLiteral,
     Decorator, ConditionalCompilation, ConditionExpression,
     ConditionIdentifier, ConditionAnd, ConditionOr, ConditionNot,
     ElifBlock, SourceLocation,
@@ -685,6 +685,15 @@ class ASTVisitor:
 
         elif node.type == 'null':
             return NullLiteral(value=None, raw='null', loc=self._make_location(node))
+
+        elif node.type == 'regex_literal':
+            text = self._get_text(node)
+            return RegexLiteral(
+                pattern=text,
+                value=text,  # Store the full pattern as value
+                raw=text,
+                loc=self._make_location(node)
+            )
 
         elif node.type == 'binary_expression':
             return self.visit_binary_expression(node)

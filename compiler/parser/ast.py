@@ -239,6 +239,13 @@ class NullLiteral(Literal):
 
 
 @dataclass
+class RegexLiteral(Literal):
+    """Regular expression literal: /pattern/flags"""
+    pattern: str = ""  # The regex pattern including delimiters and flags
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
 class ArrayLiteral(Expression):
     """Array literal: [1, 2, 3]"""
     elements: List[Expression]
