@@ -9,163 +9,360 @@
         @reactive var revenue: Number = 45678;
         @reactive var orders: Number = 823;
         @reactive var growth: Number = 12.5;
+        @reactive var conversion: Number = 3.2;
 
         @computed var revenueFormatted: String {
-            return "R$ " + revenue.toLocaleString('pt-BR');
+            return "R$ " + revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        }
+
+        @computed var growthFormatted: String {
+            return (growth >= 0 ? '+' : '') + growth.toFixed(1) + '%';
         }
 
         @computed var growthColor: String {
-            return growth >= 0 ? "#27ae60" : "#e74c3c";
+            return growth >= 0 ? '#10b981' : '#ef4444';
         }
 
-        @computed var growthIcon: String {
-            return growth >= 0 ? "📈" : "📉";
+        @computed var conversionFormatted: String {
+            return conversion.toFixed(1) + '%';
         }
 
         function simulateUpdate(): void {
-            users += Math.floor(Math.random() * 10);
-            revenue += Math.floor(Math.random() * 1000);
-            orders += Math.floor(Math.random() * 5);
-            growth = (Math.random() * 20) - 5;  // -5 to +15
+            users += Math.floor(Math.random() * 50 - 10);
+            revenue += Math.floor(Math.random() * 5000 - 1000);
+            orders += Math.floor(Math.random() * 20 - 5);
+            growth = (Math.random() * 30) - 10;
+            conversion = 2.5 + (Math.random() * 2);
         }
     ]]></fx:Script>
 
     <fx:Style>
-        .dashboard {
-            background: #f5f6fa;
-            padding: 30px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .dashboard-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .dashboard-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .update-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 14px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .update-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
         }
 
         .stat-card {
             background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
         }
 
         .stat-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
 
         .stat-label {
-            font-size: 14px;
-            color: #7f8c8d;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
         }
 
         .stat-value {
-            font-size: 36px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 10px 0;
+            font-size: 32px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+            display: block;
+            line-height: 1.2;
         }
 
         .stat-change {
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .stat-change.positive {
+            color: #10b981;
+        }
+
+        .stat-change.negative {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 24px;
+            display: block;
         }
 
         .chart-placeholder {
-            background: white;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            height: 280px;
             border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .update-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
             font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
+            font-weight: 500;
+            border: 2px dashed #d1d5db;
         }
 
-        .update-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .goals-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .goal-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .goal-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .goal-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .goal-percentage {
+            font-size: 14px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .goal-percentage.warning {
+            color: #f59e0b;
+        }
+
+        .goal-bar {
+            width: 100%;
+            height: 8px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .goal-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .goal-bar-fill.warning {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .goal-details {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 6px;
         }
     </fx:Style>
 
-    <VBox gap="{0}" width="100%" height="100%" styleClass="dashboard">
-        <VBox gap="{30}">
-            <HBox horizontalAlign="space-between" verticalAlign="center">
-                <Label text="📊 Dashboard Executivo" fontSize="{32}" fontWeight="bold" color="#2c3e50" />
+    <Box styleClass="dashboard-container">
+        <Box styleClass="dashboard-content">
+            <!-- Header -->
+            <Box styleClass="header">
+                <Label text="📊 Dashboard Executivo" styleClass="dashboard-title" />
                 <Button label="🔄 Atualizar Dados" click="{simulateUpdate}" styleClass="update-btn" />
-            </HBox>
+            </Box>
 
-            <HBox gap="{20}">
+            <!-- Stats Grid -->
+            <Box styleClass="stats-grid">
+                <!-- Card 1: Usuários -->
                 <Box styleClass="stat-card">
-                    <VBox gap="{5}">
-                        <Label text="👥" styleClass="stat-icon" />
-                        <Label text="Usuários Ativos" styleClass="stat-label" />
-                        <Label text="{users.toLocaleString()}" styleClass="stat-value" />
-                        <Label text="+15% vs mês anterior" fontSize="{12}" color="#27ae60" />
-                    </VBox>
+                    <Label text="👥" styleClass="stat-icon" />
+                    <Label text="Usuários Ativos" styleClass="stat-label" />
+                    <Label text="{users.toLocaleString('pt-BR')}" styleClass="stat-value" />
+                    <Label text="+15% vs mês anterior" styleClass="stat-change positive" />
                 </Box>
 
+                <!-- Card 2: Receita -->
                 <Box styleClass="stat-card">
-                    <VBox gap="{5}">
-                        <Label text="💰" styleClass="stat-icon" />
-                        <Label text="Receita Total" styleClass="stat-label" />
-                        <Label text="{revenueFormatted}" styleClass="stat-value" />
-                        <Label text="{growthIcon + ' ' + growth.toFixed(1) + '%'}"
-                               styleClass="stat-change" color="{growthColor}" />
-                    </VBox>
+                    <Label text="💰" styleClass="stat-icon" />
+                    <Label text="Receita Total" styleClass="stat-label" />
+                    <Label text="{revenueFormatted}" styleClass="stat-value" />
+                    <Label text="{growthFormatted}" styleClass="stat-change positive" color="{growthColor}" />
                 </Box>
 
+                <!-- Card 3: Pedidos -->
                 <Box styleClass="stat-card">
-                    <VBox gap="{5}">
-                        <Label text="🛒" styleClass="stat-icon" />
-                        <Label text="Pedidos" styleClass="stat-label" />
-                        <Label text="{orders.toLocaleString()}" styleClass="stat-value" />
-                        <Label text="+8% vs mês anterior" fontSize="{12}" color="#27ae60" />
-                    </VBox>
+                    <Label text="🛒" styleClass="stat-icon" />
+                    <Label text="Pedidos" styleClass="stat-label" />
+                    <Label text="{orders.toLocaleString('pt-BR')}" styleClass="stat-value" />
+                    <Label text="+8% vs mês anterior" styleClass="stat-change positive" />
                 </Box>
 
+                <!-- Card 4: Conversão -->
                 <Box styleClass="stat-card">
-                    <VBox gap="{5}">
-                        <Label text="📈" styleClass="stat-icon" />
-                        <Label text="Taxa de Conversão" styleClass="stat-label" />
-                        <Label text="3.2%" styleClass="stat-value" />
-                        <Label text="+0.5% vs mês anterior" fontSize="{12}" color="#27ae60" />
-                    </VBox>
+                    <Label text="📈" styleClass="stat-icon" />
+                    <Label text="Taxa de Conversão" styleClass="stat-label" />
+                    <Label text="{conversionFormatted}" styleClass="stat-value" />
+                    <Label text="+0.5% vs mês anterior" styleClass="stat-change positive" />
                 </Box>
-            </HBox>
+            </Box>
 
-            <HBox gap="{20}">
-                <Box styleClass="chart-placeholder" width="60%">
-                    <VBox gap="{20}">
-                        <Label text="📊 Gráfico de Vendas" fontSize="{20}" fontWeight="bold" />
-                        <Label text="[Gráfico seria renderizado aqui]" fontSize="{14}" color="#95a5a6" />
-                        <Label text="Receita: Janeiro a Dezembro 2024" fontSize="{12}" color="#7f8c8d" />
-                    </VBox>
+            <!-- Bottom Section -->
+            <Box styleClass="bottom-section">
+                <!-- Chart Card -->
+                <Box styleClass="chart-card">
+                    <Label text="📊 Vendas dos Últimos 12 Meses" styleClass="chart-title" />
+                    <Box styleClass="chart-placeholder">
+                        <Label text="Gráfico interativo seria renderizado aqui" />
+                    </Box>
                 </Box>
 
-                <Box styleClass="chart-placeholder" width="40%">
-                    <VBox gap="{20}">
-                        <Label text="🎯 Metas do Mês" fontSize="{20}" fontWeight="bold" />
-                        <VBox gap="{15}" horizontalAlign="left">
-                            <Label text="✅ Vendas: 92% (R$ 46K de R$ 50K)" fontSize="{14}" />
-                            <Label text="✅ Novos Usuários: 104% (1300 de 1250)" fontSize="{14}" />
-                            <Label text="⏳ Conversão: 89% (3.2% de 3.6%)" fontSize="{14}" />
-                        </VBox>
-                    </VBox>
+                <!-- Goals Card -->
+                <Box styleClass="goals-card">
+                    <Label text="🎯 Metas do Mês" styleClass="chart-title" />
+
+                    <!-- Goal 1 -->
+                    <Box styleClass="goal-item">
+                        <Box styleClass="goal-header">
+                            <Label text="Vendas" styleClass="goal-name" />
+                            <Label text="92%" styleClass="goal-percentage warning" />
+                        </Box>
+                        <Box styleClass="goal-bar">
+                            <Box styleClass="goal-bar-fill warning" style="width: 92%"></Box>
+                        </Box>
+                        <Label text="R$ 46.000 de R$ 50.000" styleClass="goal-details" />
+                    </Box>
+
+                    <!-- Goal 2 -->
+                    <Box styleClass="goal-item">
+                        <Box styleClass="goal-header">
+                            <Label text="Novos Usuários" styleClass="goal-name" />
+                            <Label text="104%" styleClass="goal-percentage" />
+                        </Box>
+                        <Box styleClass="goal-bar">
+                            <Box styleClass="goal-bar-fill" style="width: 100%"></Box>
+                        </Box>
+                        <Label text="1.300 de 1.250 usuários" styleClass="goal-details" />
+                    </Box>
+
+                    <!-- Goal 3 -->
+                    <Box styleClass="goal-item">
+                        <Box styleClass="goal-header">
+                            <Label text="Conversão" styleClass="goal-name" />
+                            <Label text="89%" styleClass="goal-percentage warning" />
+                        </Box>
+                        <Box styleClass="goal-bar">
+                            <Box styleClass="goal-bar-fill warning" style="width: 89%"></Box>
+                        </Box>
+                        <Label text="3.2% de 3.6% meta" styleClass="goal-details" />
+                    </Box>
                 </Box>
-            </HBox>
-        </VBox>
-    </VBox>
+            </Box>
+        </Box>
+    </Box>
 
 </Application>
