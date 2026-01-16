@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Data Components Demo - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        // Employee data for DataGrid
+        @reactive var employees: Array = [
+            {name: 'João Silva', department: 'Engenharia', salary: 8500, status: 'Ativo'},
+            {name: 'Maria Santos', department: 'Marketing', salary: 7200, status: 'Ativo'},
+            {name: 'Pedro Costa', department: 'Vendas', salary: 6800, status: 'Férias'},
+            {name: 'Ana Oliveira', department: 'Engenharia', salary: 9200, status: 'Ativo'},
+            {name: 'Carlos Souza', department: 'RH', salary: 5900, status: 'Ativo'}
+        ];
+
+        // Categories for ComboBox
+        @reactive var categories: Array = [
+            {label: 'Todos os Departamentos', value: 'all'},
+            {label: 'Engenharia', value: 'eng'},
+            {label: 'Marketing', value: 'mkt'},
+            {label: 'Vendas', value: 'sales'},
+            {label: 'RH', value: 'hr'}
+        ];
+
+        // Recent activities for List
+        @reactive var activities: Array = [
+            {label: '✅ João concluiu projeto Alpha'},
+            {label: '📝 Maria criou relatório mensal'},
+            {label: '🎯 Pedro bateu meta de vendas'},
+            {label: '💼 Ana iniciou sprint 24'},
+            {label: '👥 Carlos agendou treinamento'}
+        ];
+
+        @reactive var selectedCategory: Number = 0;
+        @reactive var statusMessage: String = 'Selecione um departamento para filtrar';
+
+        function addEmployee(): void {
+            const newEmp = {
+                name: 'Novo Funcionário',
+                department: 'Engenharia',
+                salary: 7000,
+                status: 'Ativo'
+            };
+            employees = [...employees, newEmp];
+            statusMessage = 'Funcionário adicionado! Total: ' + employees.length;
+        }
+
+        function removeLastEmployee(): void {
+            if (employees.length > 0) {
+                employees = employees.slice(0, -1);
+                statusMessage = 'Funcionário removido! Total: ' + employees.length;
+            }
+        }
+
+        function addActivity(): void {
+            const messages = [
+                '🎉 Nova conquista desbloqueada!',
+                '📊 Dashboard atualizado',
+                '🔔 Notificação recebida',
+                '⚡ Sistema otimizado',
+                '🎨 Interface melhorada'
+            ];
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            activities = [{label: randomMsg}, ...activities];
+        }
+
+        @computed var totalEmployees: Number {
+            return employees.length;
+        }
+
+        @computed var totalSalaries: Number {
+            return employees.reduce((sum, emp) => sum + emp.salary, 0);
+        }
+
+        @computed var averageSalary: Number {
+            return totalEmployees > 0 ? totalSalaries / totalEmployees : 0;
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('../../runtime/neo-flex-classic-theme.css');
+
+        .demo-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .section-header {
+            font-size: 13px;
+            font-weight: bold;
+            color: #34495e;
+            padding: 8px 0 4px 0;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-label {
+            font-size: 10px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #495057;
+        }
+    </fx:Style>
+
+    <VBox gap="20" width="100%" style="padding: 20px; max-width: 1400px; margin: 0 auto;">
+
+        <!-- Header -->
+        <VBox gap="8">
+            <Label text="📊 Data Components Showcase" styleClass="demo-title" />
+            <Label text="DataGrid, ComboBox e List - Os componentes Flex mais versáteis" styleClass="neo-label" />
+        </VBox>
+
+        <!-- Status Bar -->
+        <Label text="{statusMessage}" styleClass="status-bar" />
+
+        <!-- Top Section: DataGrid -->
+        <Panel title="DataGrid - Tabela de Funcionários">
+            <VBox gap="12" width="100%">
+
+                <!-- Controls -->
+                <HBox gap="8">
+                    <Button label="➕ Adicionar Funcionário" click="{addEmployee}" />
+                    <Button label="➖ Remover Último" click="{removeLastEmployee}" />
+                    <Label text="ComboBox de Filtro:" />
+                    <ComboBox dataProvider="{categories}" labelField="label" styleClass="neo-combobox" />
+                </HBox>
+
+                <!-- DataGrid -->
+                <DataGrid dataProvider="{employees}" width="100%" styleClass="neo-datagrid">
+                    <DataGridColumn headerText="Nome" dataField="name" width="200" />
+                    <DataGridColumn headerText="Departamento" dataField="department" width="150" />
+                    <DataGridColumn headerText="Salário (R$)" dataField="salary" width="120" />
+                    <DataGridColumn headerText="Status" dataField="status" width="100" />
+                </DataGrid>
+
+                <!-- Summary Cards -->
+                <HBox gap="12" width="100%">
+                    <VBox gap="4" styleClass="info-card" style="flex: 1;">
+                        <Label text="Total de Funcionários" styleClass="info-label" />
+                        <Label text="{totalEmployees}" styleClass="info-value" />
+                    </VBox>
+                    <VBox gap="4" styleClass="info-card" style="flex: 1;">
+                        <Label text="Folha Salarial Total" styleClass="info-label" />
+                        <Label text="{totalSalaries}" styleClass="info-value" />
+                    </VBox>
+                    <VBox gap="4" styleClass="info-card" style="flex: 1;">
+                        <Label text="Salário Médio" styleClass="info-label" />
+                        <Label text="{averageSalary}" styleClass="info-value" />
+                    </VBox>
+                </HBox>
+            </VBox>
+        </Panel>
+
+        <!-- Bottom Section: List and ComboBox Examples -->
+        <HBox gap="20" width="100%">
+
+            <!-- List Component -->
+            <Panel title="List - Atividades Recentes" style="flex: 1;">
+                <VBox gap="8" width="100%">
+                    <Label text="Feed de atividades em tempo real" styleClass="section-header" />
+                    <Button label="➕ Adicionar Atividade" click="{addActivity}" />
+                    <List dataProvider="{activities}" labelField="label" styleClass="neo-list" />
+                    <Label text="Clique nos itens para selecioná-los" styleClass="neo-label" style="font-size: 10px; color: #999;" />
+                </VBox>
+            </Panel>
+
+            <!-- ComboBox Component -->
+            <Panel title="ComboBox - Seleção de Categoria" style="flex: 1;">
+                <VBox gap="12" width="100%">
+                    <Label text="Dropdown interativo com dados dinâmicos" styleClass="section-header" />
+
+                    <VBox gap="4">
+                        <Label text="Filtrar por Departamento:" />
+                        <ComboBox
+                            dataProvider="{categories}"
+                            labelField="label"
+                            selectedIndex="{selectedCategory}"
+                            styleClass="neo-combobox"
+                            style="width: 100%;" />
+                    </VBox>
+
+                    <VBox gap="4">
+                        <Label text="Status de Funcionário:" />
+                        <ComboBox styleClass="neo-combobox" style="width: 100%;">
+                            <option>-- Selecione --</option>
+                            <option>Ativo</option>
+                            <option>Férias</option>
+                            <option>Afastado</option>
+                            <option>Desligado</option>
+                        </ComboBox>
+                    </VBox>
+
+                    <Label
+                        text="💡 Dica: ComboBox pode ser populado via dataProvider ou com opções estáticas"
+                        styleClass="neo-label"
+                        style="font-size: 10px; color: #666; line-height: 1.4; margin-top: 8px;" />
+                </VBox>
+            </Panel>
+        </HBox>
+
+        <!-- Feature Highlights -->
+        <Panel title="✨ Recursos dos Componentes">
+            <VBox gap="8">
+                <Label text="✅ DataGrid: Colunas customizáveis, larguras ajustáveis, binding reativo de arrays" />
+                <Label text="✅ ComboBox: Dropdown estilizado, binding de dataProvider, labelField configurável" />
+                <Label text="✅ List: Scroll automático, hover interativo, seleção de itens" />
+                <Label text="✅ Todos os componentes: Atualização reativa instantânea quando dados mudam" />
+            </VBox>
+        </Panel>
+
+    </VBox>
+
+</Application>

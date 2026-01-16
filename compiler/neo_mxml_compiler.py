@@ -20,13 +20,14 @@ class NeoMXMLCompiler:
 
     # Componentes Neo suportados
     CONTAINER_COMPONENTS = {'Application', 'VBox', 'HBox', 'Panel', 'Box'}
-    INPUT_COMPONENTS = {'TextInput', 'CheckBox', 'RadioButton'}
-    DISPLAY_COMPONENTS = {'Label', 'Image'}
+    INPUT_COMPONENTS = {'TextInput', 'CheckBox', 'RadioButton', 'ComboBox'}
+    DISPLAY_COMPONENTS = {'Label', 'Image', 'List'}
     BUTTON_COMPONENTS = {'Button'}
     REPEATER_COMPONENTS = {'Repeater'}
+    DATA_COMPONENTS = {'DataGrid'}
 
     ALL_COMPONENTS = (CONTAINER_COMPONENTS | INPUT_COMPONENTS |
-                     DISPLAY_COMPONENTS | BUTTON_COMPONENTS | REPEATER_COMPONENTS)
+                     DISPLAY_COMPONENTS | BUTTON_COMPONENTS | REPEATER_COMPONENTS | DATA_COMPONENTS)
 
     def __init__(self):
         self.as4_parser = AS4Parser()
@@ -229,6 +230,85 @@ class NeoMXMLCompiler:
                 is_style = binding.get('is_style', False)
                 is_two_way = binding.get('is_two_way', False)
                 is_repeater = binding.get('is_repeater', False)
+                is_combobox = binding.get('is_combobox', False)
+                is_list = binding.get('is_list', False)
+                is_datagrid = binding.get('is_datagrid', False)
+
+                # ComboBox especial
+                if is_combobox:
+                    template = binding.get('template', 'label')  # labelField
+                    lines.append(f"    // ComboBox: {elem_id}")
+                    lines.append(f"    createEffect(() => {{")
+                    lines.append(f"      const el = this.shadowRoot.getElementById('{elem_id}');")
+                    lines.append(f"      if (!el) return;")
+                    lines.append(f"      ")
+                    lines.append(f"      // Limpar opções anteriores (exceto primeira)")
+                    lines.append(f"      while (el.options.length > 1) el.remove(1);")
+                    lines.append(f"      ")
+                    lines.append(f"      // Renderizar opções do array")
+                    expr_with_value = self._add_value_access(expr) if expr not in self.reactive_vars else f"{expr}.value"
+                    items_var = 'comboItems' if expr.strip() == 'items' else 'items'
+                    lines.append(f"      const {items_var} = {expr_with_value} || [];")
+                    lines.append(f"      {items_var}.forEach((item, index) => {{")
+                    lines.append(f"        const option = document.createElement('option');")
+                    lines.append(f"        option.value = index;")
+                    lines.append(f"        option.textContent = item.{template} || item || '';")
+                    lines.append(f"        el.appendChild(option);")
+                    lines.append(f"      }});")
+                    lines.append(f"    }});")
+                    continue
+
+                # List especial
+                if is_list:
+                    template = binding.get('template', 'label')  # labelField
+                    lines.append(f"    // List: {elem_id}")
+                    lines.append(f"    createEffect(() => {{")
+                    lines.append(f"      const el = this.shadowRoot.getElementById('{elem_id}');")
+                    lines.append(f"      if (!el) return;")
+                    lines.append(f"      ")
+                    lines.append(f"      // Limpar conteúdo anterior")
+                    lines.append(f"      el.innerHTML = '';")
+                    lines.append(f"      ")
+                    lines.append(f"      // Renderizar itens do array")
+                    expr_with_value = self._add_value_access(expr) if expr not in self.reactive_vars else f"{expr}.value"
+                    items_var = 'listItems' if expr.strip() == 'items' else 'items'
+                    lines.append(f"      const {items_var} = {expr_with_value} || [];")
+                    lines.append(f"      {items_var}.forEach((item, index) => {{")
+                    lines.append(f"        const itemEl = document.createElement('div');")
+                    lines.append(f"        itemEl.className = 'neo-list-item';")
+                    lines.append(f"        itemEl.textContent = item.{template} || item || '';")
+                    lines.append(f"        itemEl.dataset.index = index;")
+                    lines.append(f"        el.appendChild(itemEl);")
+                    lines.append(f"      }});")
+                    lines.append(f"    }});")
+                    continue
+
+                # DataGrid especial
+                if is_datagrid:
+                    columns = binding.get('template', [])  # columns array
+                    lines.append(f"    // DataGrid: {elem_id}")
+                    lines.append(f"    createEffect(() => {{")
+                    lines.append(f"      const tbody = this.shadowRoot.getElementById('{elem_id}_body');")
+                    lines.append(f"      if (!tbody) return;")
+                    lines.append(f"      ")
+                    lines.append(f"      // Limpar linhas anteriores")
+                    lines.append(f"      tbody.innerHTML = '';")
+                    lines.append(f"      ")
+                    lines.append(f"      // Renderizar linhas do array")
+                    expr_with_value = self._add_value_access(expr) if expr not in self.reactive_vars else f"{expr}.value"
+                    items_var = 'gridData' if expr.strip() == 'items' else 'items'
+                    lines.append(f"      const {items_var} = {expr_with_value} || [];")
+                    lines.append(f"      {items_var}.forEach((item, index) => {{")
+                    lines.append(f"        const row = document.createElement('tr');")
+                    for col in columns:
+                        data_field = col['dataField']
+                        lines.append(f"        const td_{data_field} = document.createElement('td');")
+                        lines.append(f"        td_{data_field}.textContent = item.{data_field} || '';")
+                        lines.append(f"        row.appendChild(td_{data_field});")
+                    lines.append(f"        tbody.appendChild(row);")
+                    lines.append(f"      }});")
+                    lines.append(f"    }});")
+                    continue
 
                 # Repeater especial
                 if is_repeater:
@@ -607,6 +687,114 @@ class NeoMXMLCompiler:
             style_str = self._build_style_string(static_attrs)
 
             lines.append(f"{prefix}<input type='checkbox' id='{elem_id}' class='neo-checkbox'{style_str} />")
+
+        elif tag == 'ComboBox':
+            elem_id = f"combobox_{self.component_counter}"
+            self.component_counter += 1
+
+            data_provider = element.get('dataProvider', '')
+            label_field = element.get('labelField', 'label')
+            selected_index = element.get('selectedIndex', '0')
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string('neo-combobox', static_attrs)
+            style_str = self._build_style_string(static_attrs)
+
+            # Detectar binding no dataProvider
+            if data_provider and '{' in data_provider and '}' in data_provider:
+                match = re.search(r'\{([^}]+)\}', data_provider)
+                if match:
+                    array_var = match.group(1).strip()
+                    self.bindings.append({
+                        'id': elem_id,
+                        'attribute': 'combobox',
+                        'expression': array_var,
+                        'template': label_field,
+                        'is_combobox': True
+                    })
+
+            lines.append(f"{prefix}<select id='{elem_id}'{class_str}{style_str}>")
+            lines.append(f"{prefix}  <option>-- Select --</option>")
+            lines.append(f"{prefix}</select>")
+
+        elif tag == 'List':
+            elem_id = f"list_{self.component_counter}"
+            self.component_counter += 1
+
+            data_provider = element.get('dataProvider', '')
+            label_field = element.get('labelField', 'label')
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string('neo-list', static_attrs)
+            style_str = self._build_style_string(static_attrs)
+
+            # Detectar binding no dataProvider
+            if data_provider and '{' in data_provider and '}' in data_provider:
+                match = re.search(r'\{([^}]+)\}', data_provider)
+                if match:
+                    array_var = match.group(1).strip()
+                    self.bindings.append({
+                        'id': elem_id,
+                        'attribute': 'list',
+                        'expression': array_var,
+                        'template': label_field,
+                        'is_list': True
+                    })
+
+            lines.append(f"{prefix}<div id='{elem_id}'{class_str}{style_str}>")
+            lines.append(f"{prefix}  <!-- List items will be dynamically generated -->")
+            lines.append(f"{prefix}</div>")
+
+        elif tag == 'DataGrid':
+            elem_id = f"datagrid_{self.component_counter}"
+            self.component_counter += 1
+
+            data_provider = element.get('dataProvider', '')
+
+            # Processar atributos
+            static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string('neo-datagrid', static_attrs)
+            style_str = self._build_style_string(static_attrs)
+
+            # Coletar colunas
+            columns = []
+            for child in element:
+                if child.tag.endswith('DataGridColumn') or child.tag == 'DataGridColumn':
+                    col_info = {
+                        'headerText': child.get('headerText', 'Column'),
+                        'dataField': child.get('dataField', 'field'),
+                        'width': child.get('width', '100')
+                    }
+                    columns.append(col_info)
+
+            # Detectar binding no dataProvider
+            if data_provider and '{' in data_provider and '}' in data_provider:
+                match = re.search(r'\{([^}]+)\}', data_provider)
+                if match:
+                    array_var = match.group(1).strip()
+                    self.bindings.append({
+                        'id': elem_id,
+                        'attribute': 'datagrid',
+                        'expression': array_var,
+                        'template': columns,
+                        'is_datagrid': True
+                    })
+
+            lines.append(f"{prefix}<div id='{elem_id}'{class_str}{style_str}>")
+            lines.append(f"{prefix}  <table class='neo-datagrid-table'>")
+            lines.append(f"{prefix}    <thead>")
+            lines.append(f"{prefix}      <tr>")
+            for col in columns:
+                lines.append(f"{prefix}        <th style='width: {col['width']}px'>{col['headerText']}</th>")
+            lines.append(f"{prefix}      </tr>")
+            lines.append(f"{prefix}    </thead>")
+            lines.append(f"{prefix}    <tbody id='{elem_id}_body'>")
+            lines.append(f"{prefix}      <!-- Rows will be dynamically generated -->")
+            lines.append(f"{prefix}    </tbody>")
+            lines.append(f"{prefix}  </table>")
+            lines.append(f"{prefix}</div>")
 
         elif tag == 'Box':
             elem_id = f"box_{self.component_counter}"
