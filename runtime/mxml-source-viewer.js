@@ -13,12 +13,30 @@ class MXMLSourceViewer {
      * Inicializa o viewer com o caminho do arquivo MXML
      */
     async init(mxmlPath) {
+        // Criar UI primeiro (botão sempre aparece)
+        this.createUI();
+
         try {
             const response = await fetch(mxmlPath);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             this.sourceCode = await response.text();
-            this.createUI();
+            this.updateCodeDisplay();
         } catch (error) {
             console.error('Erro ao carregar MXML source:', error);
+            this.sourceCode = `Erro ao carregar arquivo MXML: ${mxmlPath}\n\n${error.message}\n\nVerifique se:\n- O arquivo existe no diretório correto\n- O servidor está rodando\n- Não há erros de CORS`;
+            this.updateCodeDisplay();
+        }
+    }
+
+    /**
+     * Atualiza o código exibido no modal
+     */
+    updateCodeDisplay() {
+        const codeContainer = document.querySelector('.mxml-source-code-container');
+        if (codeContainer) {
+            codeContainer.innerHTML = `<pre><code>${this.highlightMXML(this.sourceCode)}</code></pre>`;
         }
     }
 
@@ -64,6 +82,12 @@ class MXMLSourceViewer {
      * Cria a UI do viewer
      */
     createUI() {
+        // Verificar se já foi criado
+        if (document.getElementById('mxml-view-source-btn')) {
+            console.log('✅ MXML Source Viewer UI já existe');
+            return;
+        }
+
         // Criar botão flutuante
         const button = document.createElement('button');
         button.id = 'mxml-view-source-btn';
@@ -71,6 +95,7 @@ class MXMLSourceViewer {
         button.className = 'mxml-source-btn';
         button.onclick = () => this.toggle();
         document.body.appendChild(button);
+        console.log('✅ Botão MXML Source Viewer criado!');
 
         // Criar modal overlay
         const overlay = document.createElement('div');
@@ -93,7 +118,7 @@ class MXMLSourceViewer {
 
         const codeContainer = document.createElement('div');
         codeContainer.className = 'mxml-source-code-container';
-        codeContainer.innerHTML = `<pre><code>${this.highlightMXML(this.sourceCode)}</code></pre>`;
+        codeContainer.innerHTML = `<pre><code>Carregando código MXML...</code></pre>`;
 
         const footer = document.createElement('div');
         footer.className = 'mxml-source-footer';

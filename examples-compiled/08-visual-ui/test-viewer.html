@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Teste MXML Source Viewer</title>
+</head>
+<body>
+    <h1>Teste do MXML Source Viewer</h1>
+    <p>O botão "📄 View Source MXML" deve aparecer no canto superior direito!</p>
+
+    <script src="../../runtime/mxml-source-viewer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Inicializando viewer...');
+            window.mxmlSourceViewer = new MXMLSourceViewer();
+            window.mxmlSourceViewer.init('CounterApp.mxml').then(() => {
+                console.log('Viewer inicializado!');
+            });
+        });
+    </script>
+</body>
+</html>
