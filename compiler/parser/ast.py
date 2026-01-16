@@ -254,6 +254,14 @@ class ArrayLiteral(Expression):
 
 
 @dataclass
+class SpreadElement(Expression):
+    """Spread element: ...array"""
+    argument: Expression
+    type: Optional[Type] = None
+    loc: Optional[SourceLocation] = None
+
+
+@dataclass
 class ObjectLiteral(Expression):
     """Object literal: { name: "Alice", age: 30 }"""
     properties: List['Property']

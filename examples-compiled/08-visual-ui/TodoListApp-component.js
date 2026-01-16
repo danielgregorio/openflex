@@ -47,12 +47,12 @@
 
   function addTodo() {
     if (newTodoText.value.trim() === "")   return;
-    todos.value = [{ id: nextId++, text: newTodoText.value.trim(), completed: false }];
+    todos.value = [...todos.value, { id: nextId++, text: newTodoText.value.trim(), completed: false }];
     newTodoText.value = "";
   }
 
   function toggleTodo(id) {
-    todos.value = todos.value.map((todo => todo.id === id ? { completed: !todo.completed } : todo));
+    todos.value = todos.value.map((todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo));
   }
 
   function deleteTodo(id) {

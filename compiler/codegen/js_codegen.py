@@ -475,21 +475,32 @@ class JSCodeGenerator:
         return f"{callee}?.({args_str})"
 
     def _generate_array_literal(self, array: ArrayLiteral) -> str:
-        """Generate array literal"""
-        elements = [self._generate_expression(elem) for elem in array.elements]
+        """Generate array literal with spread support"""
+        from ..parser.ast import SpreadElement
+        elements = []
+        for elem in array.elements:
+            if isinstance(elem, SpreadElement):
+                elements.append(f"...{self._generate_expression(elem.argument)}")
+            else:
+                elements.append(self._generate_expression(elem))
         elements_str = ", ".join(elements)
         return f"[{elements_str}]"
 
     def _generate_object_literal(self, obj: ObjectLiteral) -> str:
-        """Generate object literal"""
+        """Generate object literal with spread support"""
+        from ..parser.ast import SpreadElement
         if not obj.properties:
             return "{}"
 
         props = []
         for prop in obj.properties:
-            key = prop.key.name if isinstance(prop.key, Identifier) else self._generate_expression(prop.key)
-            value = self._generate_expression(prop.value)
-            props.append(f"{key}: {value}")
+            if isinstance(prop, SpreadElement):
+                # Spread in object: {...obj}
+                props.append(f"...{self._generate_expression(prop.argument)}")
+            else:
+                key = prop.key.name if isinstance(prop.key, Identifier) else self._generate_expression(prop.key)
+                value = self._generate_expression(prop.value)
+                props.append(f"{key}: {value}")
 
         props_str = ", ".join(props)
         return f"{{ {props_str} }}"

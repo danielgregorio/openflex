@@ -840,11 +840,29 @@ class ASTVisitor:
         elements = []
         for child in node.children:
             if child.type != '[' and child.type != ']' and child.type != ',':
-                expr = self.visit_expression(child)
-                if expr:
-                    elements.append(expr)
+                # Check if it's a spread element
+                if child.type == 'spread_element':
+                    spread = self.visit_spread_element(child)
+                    if spread:
+                        elements.append(spread)
+                else:
+                    expr = self.visit_expression(child)
+                    if expr:
+                        elements.append(expr)
 
         return ArrayLiteral(elements=elements, loc=self._make_location(node))
+
+    def visit_spread_element(self, node) -> 'SpreadElement':
+        """Visit spread_element node"""
+        from .ast import SpreadElement
+        # spread_element has ... followed by expression
+        argument = None
+        for child in node.children:
+            if child.type != '...':
+                argument = self.visit_expression(child)
+                break
+
+        return SpreadElement(argument=argument, loc=self._make_location(node)) if argument else None
 
     def visit_object_literal(self, node) -> 'ObjectLiteral':
         """Visit object_literal node"""
@@ -855,6 +873,11 @@ class ASTVisitor:
                 prop = self.visit_property(child)
                 if prop:
                     properties.append(prop)
+            elif child.type == 'spread_element':
+                # Spread in object: {...obj}
+                spread = self.visit_spread_element(child)
+                if spread:
+                    properties.append(spread)
 
         return ObjectLiteral(properties=properties, loc=self._make_location(node))
 
