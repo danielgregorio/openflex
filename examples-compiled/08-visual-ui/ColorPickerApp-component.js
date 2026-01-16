@@ -20,7 +20,7 @@
   const hexColor = new Computed(() => {
     const toHex = n => {
       const hex = Math.round(n).toString(16);
-      return hex.length === 1 ? "0" + hex : hex;
+      return (hex.length === 1 ? "0" + hex : hex);
     };
     return "#" + toHex(red.value) + toHex(green.value) + toHex(blue.value);
   });
@@ -34,7 +34,7 @@
   });
 
   const textColor = new Computed(() => {
-    return brightness.value > 0.5 ? "#000000" : "#ffffff";
+    return (brightness.value > 0.5 ? "#000000" : "#ffffff");
   });
 
   function randomColor() {

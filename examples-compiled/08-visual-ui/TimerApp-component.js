@@ -26,7 +26,7 @@
   });
 
   const buttonLabel = new Computed(() => {
-    return isRunning.value ? "⏸️ Pausar" : "▶️ Iniciar";
+    return (isRunning.value ? "⏸️ Pausar" : "▶️ Iniciar");
   });
 
   function toggleTimer() {

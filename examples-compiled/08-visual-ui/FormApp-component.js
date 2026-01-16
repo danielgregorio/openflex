@@ -40,17 +40,17 @@
 
   const nameError = new Computed(() => {
     if (name.value.length === 0)   return "";
-    return isNameValid.value ? "" : "Nome deve ter pelo menos 3 caracteres";
+    return (isNameValid.value ? "" : "Nome deve ter pelo menos 3 caracteres");
   });
 
   const emailError = new Computed(() => {
     if (email.value.length === 0)   return "";
-    return isEmailValid.value ? "" : "Email inválido";
+    return (isEmailValid.value ? "" : "Email inválido");
   });
 
   const messageError = new Computed(() => {
     if (message.value.length === 0)   return "";
-    return isMessageValid.value ? "" : "Mensagem deve ter pelo menos 10 caracteres";
+    return (isMessageValid.value ? "" : "Mensagem deve ter pelo menos 10 caracteres");
   });
 
   function submitForm() {

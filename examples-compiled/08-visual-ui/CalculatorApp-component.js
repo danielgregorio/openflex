@@ -27,7 +27,7 @@
       newNumber.value = false;
     }
     else {
-      display.value = display.value === "0" ? num : display.value + num;
+      (display.value = display.value === "0" ? num : display.value + num);
     }
   }
 

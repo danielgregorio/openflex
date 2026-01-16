@@ -52,7 +52,7 @@
   }
 
   function toggleTodo(id) {
-    todos.value = todos.value.map(todo => todo.id === id ? { completed: !todo.completed } : todo);
+    todos.value = todos.value.map((todo => todo.id === id ? { completed: !todo.completed } : todo));
   }
 
   function deleteTodo(id) {
