@@ -20,5 +20,17 @@
     <script src="../runtime/openflex-runtime-browser.js"></script>
     <script src="FormApp-component.js"></script>
     <script>console.log('✅ Formulário loaded!');</script>
+
+    <script src="../runtime/mxml-source-viewer.js"></script>
+
+    <script>
+        // Inicializar viewer de source code MXML
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof MXMLSourceViewer !== 'undefined') {
+                window.mxmlSourceViewer = new MXMLSourceViewer();
+                window.mxmlSourceViewer.init('FormApp.mxml');
+            }
+        });
+    </script>
 </body>
 </html>

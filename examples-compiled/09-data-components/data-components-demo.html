@@ -26,10 +26,17 @@
 
     <script src="../../runtime/openflex-runtime-browser.js"></script>
     <script src="DataComponentsDemo-component.js"></script>
+    <script src="../../runtime/mxml-source-viewer.js"></script>
 
     <script>
         console.log('✅ Data Components Demo loaded!');
         console.log('📊 DataGrid, ComboBox, and List components active');
+
+        // Inicializar viewer de source code
+        document.addEventListener('DOMContentLoaded', () => {
+            window.mxmlSourceViewer = new MXMLSourceViewer();
+            window.mxmlSourceViewer.init('DataComponentsDemo.mxml');
+        });
     </script>
 </body>
 </html>

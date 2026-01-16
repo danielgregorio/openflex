@@ -249,5 +249,17 @@
     <script>
         console.log('✅ OpenFlex Neo MXML Examples ready!');
     </script>
+
+    <script src="../runtime/mxml-source-viewer.js"></script>
+
+    <script>
+        // Inicializar viewer de source code MXML
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof MXMLSourceViewer !== 'undefined') {
+                window.mxmlSourceViewer = new MXMLSourceViewer();
+                window.mxmlSourceViewer.init('runmxmlexamples.mxml');
+            }
+        });
+    </script>
 </body>
 </html>

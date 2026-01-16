@@ -57,5 +57,17 @@
     </a>
     <div id="app"></div>
     <script src="02-todo-list-visual.js"></script>
+
+    <script src="../runtime/mxml-source-viewer.js"></script>
+
+    <script>
+        // Inicializar viewer de source code MXML
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof MXMLSourceViewer !== 'undefined') {
+                window.mxmlSourceViewer = new MXMLSourceViewer();
+                window.mxmlSourceViewer.init('02todolistvisual.mxml');
+            }
+        });
+    </script>
 </body>
 </html>

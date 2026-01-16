@@ -20,5 +20,17 @@
     <script src="../runtime/openflex-runtime-browser.js"></script>
     <script src="ColorPickerApp-component.js"></script>
     <script>console.log('✅ Color Picker loaded!');</script>
+
+    <script src="../runtime/mxml-source-viewer.js"></script>
+
+    <script>
+        // Inicializar viewer de source code MXML
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof MXMLSourceViewer !== 'undefined') {
+                window.mxmlSourceViewer = new MXMLSourceViewer();
+                window.mxmlSourceViewer.init('ColorPickerApp.mxml');
+            }
+        });
+    </script>
 </body>
 </html>
