@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenFlex Neo - Galeria de Exemplos MXML</title>
+
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
     <style>
         * {
             margin: 0;
@@ -11,11 +15,23 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #764ba2;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-gradient);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 20px;
         }
 
         .container {
@@ -23,453 +39,740 @@
             margin: 0 auto;
         }
 
+        /* Header */
         .header {
             text-align: center;
             color: white;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .header-logo {
+            font-size: 48px;
+            margin-bottom: 10px;
         }
 
         .header h1 {
-            font-size: 56px;
-            margin-bottom: 15px;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            font-size: clamp(32px, 5vw, 56px);
+            margin-bottom: 12px;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
-        .header p {
-            font-size: 20px;
+        .header-subtitle {
+            font-size: clamp(16px, 2vw, 20px);
             opacity: 0.95;
+            font-weight: 400;
         }
 
+        .header-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Search & Filters */
+        .controls {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+            transition: var(--transition);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            background: transparent;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .filter-btn.active {
+            background: white;
+            color: var(--primary);
+            border-color: white;
+        }
+
+        /* Examples Grid */
         .examples-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
             margin-bottom: 60px;
         }
 
         .example-card {
             background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.5s ease;
         }
 
         .example-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
         }
 
-        .example-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .example-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .example-description {
-            font-size: 15px;
-            color: #7f8c8d;
-            margin-bottom: 25px;
-            line-height: 1.6;
-            min-height: 100px;
-        }
-
-        .example-buttons {
+        .card-header {
+            padding: 24px 24px 16px;
             display: flex;
-            gap: 10px;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .card-emoji {
+            font-size: 40px;
+            line-height: 1;
+        }
+
+        .card-title-group {
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .card-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-reactive { background: #e3f2fd; color: #1976d2; }
+        .badge-computed { background: #f3e5f5; color: #7b1fa2; }
+        .badge-binding { background: #fff3e0; color: #f57c00; }
+        .badge-new { background: #e8f5e9; color: #388e3c; }
+
+        .card-body {
+            padding: 0 24px 20px;
+            flex: 1;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .card-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 8px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .card-features span::before {
+            content: "•";
+            margin-right: 6px;
+        }
+
+        .card-actions {
+            padding: 0 16px 16px;
+            display: flex;
+            gap: 8px;
         }
 
         .btn {
             flex: 1;
-            padding: 14px 20px;
+            padding: 10px 16px;
             border: none;
-            border-radius: 10px;
-            font-size: 15px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
             text-decoration: none;
             text-align: center;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
-        .btn-run {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn-primary {
+            background: var(--bg-gradient);
             color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
-        .btn-run:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
         }
 
-        .btn-code {
-            background: #2c3e50;
-            color: white;
+        .btn-secondary:hover {
+            background: #e2e8f0;
         }
 
-        .btn-code:hover {
-            background: #34495e;
-        }
-
-        /* Modal styles */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            animation: fadeIn 0.3s;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
         }
 
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #1e1e1e;
+            border-radius: var(--radius);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: #999;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: #333;
+            color: white;
+        }
+
+        .modal-body {
+            overflow: auto;
+            padding: 0;
+        }
+
+        pre {
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+
+        pre code {
+            font-size: 13px !important;
+            line-height: 1.6 !important;
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 40px;
+            margin-top: 60px;
+            color: white;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .footer p {
+            font-size: 15px;
+            opacity: 0.9;
+            line-height: 1.7;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .footer-feature {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
-        .modal-content {
-            background-color: #1e1e1e;
-            margin: 2% auto;
-            padding: 0;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 1200px;
-            max-height: 90vh;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: slideIn 0.3s;
-        }
-
-        @keyframes slideIn {
+        @keyframes fadeInDown {
             from {
-                transform: translateY(-50px);
                 opacity: 0;
+                transform: translateY(-20px);
             }
             to {
-                transform: translateY(0);
                 opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px 30px;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .modal-title {
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .close-btn {
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0 10px;
-            line-height: 1;
-        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .examples-grid {
+                grid-template-columns: 1fr;
+            }
 
-        .close-btn:hover {
-            opacity: 0.8;
-        }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-        .modal-body {
-            padding: 30px;
-            overflow-y: auto;
-            max-height: calc(90vh - 120px);
-        }
-
-        .code-container {
-            background: #1e1e1e;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        pre {
-            margin: 0;
-            padding: 20px;
-            overflow-x: auto;
-        }
-
-        code {
-            font-family: 'Courier New', Consolas, Monaco, monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #d4d4d4;
-        }
-
-        /* Syntax highlighting */
-        .xml-tag { color: #569cd6; }
-        .xml-attr-name { color: #9cdcfe; }
-        .xml-attr-value { color: #ce9178; }
-        .xml-comment { color: #6a9955; }
-        .keyword { color: #c586c0; }
-
-        .footer {
-            text-align: center;
-            color: white;
-            margin-top: 60px;
-            padding: 30px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 16px;
-        }
-
-        .footer h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .footer p {
-            font-size: 16px;
-            line-height: 1.8;
-            opacity: 0.9;
+            .filter-group {
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🆕 OpenFlex Neo</h1>
-            <p>Galeria Completa de Exemplos MXML com Reatividade</p>
-        </div>
-
-        <div class="examples-grid">
-            <!-- Counter App -->
-            <div class="example-card">
-                <div class="example-icon">🔢</div>
-                <h3 class="example-title">Contador Reativo</h3>
-                <p class="example-description">
-                    Contador com @reactive signals, @computed properties e data binding. Demonstra reatividade granular e updates automáticos da UI.
-                </p>
-                <div class="example-buttons">
-                    <a href="counter-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
-                    <button class="btn btn-code" onclick="showCode('CounterApp')">📄 Ver Código</button>
-                </div>
+        <!-- Header -->
+        <header class="header">
+            <div class="header-logo">🆕</div>
+            <h1>OpenFlex Neo</h1>
+            <p class="header-subtitle">Framework MXML Moderno com Reatividade Granular</p>
+            <div class="header-tags">
+                <span class="tag">Zero Dependencies</span>
+                <span class="tag">Web Components</span>
+                <span class="tag">Signal-based Reactivity</span>
+                <span class="tag">Adobe Flex Inspired</span>
             </div>
+        </header>
 
-            <!-- Todo List -->
-            <div class="example-card">
-                <div class="example-icon">✅</div>
-                <h3 class="example-title">Lista de Tarefas</h3>
-                <p class="example-description">
-                    Todo list com Repeater, TextInput two-way binding e array manipulation reativa. Mostra loops dinâmicos e estados complexos.
-                </p>
-                <div class="example-buttons">
-                    <a href="todolist-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
-                    <button class="btn btn-code" onclick="showCode('TodoListApp')">📄 Ver Código</button>
-                </div>
+        <!-- Search & Filters -->
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar exemplos...">
+                <span class="search-icon">🔍</span>
             </div>
-
-            <!-- Calculator -->
-            <div class="example-card">
-                <div class="example-icon">🧮</div>
-                <h3 class="example-title">Calculadora</h3>
-                <p class="example-description">
-                    Calculadora funcional completa com grid layout e operações básicas (+, -, ×, ÷). Interface moderna e responsiva.
-                </p>
-                <div class="example-buttons">
-                    <a href="calculatorapp-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
-                    <button class="btn btn-code" onclick="showCode('CalculatorApp')">📄 Ver Código</button>
-                </div>
-            </div>
-
-            <!-- Timer -->
-            <div class="example-card">
-                <div class="example-icon">⏱️</div>
-                <h3 class="example-title">Cronômetro</h3>
-                <p class="example-description">
-                    Cronômetro com controles de play/pause, reset e formatação de tempo (HH:MM:SS). Usa setInterval com reatividade.
-                </p>
-                <div class="example-buttons">
-                    <a href="timerapp-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
-                    <button class="btn btn-code" onclick="showCode('TimerApp')">📄 Ver Código</button>
-                </div>
-            </div>
-
-            <!-- Temperature Converter -->
-            <div class="example-card">
-                <div class="example-icon">🌡️</div>
-                <h3 class="example-title">Conversor de Temperatura</h3>
-                <p class="example-description">
-                    Conversor C°/F°/K com slider interativo, emojis dinâmicos e cores que mudam conforme a temperatura.
-                </p>
-                <div class="example-buttons">
-                    <a href="temperatureapp-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
-                    <button class="btn btn-code" onclick="showCode('TemperatureApp')">📄 Ver Código</button>
-                </div>
-            </div>
-
-            <!-- Quiz -->
-            <div class="example-card">
-                <div class="example-icon">🎯</div>
-                <h3 class="example-title">Quiz Interativo</h3>
-                <p class="example-description">
-                    Quiz de múltipla escolha com 5 questões, progress bar, pontuação e tela de resultado com gerenciamento de estado complexo.
-                </p>
-                <div class="example-buttons">
-                    <a href="quizapp-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
-                    <button class="btn btn-code" onclick="showCode('QuizApp')">📄 Ver Código</button>
-                </div>
-            </div>
-
-            <!-- Dashboard -->
-            <div class="example-card">
-                <div class="example-icon">📊</div>
-                <h3 class="example-title">Dashboard Executivo</h3>
-                <p class="example-description">
-                    Dashboard com cards de métricas (usuários, receita, pedidos), formatação de números e atualização dinâmica. Layout profissional.
-                </p>
-                <div class="example-buttons">
-                    <a href="dashboardapp-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
-                    <button class="btn btn-code" onclick="showCode('DashboardApp')">📄 Ver Código</button>
-                </div>
-            </div>
-
-            <!-- Color Picker -->
-            <div class="example-card">
-                <div class="example-icon">🎨</div>
-                <h3 class="example-title">Seletor de Cores</h3>
-                <p class="example-description">
-                    Color picker com sliders RGB, preview em tempo real, conversão HEX/RGB e cores aleatórias. Interface intuitiva e visual.
-                </p>
-                <div class="example-buttons">
-                    <a href="colorpicker-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
-                    <button class="btn btn-code" onclick="showCode('ColorPickerApp')">📄 Ver Código</button>
-                </div>
-            </div>
-
-            <!-- Form -->
-            <div class="example-card">
-                <div class="example-icon">📝</div>
-                <h3 class="example-title">Formulário de Contato</h3>
-                <p class="example-description">
-                    Formulário com validação em tempo real, mensagens de erro, checkbox e feedback visual. Demonstra validação reativa profissional.
-                </p>
-                <div class="example-buttons">
-                    <a href="formapp-test.html" class="btn btn-run" target="_blank">▶ Executar</a>
-                    <button class="btn btn-code" onclick="showCode('FormApp')">📄 Ver Código</button>
-                </div>
-            </div>
-
-            <!-- Flex Classic Demo - DESTAQUE -->
-            <div class="example-card" style="background: linear-gradient(135deg, #708090 0%, #556B7F 100%); color: white; grid-column: span 2;">
-                <div class="example-icon">🎨</div>
-                <h3 class="example-title" style="color: white;">Flex Classic Theme Demo ⭐</h3>
-                <p class="example-description" style="color: rgba(255,255,255,0.9);">
-                    <strong>NOVO!</strong> Visual clássico do Adobe Flex 3/4 - gradientes cinza, botões 3D, painéis chanfrados.
-                    Aplicação completa com formulário e data grid demonstrando o tema nostálgico do Flex.
-                </p>
-                <div class="example-buttons">
-                    <a href="flex-classic-demo.html" class="btn btn-run" target="_blank" style="background: white; color: #2c3e50;">▶ Ver Demo</a>
-                    <button class="btn btn-code" onclick="showCode('FlexClassicDemo')" style="background: rgba(255,255,255,0.2);">📄 Ver Código</button>
-                </div>
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="reactive">Reactive</button>
+                <button class="filter-btn" data-filter="forms">Forms</button>
+                <button class="filter-btn" data-filter="ui">UI</button>
             </div>
         </div>
 
-        <div class="footer">
-            <h3>🚀 Sobre OpenFlex Neo MXML</h3>
+        <!-- Examples Grid -->
+        <div class="examples-grid" id="examplesGrid">
+            <!-- Examples will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <h3>🚀 Sobre OpenFlex Neo</h3>
             <p>
-                Framework declarativo com sintaxe MXML (como Adobe Flex) e sistema de reatividade granular.
-                Compila para Web Components nativos com zero dependências no runtime.
-                <br><br>
-                <strong>Features:</strong> @reactive signals • @computed properties • Data binding {expression} •
-                Event handlers • Repeaters • Two-way binding • Componentes Neo (VBox, HBox, Panel, Button, etc)
+                Framework declarativo com sintaxe MXML inspirada no Adobe Flex.
+                Sistema de reatividade granular baseado em Signals compila para Web Components nativos.
             </p>
-        </div>
+            <div class="footer-features">
+                <span class="footer-feature">@reactive Signals</span>
+                <span class="footer-feature">@computed Properties</span>
+                <span class="footer-feature">Data Binding {expr}</span>
+                <span class="footer-feature">Event Handlers</span>
+                <span class="footer-feature">Two-way Binding</span>
+                <span class="footer-feature">Repeaters</span>
+            </div>
+        </footer>
     </div>
 
-    <!-- Modal para código fonte -->
-    <div id="codeModal" class="modal">
+    <!-- Source Code Modal -->
+    <div class="modal" id="sourceModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Código Fonte MXML</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <h3 class="modal-title" id="modalTitle">
+                    <span>📄</span>
+                    <span id="modalFileName"></span>
+                </h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="code-container">
-                    <pre><code id="codeContent"></code></pre>
-                </div>
+                <pre><code class="language-xml" id="sourceCode"></code></pre>
             </div>
         </div>
     </div>
 
+    <!-- Prism.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+
     <script>
-        const modal = document.getElementById('codeModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const codeContent = document.getElementById('codeContent');
-
-        const mxmlFiles = {
-            'CounterApp': 'CounterApp.mxml',
-            'TodoListApp': 'TodoListApp.mxml',
-            'CalculatorApp': 'CalculatorApp.mxml',
-            'TimerApp': 'TimerApp.mxml',
-            'TemperatureApp': 'TemperatureApp.mxml',
-            'QuizApp': 'QuizApp.mxml',
-            'DashboardApp': 'DashboardApp.mxml',
-            'ColorPickerApp': 'ColorPickerApp.mxml',
-            'FormApp': 'FormApp.mxml',
-            'FlexClassicDemo': 'FlexClassicDemo.mxml'
-        };
-
-        async function showCode(appName) {
-            modalTitle.textContent = `📄 ${appName}.mxml`;
-            codeContent.textContent = 'Carregando código...';
-            modal.style.display = 'block';
-
-            try {
-                const response = await fetch(mxmlFiles[appName]);
-                const code = await response.text();
-                const highlighted = highlightXML(code);
-                codeContent.innerHTML = highlighted;
-            } catch (error) {
-                codeContent.textContent = 'Erro ao carregar: ' + error.message;
+        // Examples data
+        const examples = [
+            {
+                id: 'counter',
+                emoji: '🔢',
+                title: 'Contador Reativo',
+                description: 'Demonstra reatividade granular com @reactive signals e @computed properties',
+                features: ['@reactive', '@computed', 'Data binding'],
+                badges: ['reactive', 'computed'],
+                tags: ['reactive', 'ui'],
+                file: 'CounterApp.mxml',
+                url: 'counter-test.html'
+            },
+            {
+                id: 'todo',
+                emoji: '✅',
+                title: 'Lista de Tarefas',
+                description: 'Todo list completa com filtros, array manipulation e two-way binding',
+                features: ['Repeater', 'Array methods', 'Filters'],
+                badges: ['reactive', 'binding'],
+                tags: ['reactive', 'ui'],
+                file: 'TodoListApp.mxml',
+                url: 'todolist-test.html'
+            },
+            {
+                id: 'calculator',
+                emoji: '🧮',
+                title: 'Calculadora',
+                description: 'Calculadora funcional com grid layout e operações básicas',
+                features: ['Grid layout', 'Event handling', 'State management'],
+                badges: ['reactive'],
+                tags: ['ui'],
+                file: 'CalculatorApp.mxml',
+                url: 'calculatorapp-test.html'
+            },
+            {
+                id: 'timer',
+                emoji: '⏱️',
+                title: 'Cronômetro',
+                description: 'Timer com controles de play/pause e formatação de tempo',
+                features: ['setInterval', 'Time formatting', 'Controls'],
+                badges: ['reactive'],
+                tags: ['reactive', 'ui'],
+                file: 'TimerApp.mxml',
+                url: 'timerapp-test.html'
+            },
+            {
+                id: 'temperature',
+                emoji: '🌡️',
+                title: 'Conversor de Temperatura',
+                description: 'Conversão C°/F°/K com slider, emojis dinâmicos e cores reativas',
+                features: ['Multi-unit conversion', 'Dynamic colors', 'Slider input'],
+                badges: ['computed', 'binding'],
+                tags: ['reactive', 'ui'],
+                file: 'TemperatureApp.mxml',
+                url: 'temperatureapp-test.html'
+            },
+            {
+                id: 'quiz',
+                emoji: '🎯',
+                title: 'Quiz Interativo',
+                description: 'Quiz de múltipla escolha com 5 questões, progress bar e pontuação',
+                features: ['State machine', 'Progress tracking', 'Score calculation'],
+                badges: ['reactive'],
+                tags: ['reactive', 'ui'],
+                file: 'QuizApp.mxml',
+                url: 'quizapp-test.html'
+            },
+            {
+                id: 'dashboard',
+                emoji: '📊',
+                title: 'Dashboard Executivo',
+                description: 'Dashboard com cards de métricas e formatação de números',
+                features: ['Cards layout', 'Number formatting', 'Dynamic updates'],
+                badges: ['reactive', 'computed'],
+                tags: ['ui'],
+                file: 'DashboardApp.mxml',
+                url: 'dashboardapp-test.html'
+            },
+            {
+                id: 'colorpicker',
+                emoji: '🎨',
+                title: 'Seletor de Cores',
+                description: 'Color picker com sliders RGB e conversão HEX/RGB',
+                features: ['RGB sliders', 'Color conversion', 'Live preview'],
+                badges: ['computed', 'binding'],
+                tags: ['reactive', 'ui'],
+                file: 'ColorPickerApp.mxml',
+                url: 'colorpickerapp-test.html'
+            },
+            {
+                id: 'form',
+                emoji: '📝',
+                title: 'Formulário de Contato',
+                description: 'Form com validação em tempo real e mensagens de erro',
+                features: ['Regex validation', 'Error messages', 'Submit handling'],
+                badges: ['reactive', 'computed'],
+                tags: ['reactive', 'forms'],
+                file: 'FormApp.mxml',
+                url: 'formapp-test.html'
+            },
+            {
+                id: 'flex-classic',
+                emoji: '🎨',
+                title: 'Flex Classic Theme',
+                description: 'Visual nostálgico do Adobe Flex 3/4 com gradientes e botões 3D',
+                features: ['Classic styling', 'Flex theme', 'Retro UI'],
+                badges: ['new'],
+                tags: ['ui'],
+                file: 'FlexClassicDemo.mxml',
+                url: 'flex-classic-demo.html'
             }
+        ];
+
+        // MXML source code cache
+        const sourceCache = {};
+
+        // Render examples
+        function renderExamples(filteredExamples = examples) {
+            const grid = document.getElementById('examplesGrid');
+            grid.innerHTML = filteredExamples.map(ex => `
+                <div class="example-card" data-tags="${ex.tags.join(' ')}">
+                    <div class="card-header">
+                        <div class="card-emoji">${ex.emoji}</div>
+                        <div class="card-title-group">
+                            <h3 class="card-title">${ex.title}</h3>
+                            <div class="card-badges">
+                                ${ex.badges.map(b => `<span class="badge badge-${b}">${b}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-description">${ex.description}</p>
+                        <div class="card-features">
+                            ${ex.features.map(f => `<span>${f}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <a href="${ex.url}" class="btn btn-primary">
+                            <span>▶</span>
+                            <span>Executar</span>
+                        </a>
+                        <button class="btn btn-secondary" onclick="viewSource('${ex.file}', '${ex.title}')">
+                            <span>📄</span>
+                            <span>Código</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
+        // View source code
+        async function viewSource(filename, title) {
+            const modal = document.getElementById('sourceModal');
+            const codeElement = document.getElementById('sourceCode');
+            const titleElement = document.getElementById('modalFileName');
+
+            titleElement.textContent = filename;
+            codeElement.textContent = 'Carregando...';
+            modal.classList.add('active');
+
+            if (!sourceCache[filename]) {
+                try {
+                    const response = await fetch(filename);
+                    sourceCache[filename] = await response.text();
+                } catch (error) {
+                    codeElement.textContent = `Erro ao carregar código: ${error.message}`;
+                    return;
+                }
+            }
+
+            codeElement.textContent = sourceCache[filename];
+            Prism.highlightElement(codeElement);
+        }
+
+        // Close modal
         function closeModal() {
-            modal.style.display = 'none';
+            document.getElementById('sourceModal').classList.remove('active');
         }
 
-        window.onclick = function(event) {
-            if (event.target == modal) closeModal();
-        }
-
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') closeModal();
+        // Close modal on click outside
+        document.getElementById('sourceModal').addEventListener('click', (e) => {
+            if (e.target.id === 'sourceModal') {
+                closeModal();
+            }
         });
 
-        function highlightXML(code) {
-            return code
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/(&lt;\/?[\w:]+)/g, '<span class="xml-tag">$1</span>')
-                .replace(/(\w+)=/g, '<span class="xml-attr-name">$1</span>=')
-                .replace(/="([^"]*)"/g, '=<span class="xml-attr-value">"$1"</span>')
-                .replace(/(&lt;!--.*?--&gt;)/g, '<span class="xml-comment">$1</span>')
-                .replace(/@(\w+)/g, '<span class="keyword">@$1</span>');
-        }
+        // Close modal on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
 
-        console.log('✨ OpenFlex Neo - Galeria carregada! 10 exemplos MXML disponíveis (incluindo Flex Classic Theme!).');
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = examples.filter(ex =>
+                ex.title.toLowerCase().includes(query) ||
+                ex.description.toLowerCase().includes(query) ||
+                ex.features.some(f => f.toLowerCase().includes(query))
+            );
+            renderExamples(filtered);
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.dataset.filter;
+                if (filter === 'all') {
+                    renderExamples(examples);
+                } else {
+                    const filtered = examples.filter(ex => ex.tags.includes(filter));
+                    renderExamples(filtered);
+                }
+            });
+        });
+
+        // Initial render
+        renderExamples();
     </script>
 </body>
 </html>
