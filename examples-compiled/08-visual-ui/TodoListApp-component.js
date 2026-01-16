@@ -88,7 +88,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.filter-btn {
+        <style>@import url('../runtime/neo-flex-classic-theme.css');
+
+        .filter-btn {
             padding: 8px 16px;
             border-radius: 6px;
             font-size: 14px;

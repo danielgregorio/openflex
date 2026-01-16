@@ -80,7 +80,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.quiz-container {
+        <style>@import url('../runtime/neo-flex-classic-theme.css');
+
+        .quiz-container {
             background: white;
             border-radius: 20px;
             padding: 40px;

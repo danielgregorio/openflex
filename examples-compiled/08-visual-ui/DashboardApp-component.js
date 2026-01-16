@@ -68,7 +68,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('dashboard-styles.css');</style>
+        <style>@import url('../runtime/neo-flex-classic-theme.css');
+
+        @import url('dashboard-styles.css');</style>
       <div id='app_0' class='neo-application'>
         <div id='vbox_1' class='neo-vbox' style='width: 100%; height: 100%; gap: 0px'>
           <div id='vbox_2' class='neo-vbox' style='width: 100%; gap: 40px; max-width: 1600px; margin: 0 auto;'>

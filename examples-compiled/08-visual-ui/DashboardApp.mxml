@@ -45,6 +45,8 @@
     ]]></fx:Script>
 
     <fx:Style>
+        @import url('../runtime/neo-flex-classic-theme.css');
+
         @import url('dashboard-styles.css');
     </fx:Style>
 

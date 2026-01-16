@@ -65,7 +65,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.counter-display {
+        <style>@import url('../runtime/neo-flex-classic-theme.css');
+
+        .counter-display {
             font-size: 72px;
             font-weight: bold;
             transition: all 0.3s ease;

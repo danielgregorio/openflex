@@ -66,7 +66,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.temp-card {
+        <style>@import url('../runtime/neo-flex-classic-theme.css');
+
+        .temp-card {
             background: white;
             border-radius: 16px;
             padding: 30px;

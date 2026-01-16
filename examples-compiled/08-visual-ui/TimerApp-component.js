@@ -69,7 +69,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.timer-display {
+        <style>@import url('../runtime/neo-flex-classic-theme.css');
+
+        .timer-display {
             font-size: 96px;
             font-weight: bold;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

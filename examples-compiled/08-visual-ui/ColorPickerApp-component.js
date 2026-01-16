@@ -62,7 +62,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.picker-container {
+        <style>@import url('../runtime/neo-flex-classic-theme.css');
+
+        .picker-container {
             background: white;
             border-radius: 20px;
             padding: 40px;

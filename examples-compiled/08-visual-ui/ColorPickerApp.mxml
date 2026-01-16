@@ -41,6 +41,8 @@
     ]]></fx:Script>
 
     <fx:Style>
+        @import url('../runtime/neo-flex-classic-theme.css');
+
         .picker-container {
             background: white;
             border-radius: 20px;

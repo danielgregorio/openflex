@@ -52,6 +52,8 @@
     ]]></fx:Script>
 
     <fx:Style>
+        @import url('../runtime/neo-flex-classic-theme.css');
+
         .counter-display {
             font-size: 72px;
             font-weight: bold;

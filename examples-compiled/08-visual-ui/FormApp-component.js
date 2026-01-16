@@ -88,7 +88,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.form-container {
+        <style>@import url('../runtime/neo-flex-classic-theme.css');
+
+        .form-container {
             background: white;
             border-radius: 20px;
             padding: 40px;

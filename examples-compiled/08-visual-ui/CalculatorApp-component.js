@@ -96,7 +96,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.calculator {
+        <style>@import url('../runtime/neo-flex-classic-theme.css');
+
+        .calculator {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
             border-radius: 16px;
