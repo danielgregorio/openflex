@@ -432,21 +432,35 @@ class JSCodeGenerator:
     def _generate_member_expression(self, member: MemberExpression) -> str:
         """Generate member access"""
         obj = self._generate_expression(member.object)
-        prop = self._generate_expression(member.property)
 
+        # For non-computed member access (obj.prop), generate property name directly
+        # without going through _generate_expression to avoid adding .value
         if member.is_computed:
+            prop = self._generate_expression(member.property)
             return f"{obj}[{prop}]"
         else:
+            # For obj.prop, just get the property name without transformation
+            from compiler.parser.ast import Identifier
+            if isinstance(member.property, Identifier):
+                prop = member.property.name
+            else:
+                prop = self._generate_expression(member.property)
             return f"{obj}.{prop}"
 
     def _generate_optional_member_expression(self, member: OptionalMemberExpression) -> str:
         """Generate optional member access: obj?.prop or obj?.[key]"""
         obj = self._generate_expression(member.object)
-        prop = self._generate_expression(member.property)
 
+        # For non-computed member access (obj?.prop), generate property name directly
         if member.is_computed:
+            prop = self._generate_expression(member.property)
             return f"{obj}?.[{prop}]"
         else:
+            from compiler.parser.ast import Identifier
+            if isinstance(member.property, Identifier):
+                prop = member.property.name
+            else:
+                prop = self._generate_expression(member.property)
             return f"{obj}?.{prop}"
 
     def _generate_optional_call_expression(self, call: OptionalCallExpression) -> str:

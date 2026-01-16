@@ -70,8 +70,13 @@ class NeoMXMLCompiler:
         lines.append("// Complete MXML -> Web Components with Full Reactivity")
         lines.append("")
 
+        # Encapsular tudo em IIFE para evitar poluição do escopo global
+        lines.append("(function() {")
+        lines.append("")
+
         # Compilar script AS4
         has_reactivity = False
+        script_lines = []
         if script_content:
             try:
                 ast = self.as4_parser.parse(script_content, filename)
@@ -84,29 +89,40 @@ class NeoMXMLCompiler:
                 # Extrair variáveis reativas
                 self.reactive_vars = self.js_codegen.reactive_vars.copy()
 
-                lines.append(script_js)
+                # Indentar o script para dentro do IIFE
+                for line in script_js.split('\n'):
+                    script_lines.append(f"  {line}" if line.strip() else line)
             except Exception as e:
-                lines.append(f"// ERRO ao compilar script: {e}")
+                script_lines.append(f"  // ERRO ao compilar script: {e}")
 
+        lines.extend(script_lines)
         lines.append("")
 
-        # Gerar Web Component
+        # Gerar Web Component (também indentado)
         component_lines = self._generate_web_component(root, has_reactivity)
-        lines.extend(component_lines)
+        for line in component_lines:
+            lines.append(f"  {line}" if line.strip() else line)
 
-        # Registrar custom element
         lines.append("")
-        lines.append("// Register Custom Element")
-        lines.append("if (typeof window !== 'undefined') {")
-        lines.append("  customElements.define('app-root', AppComponent);")
-        lines.append("}")
 
-        # Export para Node.js
+        # Registrar custom element (dentro do IIFE)
+        lines.append("  // Register Custom Element")
+        lines.append("  if (typeof window !== 'undefined') {")
+        lines.append("    customElements.define('app-root', AppComponent);")
+        lines.append("  }")
+
         lines.append("")
-        lines.append("// Export for Node.js/testing")
-        lines.append("if (typeof module !== 'undefined' && module.exports) {")
-        lines.append("  module.exports = { AppComponent };")
-        lines.append("}")
+
+        # Export para Node.js (dentro do IIFE)
+        lines.append("  // Export for Node.js/testing")
+        lines.append("  if (typeof module !== 'undefined' && module.exports) {")
+        lines.append("    module.exports = { AppComponent };")
+        lines.append("  }")
+
+        lines.append("")
+
+        # Fechar IIFE
+        lines.append("})();")
 
         return "\n".join(lines)
 
