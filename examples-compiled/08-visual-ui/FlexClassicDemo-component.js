@@ -63,7 +63,9 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>/* Estilos customizados podem ir aqui */
+        <style>@import url('../../runtime/neo-flex-classic-theme.css');
+
+        /* Estilos customizados podem ir aqui */
         .title-text {
             font-size: 14px;
             font-weight: bold;
