@@ -50,30 +50,36 @@ class MXMLSourceViewer {
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
 
-        // XML tags
-        code = code.replace(/(&lt;\/?)([\w:]+)/g, '$1<span class="xml-tag">$2</span>');
+        // Comments (fazer primeiro para não interferir)
+        code = code.replace(/(&lt;!--.*?--&gt;)/g, '<span class="xml-comment">$1</span>');
 
-        // Attributes
-        code = code.replace(/([\w:]+)(=)/g, '<span class="xml-attr">$1</span>$2');
+        // CDATA (fazer antes de tags)
+        code = code.replace(/(&lt;!\[CDATA\[)([\s\S]*?)(\]\]&gt;)/g,
+            '<span class="xml-bracket">&lt;![CDATA[</span><span class="xml-cdata">$2</span><span class="xml-bracket">]]&gt;</span>');
+
+        // XML tags com brackets destacados
+        code = code.replace(/(&lt;\/?)([A-Za-z][\w:]*)/g,
+            '<span class="xml-bracket">$1</span><span class="xml-tag">$2</span>');
+
+        // Fechar tags >
+        code = code.replace(/(\/?&gt;)/g, '<span class="xml-bracket">$1</span>');
+
+        // Attributes (somente em contexto de tags)
+        code = code.replace(/\s([\w:]+)(=)/g, ' <span class="xml-attr">$1</span><span class="xml-bracket">$2</span>');
 
         // Strings
         code = code.replace(/("([^"]*)")/g, '<span class="xml-string">$1</span>');
         code = code.replace(/('([^']*)')/g, '<span class="xml-string">$1</span>');
 
-        // Comments
-        code = code.replace(/(&lt;!--.*?--&gt;)/g, '<span class="xml-comment">$1</span>');
-
-        // CDATA
-        code = code.replace(/(&lt;!\[CDATA\[[\s\S]*?\]\]&gt;)/g, '<span class="xml-cdata">$1</span>');
-
-        // Keywords dentro de CDATA (AS4)
+        // Keywords AS4 dentro de strings (CDATA já processado)
         code = code.replace(/\b(var|function|return|if|else|const|let|class|extends|implements|interface|public|private|protected|static|import|from|export|default|async|await|void|Number|String|Boolean|Array|Object)\b/g, '<span class="js-keyword">$1</span>');
 
         // Decorators AS4
         code = code.replace(/@(reactive|computed|bindable|inject)/g, '<span class="as4-decorator">@$1</span>');
 
-        // Binding expressions
-        code = code.replace(/(\{[^}]+\})/g, '<span class="mxml-binding">$1</span>');
+        // Binding expressions com destaque especial
+        code = code.replace(/(\{)([^}]+)(\})/g,
+            '<span class="mxml-binding-bracket">$1</span><span class="mxml-binding">$2</span><span class="mxml-binding-bracket">$3</span>');
 
         return code;
     }
@@ -248,9 +254,9 @@ class MXMLSourceViewer {
             .mxml-source-code-container pre {
                 margin: 0;
                 padding: 20px;
-                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-                font-size: 13px;
-                line-height: 1.6;
+                font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+                font-size: 14px;
+                line-height: 1.7;
                 color: #d4d4d4;
             }
 
@@ -285,15 +291,49 @@ class MXMLSourceViewer {
                 background: #218838;
             }
 
-            /* Syntax Highlighting */
-            .xml-tag { color: #569cd6; font-weight: bold; }
-            .xml-attr { color: #9cdcfe; }
-            .xml-string { color: #ce9178; }
-            .xml-comment { color: #6a9955; font-style: italic; }
-            .xml-cdata { color: #d4d4d4; background: #2d2d30; }
-            .js-keyword { color: #c586c0; font-weight: bold; }
-            .as4-decorator { color: #dcdcaa; font-weight: bold; }
-            .mxml-binding { color: #4ec9b0; font-weight: bold; }
+            /* Syntax Highlighting - VS Code Dark+ inspired com melhor contraste */
+            .xml-bracket {
+                color: #808080;
+                font-weight: normal;
+            }
+            .xml-tag {
+                color: #4EC9B0;
+                font-weight: bold;
+            }
+            .xml-attr {
+                color: #9CDCFE;
+                font-weight: normal;
+            }
+            .xml-string {
+                color: #CE9178;
+            }
+            .xml-comment {
+                color: #6A9955;
+                font-style: italic;
+                opacity: 0.9;
+            }
+            .xml-cdata {
+                color: #DCDCAA;
+                background: rgba(220, 220, 170, 0.05);
+                padding: 2px 4px;
+                border-radius: 2px;
+            }
+            .js-keyword {
+                color: #C586C0;
+                font-weight: bold;
+            }
+            .as4-decorator {
+                color: #DCDCAA;
+                font-weight: bold;
+            }
+            .mxml-binding-bracket {
+                color: #FFD700;
+                font-weight: bold;
+            }
+            .mxml-binding {
+                color: #4FC1FF;
+                font-weight: bold;
+            }
         `;
         document.head.appendChild(style);
     }
