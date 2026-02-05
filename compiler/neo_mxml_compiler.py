@@ -8,6 +8,7 @@ import re
 import xml.etree.ElementTree as ET
 from typing import List, Dict, Optional, Tuple, Set
 from compiler.parser.as4_parser import AS4Parser
+from compiler.parser.mxml_parser import preprocess_mxml_bindings
 from compiler.codegen.js_codegen import JSCodeGenerator
 
 
@@ -29,6 +30,12 @@ class NeoMXMLCompiler:
     ALL_COMPONENTS = (CONTAINER_COMPONENTS | INPUT_COMPONENTS |
                      DISPLAY_COMPONENTS | BUTTON_COMPONENTS | REPEATER_COMPONENTS | DATA_COMPONENTS)
 
+    # DnD-related attribute names
+    DND_ATTRS = {
+        'dragEnabled', 'dropEnabled', 'dragMoveEnabled', 'allowMultipleSelection',
+        'dragStart', 'dragEnter', 'dragOver', 'dragExit', 'dragDrop', 'dragComplete'
+    }
+
     def __init__(self):
         self.as4_parser = AS4Parser()
         self.js_codegen = JSCodeGenerator()
@@ -37,6 +44,8 @@ class NeoMXMLCompiler:
         self.styles = ""
         self.bindings = []  # Lista de bindings {id, attribute, expression}
         self.event_handlers = []  # Lista de event handlers {id, event, handler}
+        self.uses_dnd = False
+        self.dnd_configs = []  # Lista de dnd configs {id, component_type, ...}
 
     def _add_value_access(self, expr: str) -> str:
         """Add .value access to reactive variables in expression"""
@@ -57,6 +66,11 @@ class NeoMXMLCompiler:
         self.styles = ""
         self.bindings = []
         self.event_handlers = []
+        self.uses_dnd = False
+        self.dnd_configs = []
+
+        # Preprocess MXML to normalize binding syntax before XML parsing
+        mxml_source = preprocess_mxml_bindings(mxml_source)
 
         # Parse MXML como XML
         try:
@@ -110,7 +124,18 @@ class NeoMXMLCompiler:
         lines.append("")
 
         # Gerar Web Component (também indentado)
+        # Note: this call populates self.uses_dnd via _extract_dnd_config
         component_lines = self._generate_web_component(root, has_reactivity)
+
+        # Conditional DnD runtime import (after processing determines if DnD is used)
+        if self.uses_dnd:
+            lines.append("  // OpenFlex DnD Runtime")
+            lines.append("  const { DragManager, DragSource, NeoFlexDragEvent, setupDragSource, setupDropTarget } =")
+            lines.append("    (typeof window !== 'undefined' && window.OpenFlexDnD)")
+            lines.append("    ? window.OpenFlexDnD")
+            lines.append("    : require('./runtime/openflex-dnd.js');")
+            lines.append("")
+
         for line in component_lines:
             lines.append(f"  {line}" if line.strip() else line)
 
@@ -261,6 +286,7 @@ class NeoMXMLCompiler:
                 # List especial
                 if is_list:
                     template = binding.get('template', 'label')  # labelField
+                    dnd_config = binding.get('dnd_config', None)
                     lines.append(f"    // List: {elem_id}")
                     lines.append(f"    createEffect(() => {{")
                     lines.append(f"      const el = this.shadowRoot.getElementById('{elem_id}');")
@@ -278,14 +304,36 @@ class NeoMXMLCompiler:
                     lines.append(f"        itemEl.className = 'neo-list-item';")
                     lines.append(f"        itemEl.textContent = item.{template} || item || '';")
                     lines.append(f"        itemEl.dataset.index = index;")
+                    # DnD: setupDragSource for each item
+                    if dnd_config and dnd_config.get('dragEnabled'):
+                        action = dnd_config.get('action', 'copy')
+                        drag_start_handler = dnd_config.get('events', {}).get('dragStart', '')
+                        drag_complete_handler = dnd_config.get('events', {}).get('dragComplete', '')
+                        lines.append(f"        setupDragSource(itemEl, {{ item: item, index: index, action: '{action}'"
+                                     + (f", onDragStart: (e) => {drag_start_handler}(e)" if drag_start_handler else "")
+                                     + (f", onDragComplete: (e) => {drag_complete_handler}(e)" if drag_complete_handler else "")
+                                     + f" }});")
                     lines.append(f"        el.appendChild(itemEl);")
                     lines.append(f"      }});")
+                    # DnD: setupDropTarget on the container (after items are rendered)
+                    if dnd_config and dnd_config.get('dropEnabled'):
+                        drag_enter_handler = dnd_config.get('events', {}).get('dragEnter', '')
+                        drag_over_handler = dnd_config.get('events', {}).get('dragOver', '')
+                        drag_exit_handler = dnd_config.get('events', {}).get('dragExit', '')
+                        drag_drop_handler = dnd_config.get('events', {}).get('dragDrop', '')
+                        lines.append(f"      setupDropTarget(el, {{ childSelector: '.neo-list-item'"
+                                     + (f", onDragEnter: (e) => {drag_enter_handler}(e)" if drag_enter_handler else "")
+                                     + (f", onDragOver: (e) => {drag_over_handler}(e)" if drag_over_handler else "")
+                                     + (f", onDragExit: (e) => {drag_exit_handler}(e)" if drag_exit_handler else "")
+                                     + (f", onDragDrop: (e) => {drag_drop_handler}(e)" if drag_drop_handler else "")
+                                     + f" }});")
                     lines.append(f"    }});")
                     continue
 
                 # DataGrid especial
                 if is_datagrid:
                     columns = binding.get('template', [])  # columns array
+                    dnd_config = binding.get('dnd_config', None)
                     lines.append(f"    // DataGrid: {elem_id}")
                     lines.append(f"    createEffect(() => {{")
                     lines.append(f"      const tbody = this.shadowRoot.getElementById('{elem_id}_body');")
@@ -305,8 +353,31 @@ class NeoMXMLCompiler:
                         lines.append(f"        const td_{data_field} = document.createElement('td');")
                         lines.append(f"        td_{data_field}.textContent = item.{data_field} || '';")
                         lines.append(f"        row.appendChild(td_{data_field});")
+                    # DnD: setupDragSource for each row
+                    if dnd_config and dnd_config.get('dragEnabled'):
+                        action = dnd_config.get('action', 'copy')
+                        drag_start_handler = dnd_config.get('events', {}).get('dragStart', '')
+                        drag_complete_handler = dnd_config.get('events', {}).get('dragComplete', '')
+                        lines.append(f"        row.className = 'neo-datagrid-row';")
+                        lines.append(f"        setupDragSource(row, {{ item: item, index: index, action: '{action}'"
+                                     + (f", onDragStart: (e) => {drag_start_handler}(e)" if drag_start_handler else "")
+                                     + (f", onDragComplete: (e) => {drag_complete_handler}(e)" if drag_complete_handler else "")
+                                     + f" }});")
                     lines.append(f"        tbody.appendChild(row);")
                     lines.append(f"      }});")
+                    # DnD: setupDropTarget on tbody (after rows are rendered)
+                    if dnd_config and dnd_config.get('dropEnabled'):
+                        drag_enter_handler = dnd_config.get('events', {}).get('dragEnter', '')
+                        drag_over_handler = dnd_config.get('events', {}).get('dragOver', '')
+                        drag_exit_handler = dnd_config.get('events', {}).get('dragExit', '')
+                        drag_drop_handler = dnd_config.get('events', {}).get('dragDrop', '')
+                        lines.append(f"      const dgContainer = this.shadowRoot.getElementById('{elem_id}');")
+                        lines.append(f"      setupDropTarget(dgContainer, {{ childSelector: 'tr.neo-datagrid-row'"
+                                     + (f", onDragEnter: (e) => {drag_enter_handler}(e)" if drag_enter_handler else "")
+                                     + (f", onDragOver: (e) => {drag_over_handler}(e)" if drag_over_handler else "")
+                                     + (f", onDragExit: (e) => {drag_exit_handler}(e)" if drag_exit_handler else "")
+                                     + (f", onDragDrop: (e) => {drag_drop_handler}(e)" if drag_drop_handler else "")
+                                     + f" }});")
                     lines.append(f"    }});")
                     continue
 
@@ -428,6 +499,10 @@ class NeoMXMLCompiler:
             if attr_name in ['text', 'label', 'click', 'placeholder', 'title', 'dataProvider']:
                 continue
 
+            # Ignorar DnD attributes (handled separately)
+            if attr_name in self.DND_ATTRS:
+                continue
+
             # Detectar binding
             if '{' in attr_value and '}' in attr_value:
                 match = re.search(r'\{([^}]+)\}', attr_value)
@@ -498,9 +573,11 @@ class NeoMXMLCompiler:
         """Constrói string de classes CSS combinando base + styleClass + alinhamento"""
         classes = [base_class]
 
-        # Adicionar styleClass se existir
+        # Adicionar styleClass se existir (sem duplicar base_class)
         if 'styleClass' in attrs:
-            classes.append(attrs['styleClass'])
+            for cls in attrs['styleClass'].split():
+                if cls not in classes:
+                    classes.append(cls)
 
         # Adicionar classes de alinhamento
         if 'horizontalAlign' in attrs:
@@ -523,6 +600,38 @@ class NeoMXMLCompiler:
             return " " + " ".join(classes)
         return ""
 
+    def _extract_dnd_config(self, element: ET.Element, elem_id: str, component_type: str) -> Optional[Dict]:
+        """Extract drag-and-drop configuration from element attributes"""
+        drag_enabled = element.get('dragEnabled', 'false').lower() == 'true'
+        drop_enabled = element.get('dropEnabled', 'false').lower() == 'true'
+        drag_move_enabled = element.get('dragMoveEnabled', 'false').lower() == 'true'
+
+        if not drag_enabled and not drop_enabled:
+            return None
+
+        self.uses_dnd = True
+
+        # Extract DnD event handlers
+        dnd_events = {}
+        for evt_name in ['dragStart', 'dragEnter', 'dragOver', 'dragExit', 'dragDrop', 'dragComplete']:
+            handler = element.get(evt_name, '')
+            if handler:
+                # Remove {} if present
+                handler = handler.strip('{}').strip()
+                dnd_events[evt_name] = handler
+
+        config = {
+            'id': elem_id,
+            'component_type': component_type,
+            'dragEnabled': drag_enabled,
+            'dropEnabled': drop_enabled,
+            'action': 'move' if drag_move_enabled else 'copy',
+            'events': dnd_events
+        }
+
+        self.dnd_configs.append(config)
+        return config
+
     def _generate_html_from_element(self, element: ET.Element, indent: int = 0) -> List[str]:
         """Gera HTML recursivamente a partir do elemento XML"""
         lines = []
@@ -542,9 +651,10 @@ class NeoMXMLCompiler:
 
             # Processar atributos
             static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string('neo-application', static_attrs)
             style_str = self._build_style_string(static_attrs)
 
-            lines.append(f"{prefix}<div id='{elem_id}' class='neo-application'{style_str}>")
+            lines.append(f"{prefix}<div id='{elem_id}'{class_str}{style_str}>")
             for child in element:
                 lines.extend(self._generate_html_from_element(child, indent + 2))
             lines.append(f"{prefix}</div>")
@@ -557,11 +667,10 @@ class NeoMXMLCompiler:
 
             # Processar atributos
             static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string(css_class, static_attrs)
             style_str = self._build_style_string(static_attrs)
-            align_classes = self._get_alignment_classes(static_attrs)
 
-            full_class = f"{css_class}{align_classes}"
-            lines.append(f"{prefix}<div id='{elem_id}' class='{full_class}'{style_str}>")
+            lines.append(f"{prefix}<div id='{elem_id}'{class_str}{style_str}>")
             for child in element:
                 lines.extend(self._generate_html_from_element(child, indent + 2))
             lines.append(f"{prefix}</div>")
@@ -593,8 +702,8 @@ class NeoMXMLCompiler:
 
             # Processar atributos
             static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string('neo-label', static_attrs)
             style_str = self._build_style_string(static_attrs)
-            class_attr = f" class='{static_attrs['styleClass']}'" if 'styleClass' in static_attrs else " class='neo-label'"
 
             # Detectar data binding
             if '{' in text and '}' in text:
@@ -609,9 +718,9 @@ class NeoMXMLCompiler:
                         'template': text
                     })
                     # Placeholder no HTML (será atualizado por reatividade)
-                    lines.append(f"{prefix}<span id='{elem_id}'{class_attr}{style_str}></span>")
+                    lines.append(f"{prefix}<span id='{elem_id}'{class_str}{style_str}></span>")
             else:
-                lines.append(f"{prefix}<span id='{elem_id}'{class_attr}{style_str}>{text}</span>")
+                lines.append(f"{prefix}<span id='{elem_id}'{class_str}{style_str}>{text}</span>")
 
         elif tag == 'Button':
             label = element.get('label', 'Button')
@@ -660,6 +769,7 @@ class NeoMXMLCompiler:
 
             # Processar atributos
             static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string('neo-textinput', static_attrs)
             style_str = self._build_style_string(static_attrs)
 
             # Two-way binding para text
@@ -676,7 +786,7 @@ class NeoMXMLCompiler:
                         'is_two_way': True
                     })
 
-            lines.append(f"{prefix}<input type='text' id='{elem_id}' class='neo-textinput' placeholder='{placeholder}'{style_str} />")
+            lines.append(f"{prefix}<input type='text' id='{elem_id}'{class_str} placeholder='{placeholder}'{style_str} />")
 
         elif tag == 'CheckBox':
             elem_id = f"checkbox_{self.component_counter}"
@@ -684,9 +794,10 @@ class NeoMXMLCompiler:
 
             # Processar atributos
             static_attrs = self._process_attributes(element, elem_id)
+            class_str = self._build_class_string('neo-checkbox', static_attrs)
             style_str = self._build_style_string(static_attrs)
 
-            lines.append(f"{prefix}<input type='checkbox' id='{elem_id}' class='neo-checkbox'{style_str} />")
+            lines.append(f"{prefix}<input type='checkbox' id='{elem_id}'{class_str}{style_str} />")
 
         elif tag == 'ComboBox':
             elem_id = f"combobox_{self.component_counter}"
@@ -730,6 +841,9 @@ class NeoMXMLCompiler:
             class_str = self._build_class_string('neo-list', static_attrs)
             style_str = self._build_style_string(static_attrs)
 
+            # Extract DnD config
+            dnd_config = self._extract_dnd_config(element, elem_id, 'List')
+
             # Detectar binding no dataProvider
             if data_provider and '{' in data_provider and '}' in data_provider:
                 match = re.search(r'\{([^}]+)\}', data_provider)
@@ -740,7 +854,8 @@ class NeoMXMLCompiler:
                         'attribute': 'list',
                         'expression': array_var,
                         'template': label_field,
-                        'is_list': True
+                        'is_list': True,
+                        'dnd_config': dnd_config
                     })
 
             lines.append(f"{prefix}<div id='{elem_id}'{class_str}{style_str}>")
@@ -757,6 +872,9 @@ class NeoMXMLCompiler:
             static_attrs = self._process_attributes(element, elem_id)
             class_str = self._build_class_string('neo-datagrid', static_attrs)
             style_str = self._build_style_string(static_attrs)
+
+            # Extract DnD config
+            dnd_config = self._extract_dnd_config(element, elem_id, 'DataGrid')
 
             # Coletar colunas
             columns = []
@@ -779,7 +897,8 @@ class NeoMXMLCompiler:
                         'attribute': 'datagrid',
                         'expression': array_var,
                         'template': columns,
-                        'is_datagrid': True
+                        'is_datagrid': True,
+                        'dnd_config': dnd_config
                     })
 
             lines.append(f"{prefix}<div id='{elem_id}'{class_str}{style_str}>")

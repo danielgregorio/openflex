@@ -514,3 +514,75 @@ textarea.neo-textinput {
 .flex-slide-in {
     animation: flex-slideDown 0.3s ease-out;
 }
+
+/* ========================================
+   DRAG AND DROP (Flex-style DnD)
+   ======================================== */
+
+/* Draggable items */
+.neo-drag-enabled {
+    cursor: grab;
+    user-select: none;
+}
+
+.neo-drag-enabled:active {
+    cursor: grabbing;
+}
+
+/* Item currently being dragged */
+.neo-dragging {
+    opacity: 0.4;
+    outline: 2px dashed var(--flex-focus);
+    outline-offset: -2px;
+}
+
+/* Container accepting a drop */
+.neo-drag-over {
+    outline: 2px solid var(--flex-focus);
+    outline-offset: -2px;
+    background-color: rgba(0, 153, 255, 0.05);
+}
+
+/* Drop position indicator line */
+.neo-drop-indicator {
+    display: none;
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    height: 2px;
+    background: var(--flex-focus);
+    pointer-events: none;
+    z-index: 100;
+}
+
+.neo-drop-indicator::before,
+.neo-drop-indicator::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    background: var(--flex-focus);
+    border-radius: 50%;
+}
+
+.neo-drop-indicator::before {
+    left: -4px;
+}
+
+.neo-drop-indicator::after {
+    right: -4px;
+}
+
+/* Containers that accept drops need relative positioning for the indicator */
+.neo-list {
+    position: relative;
+}
+
+.neo-datagrid {
+    position: relative;
+}
+
+.neo-repeater {
+    position: relative;
+}

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns:fx="http://openflex.dev/core"
+             title="Drag and Drop Demo">
+
+    <fx:Script>
+        @reactive var leftItems: Array = [
+            {label: "Apple"},
+            {label: "Banana"},
+            {label: "Cherry"},
+            {label: "Date"},
+            {label: "Elderberry"}
+        ];
+
+        @reactive var rightItems: Array = [
+            {label: "Fig"},
+            {label: "Grape"},
+            {label: "Honeydew"}
+        ];
+
+        @reactive var leftCount: Number = 5;
+        @reactive var rightCount: Number = 3;
+
+        function handleDropRight(event): void {
+            var draggedItem = event.dragSource.dataForFormat("items");
+            var sourceIndex = event.dragSource.dataForFormat("index");
+            var insertIndex = event.insertIndex;
+            var newLeft = leftItems.slice();
+            newLeft.splice(sourceIndex, 1);
+            var newRight = rightItems.slice();
+            newRight.splice(insertIndex, 0, draggedItem);
+            leftItems = newLeft;
+            rightItems = newRight;
+            leftCount = newLeft.length;
+            rightCount = newRight.length;
+        }
+
+        function handleDropLeft(event): void {
+            var draggedItem = event.dragSource.dataForFormat("items");
+            var sourceIndex = event.dragSource.dataForFormat("index");
+            var insertIndex = event.insertIndex;
+            var newRight = rightItems.slice();
+            newRight.splice(sourceIndex, 1);
+            var newLeft = leftItems.slice();
+            newLeft.splice(insertIndex, 0, draggedItem);
+            rightItems = newRight;
+            leftItems = newLeft;
+            leftCount = newLeft.length;
+            rightCount = newRight.length;
+        }
+    </fx:Script>
+
+    <fx:Style>
+        .demo-layout {
+            display: flex;
+            gap: 20px;
+            padding: 10px;
+        }
+        .list-container {
+            flex: 1;
+        }
+        .neo-list {
+            min-height: 200px;
+            max-height: 400px;
+        }
+    </fx:Style>
+
+    <Panel title="Drag and Drop Demo - Move Fruits Between Lists">
+        <VBox>
+            <Label text="Drag items between the two lists. Items will move on drop." />
+            <HBox styleClass="demo-layout">
+                <VBox styleClass="list-container">
+                    <Label text="Left List ({leftCount} items)" />
+                    <List dataProvider="{leftItems}" labelField="label"
+                          dragEnabled="true" dropEnabled="true" dragMoveEnabled="true"
+                          dragDrop="handleDropLeft" />
+                </VBox>
+                <VBox styleClass="list-container">
+                    <Label text="Right List ({rightCount} items)" />
+                    <List dataProvider="{rightItems}" labelField="label"
+                          dragEnabled="true" dropEnabled="true" dragMoveEnabled="true"
+                          dragDrop="handleDropRight" />
+                </VBox>
+            </HBox>
+        </VBox>
+    </Panel>
+</Application>

@@ -204,6 +204,139 @@ textarea.neo-textinput {
 }
 
 /* ========================================
+   COMBOBOX (Dropdown)
+   ======================================== */
+.neo-combobox {
+    background: white;
+    border: 1px solid var(--flex-border);
+    border-radius: 2px;
+    padding: 3px 20px 3px 5px;
+    font-size: 11px;
+    font-family: Arial, Helvetica, sans-serif;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+    background-image: linear-gradient(to bottom, transparent 0%, transparent 100%),
+                      linear-gradient(135deg, transparent 50%, var(--flex-border) 50%),
+                      linear-gradient(225deg, var(--flex-border) 50%, transparent 50%);
+    background-position: right 10px center, right 7px center, right 4px center;
+    background-size: 1px 100%, 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+.neo-combobox:hover {
+    border-color: #666666;
+}
+
+.neo-combobox:focus {
+    outline: none;
+    border-color: var(--flex-focus);
+    box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.1),
+        0 0 4px rgba(0, 153, 255, 0.4);
+}
+
+/* ========================================
+   LIST (Item List)
+   ======================================== */
+.neo-list {
+    background: white;
+    border: 1px solid var(--flex-border);
+    border-radius: 2px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    max-height: 200px;
+}
+
+.neo-list-item {
+    padding: 5px 8px;
+    font-size: 11px;
+    font-family: Arial, Helvetica, sans-serif;
+    border-bottom: 1px solid #EEEEEE;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.neo-list-item:last-child {
+    border-bottom: none;
+}
+
+.neo-list-item:hover {
+    background: var(--flex-bg-light);
+}
+
+.neo-list-item:active,
+.neo-list-item.selected {
+    background: var(--flex-selection);
+    color: white;
+}
+
+/* ========================================
+   DATAGRID (Data Table)
+   ======================================== */
+.neo-datagrid {
+    background: white;
+    border: 1px solid var(--flex-border);
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    overflow: auto;
+}
+
+.neo-datagrid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.neo-datagrid-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.neo-datagrid-table th {
+    background: linear-gradient(to bottom,
+        var(--flex-header-start) 0%,
+        var(--flex-header-end) 100%);
+    color: white;
+    font-weight: bold;
+    text-align: left;
+    padding: 6px 8px;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid #556B7F;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.neo-datagrid-table th:last-child {
+    border-right: none;
+}
+
+.neo-datagrid-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #EEEEEE;
+    border-right: 1px solid #EEEEEE;
+}
+
+.neo-datagrid-table td:last-child {
+    border-right: none;
+}
+
+.neo-datagrid-table tbody tr:hover {
+    background: #F8F8F8;
+}
+
+.neo-datagrid-table tbody tr:nth-child(even) {
+    background: #FAFAFA;
+}
+
+.neo-datagrid-table tbody tr:nth-child(even):hover {
+    background: #F0F0F0;
+}
+
+/* ========================================
    BOX (Generic Container)
    ======================================== */
 .neo-box {
@@ -380,4 +513,76 @@ textarea.neo-textinput {
 
 .flex-slide-in {
     animation: flex-slideDown 0.3s ease-out;
+}
+
+/* ========================================
+   DRAG AND DROP (Flex-style DnD)
+   ======================================== */
+
+/* Draggable items */
+.neo-drag-enabled {
+    cursor: grab;
+    user-select: none;
+}
+
+.neo-drag-enabled:active {
+    cursor: grabbing;
+}
+
+/* Item currently being dragged */
+.neo-dragging {
+    opacity: 0.4;
+    outline: 2px dashed var(--flex-focus);
+    outline-offset: -2px;
+}
+
+/* Container accepting a drop */
+.neo-drag-over {
+    outline: 2px solid var(--flex-focus);
+    outline-offset: -2px;
+    background-color: rgba(0, 153, 255, 0.05);
+}
+
+/* Drop position indicator line */
+.neo-drop-indicator {
+    display: none;
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    height: 2px;
+    background: var(--flex-focus);
+    pointer-events: none;
+    z-index: 100;
+}
+
+.neo-drop-indicator::before,
+.neo-drop-indicator::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    background: var(--flex-focus);
+    border-radius: 50%;
+}
+
+.neo-drop-indicator::before {
+    left: -4px;
+}
+
+.neo-drop-indicator::after {
+    right: -4px;
+}
+
+/* Containers that accept drops need relative positioning for the indicator */
+.neo-list {
+    position: relative;
+}
+
+.neo-datagrid {
+    position: relative;
+}
+
+.neo-repeater {
+    position: relative;
 }
