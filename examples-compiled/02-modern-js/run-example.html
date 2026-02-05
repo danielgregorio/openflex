@@ -156,7 +156,8 @@
                 const code = await response.text();
 
                 // Execute the code
-                eval(code);
+                const fn = new Function(code);
+                fn();
 
                 trace('\n-------------------------------------------');
                 trace('✅ Exemplo executado com sucesso!');

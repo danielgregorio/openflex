@@ -306,7 +306,7 @@
                         <Label className="product-description" text={item.description} />
 
                         <Label
-                            text="★".repeat(item.rating)}
+                            text={"★".repeat(item.rating)}
                             style="color: #ffc107; font-size: 14px; margin: 5px 0;" />
 
                         <Button

@@ -45,7 +45,7 @@
 
   function addItem() {
     const newId = items.value.length + 1;
-    items.value = [{ id: newId, name: "Item " + String.fromCharCode(64 + newId), status: "New" }];
+    items.value = [...items.value, { id: newId, name: "Item " + String.fromCharCode(64 + newId), status: "New" }];
   }
 
 
@@ -82,8 +82,8 @@
             <div class='neo-panel-header'>📋 Flex Classic Application Demo</div>
             <div class='neo-panel-body'>
               <div id='vbox_3' class='neo-vbox'>
-                <span id='label_4' class='title-text'>Bem-vindo ao OpenFlex Neo com visual clássico do Adobe Flex 3/4!</span>
-                <span id='label_5' class='info-text'>Este exemplo demonstra o tema Flex Classic: gradientes cinza, botões 3D e painéis chanfrados.</span>
+                <span id='label_4' class='neo-label title-text'>Bem-vindo ao OpenFlex Neo com visual clássico do Adobe Flex 3/4!</span>
+                <span id='label_5' class='neo-label info-text'>Este exemplo demonstra o tema Flex Classic: gradientes cinza, botões 3D e painéis chanfrados.</span>
               </div>
             </div>
           </div>
@@ -105,7 +105,7 @@
                   <div id='box_18' class='neo-box'>
                   </div>
                   <div id='hbox_19' class='neo-hbox'>
-                    <span id='label_20' class='title-text'>Full Name:</span>
+                    <span id='label_20' class='neo-label title-text'>Full Name:</span>
                     <span id='label_21' class='neo-label'></span>
                   </div>
                   <div id='hbox_22' class='neo-hbox'>
@@ -119,14 +119,14 @@
               <div class='neo-panel-header'>Data List</div>
               <div class='neo-panel-body'>
                 <div id='vbox_26' class='neo-vbox'>
-                  <span id='label_27' class='title-text'>Items in Collection:</span>
+                  <span id='label_27' class='neo-label title-text'>Items in Collection:</span>
                   <div id='vbox_28' class='neo-vbox'>
                     <div id='repeater_29' class='neo-repeater'>
                       <!-- Repeater content will be dynamically generated -->
                     </div>
                   </div>
                   <button id='btn_30' class='neo-button'>Add New Item</button>
-                  <span id='label_31' class='info-text'></span>
+                  <span id='label_31' class='neo-label info-text'></span>
                 </div>
               </div>
             </div>
@@ -135,9 +135,9 @@
             <div class='neo-panel-header'>About</div>
             <div class='neo-panel-body'>
               <div id='vbox_33' class='neo-vbox'>
-                <span id='label_34' class='title-text'>🎨 OpenFlex Neo - Flex Classic Theme</span>
-                <span id='label_35' class='info-text'>Inspirado no design icônico do Adobe Flex 3 e Flex 4</span>
-                <span id='label_36' class='info-text'>Gradientes sutis • Botões 3D • Painéis chanfrados • Visual nostálgico</span>
+                <span id='label_34' class='neo-label title-text'>🎨 OpenFlex Neo - Flex Classic Theme</span>
+                <span id='label_35' class='neo-label info-text'>Inspirado no design icônico do Adobe Flex 3 e Flex 4</span>
+                <span id='label_36' class='neo-label info-text'>Gradientes sutis • Botões 3D • Painéis chanfrados • Visual nostálgico</span>
               </div>
             </div>
           </div>

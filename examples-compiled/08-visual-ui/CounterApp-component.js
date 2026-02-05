@@ -47,7 +47,7 @@
 
   function addToHistory(action) {
     const timestamp = new Date().toLocaleTimeString();
-    history.value = [{ action: action, count: count.value, time: timestamp }];
+    history.value = [...history.value, { action: action, count: count.value, time: timestamp }];
   }
 
 

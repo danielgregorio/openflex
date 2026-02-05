@@ -30,7 +30,7 @@
   });
 
   const brightness = new Computed(() => {
-    return red.value * 0.299 + green.value * 0.587 + blue.value * 0.114 / 255;
+    return (red.value * 0.299 + green.value * 0.587 + blue.value * 0.114) / 255;
   });
 
   const textColor = new Computed(() => {
@@ -152,26 +152,26 @@
                 <span id='label_6' class='neo-label'></span>
               </div>
               <div id='vbox_7' class='neo-vbox'>
-                <div id='vbox_8' class='neo-vbox'>
+                <div id='vbox_8' class='neo-vbox slider-container'>
                   <div id='hbox_9' class='neo-hbox h-align-space-between'>
                     <span id='label_10' class='neo-label'>🔴 Vermelho</span>
                     <span id='label_11' class='neo-label'></span>
                   </div>
-                  <input type='text' id='input_12' class='neo-textinput' placeholder='' />
+                  <input type='text' id='input_12' class='neo-textinput color-slider slider-red' placeholder='' />
                 </div>
-                <div id='vbox_13' class='neo-vbox'>
+                <div id='vbox_13' class='neo-vbox slider-container'>
                   <div id='hbox_14' class='neo-hbox h-align-space-between'>
                     <span id='label_15' class='neo-label'>🟢 Verde</span>
                     <span id='label_16' class='neo-label'></span>
                   </div>
-                  <input type='text' id='input_17' class='neo-textinput' placeholder='' />
+                  <input type='text' id='input_17' class='neo-textinput color-slider slider-green' placeholder='' />
                 </div>
-                <div id='vbox_18' class='neo-vbox'>
+                <div id='vbox_18' class='neo-vbox slider-container'>
                   <div id='hbox_19' class='neo-hbox h-align-space-between'>
                     <span id='label_20' class='neo-label'>🔵 Azul</span>
                     <span id='label_21' class='neo-label'></span>
                   </div>
-                  <input type='text' id='input_22' class='neo-textinput' placeholder='' />
+                  <input type='text' id='input_22' class='neo-textinput color-slider slider-blue' placeholder='' />
                 </div>
               </div>
               <div id='vbox_23' class='neo-vbox'>

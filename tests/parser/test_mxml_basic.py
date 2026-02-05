@@ -337,8 +337,8 @@ def test_counter_example(parser):
         </fx:Script>
 
         <VBox gap="{16}" padding="{32}">
-            <Label text="{"Count: " + count}" fontSize="{24}" />
-            <Label text="{"Doubled: " + doubled}" fontSize="{18}" />
+            <Label text="{'Count: ' + count}" fontSize="{24}" />
+            <Label text="{'Doubled: ' + doubled}" fontSize="{18}" />
 
             <HBox gap="{8}">
                 <Button label="-" click="{decrement}" />

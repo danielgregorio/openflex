@@ -228,8 +228,8 @@ def test_ast_structure_validation(parser):
 
     # Check return statement contains binary expression
     return_stmt = add_func.body.body[0]
-    assert hasattr(return_stmt, 'value'), "Return statement has no value"
-    assert isinstance(return_stmt.value, BinaryExpression), "Return value is not a binary expression"
+    assert hasattr(return_stmt, 'argument'), "Return statement has no argument"
+    assert isinstance(return_stmt.argument, BinaryExpression), "Return argument is not a binary expression"
 
     print("✅ AST structure validation passed!")
     print(f"   - Variables: {len(vars)}")

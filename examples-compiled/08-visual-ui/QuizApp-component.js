@@ -163,7 +163,7 @@
                   </div>
                 </div>
               </div>
-              <span id='label_8' class='question-text'></span>
+              <span id='label_8' class='neo-label question-text'></span>
               <div id='vbox_9' class='neo-vbox'>
                 <button id='btn_10' class='neo-button'></button>
                 <button id='btn_11' class='neo-button'></button>
@@ -178,7 +178,7 @@
           <div id='box_16' class='neo-box'>
             <div id='vbox_17' class='neo-vbox h-align-center'>
               <span id='label_18' class='neo-label'>🎯 Resultado Final</span>
-              <span id='label_19' class='score-display'></span>
+              <span id='label_19' class='neo-label score-display'></span>
               <span id='label_20' class='neo-label' style='color: #2c3e50'></span>
               <span id='label_21' class='neo-label' style='color: #7f8c8d'></span>
               <button id='btn_22' class='neo-button next-btn'>🔄 Jogar Novamente</button>

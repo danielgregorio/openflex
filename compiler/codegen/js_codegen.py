@@ -16,6 +16,9 @@ class JSCodeGenerator:
         self.indent_str = "  "  # 2 spaces
         self.reactive_vars = set()  # Track reactive variables
         self.has_reactivity = False  # Track if we need runtime import
+        self._current_class_properties = set()  # Track class property names for this. insertion
+        self._in_class_method = False  # Track if we're generating a class method body
+        self._method_local_names = set()  # Track method params and local vars (shadow this.)
 
     def generate(self, program: Program) -> str:
         """Generate JavaScript code for entire program"""
@@ -80,13 +83,31 @@ class JSCodeGenerator:
             return self._generate_if_statement(stmt)
         elif isinstance(stmt, ForStatement):
             return self._generate_for_statement(stmt)
+        elif isinstance(stmt, ForInStatement):
+            return self._generate_for_in_statement(stmt)
+        elif isinstance(stmt, ForOfStatement):
+            return self._generate_for_of_statement(stmt)
         elif isinstance(stmt, WhileStatement):
             return self._generate_while_statement(stmt)
+        elif isinstance(stmt, TryStatement):
+            return self._generate_try_statement(stmt)
+        elif isinstance(stmt, ThrowStatement):
+            return self._generate_throw_statement(stmt)
+        elif isinstance(stmt, BreakStatement):
+            return self._generate_break_statement(stmt)
+        elif isinstance(stmt, ContinueStatement):
+            return self._generate_continue_statement(stmt)
+        elif isinstance(stmt, ImportDeclaration):
+            return self._generate_import_declaration(stmt)
         else:
             return f"/* TODO: {stmt.__class__.__name__} */"
 
     def _generate_variable_declaration(self, var_decl: VariableDeclaration) -> str:
         """Generate variable declaration"""
+        # Track local variable names inside class methods to avoid this. insertion
+        if self._in_class_method:
+            self._method_local_names.add(var_decl.name)
+
         # Check for decorators
         is_reactive = any(d.name == 'reactive' for d in var_decl.decorators)
         is_computed = any(d.name == 'computed' for d in var_decl.decorators)
@@ -201,11 +222,12 @@ class JSCodeGenerator:
         params = []
         for param in func_decl.params:
             param_name = param.name
+            prefix = "..." if param.is_rest else ""
             if param.default_value:
                 default = self._generate_expression(param.default_value)
-                params.append(f"{param_name} = {default}")
+                params.append(f"{prefix}{param_name} = {default}")
             else:
-                params.append(param_name)
+                params.append(f"{prefix}{param_name}")
 
         params_str = ", ".join(params)
 
@@ -229,6 +251,14 @@ class JSCodeGenerator:
         name = class_decl.name
         lines = []
 
+        # Collect all property names for this. insertion in methods
+        class_properties = set()
+        for member in class_decl.members:
+            if isinstance(member, PropertyDeclaration):
+                class_properties.add(member.name)
+            elif isinstance(member, VariableDeclaration):
+                class_properties.add(member.name)
+
         # Class header
         if class_decl.super_class:
             super_name = class_decl.super_class.name
@@ -242,28 +272,63 @@ class JSCodeGenerator:
         for member in class_decl.members:
             if isinstance(member, PropertyDeclaration):
                 # Property
+                static_prefix = "static " if member.is_static else ""
                 prop_name = member.name
                 if member.initializer:
                     value = self._generate_expression(member.initializer)
-                    lines.append(f"{self._indent()}{prop_name} = {value};")
+                    lines.append(f"{self._indent()}{static_prefix}{prop_name} = {value};")
                 else:
-                    lines.append(f"{self._indent()}{prop_name};")
+                    lines.append(f"{self._indent()}{static_prefix}{prop_name};")
 
             elif isinstance(member, VariableDeclaration):
                 # Variable declaration (treated as property in classes)
+                static_prefix = "static " if member.is_static else ""
                 prop_name = member.name
                 if member.initializer:
                     value = self._generate_expression(member.initializer)
-                    lines.append(f"{self._indent()}{prop_name} = {value};")
+                    lines.append(f"{self._indent()}{static_prefix}{prop_name} = {value};")
                 else:
-                    lines.append(f"{self._indent()}{prop_name};")
+                    lines.append(f"{self._indent()}{static_prefix}{prop_name};")
 
             elif isinstance(member, FunctionDeclaration):
-                # Method
-                method_code = self._generate_function_declaration(member)
-                # Remove 'function' keyword for class methods
-                method_code = method_code.replace("function ", "")
-                lines.append(method_code)
+                # Method - set class context for this. insertion
+                prev_props = self._current_class_properties
+                prev_in_method = self._in_class_method
+                prev_locals = self._method_local_names
+                self._current_class_properties = class_properties
+                self._in_class_method = True
+                # Collect parameter names so they shadow class properties
+                self._method_local_names = {p.name for p in member.params}
+
+                # Build method signature directly (not via _generate_function_declaration)
+                static_prefix = "static " if member.is_static else ""
+                async_prefix = "async " if member.is_async else ""
+                method_name = member.name
+
+                # Parameters with rest support
+                params = []
+                for param in member.params:
+                    param_name = param.name
+                    prefix = "..." if param.is_rest else ""
+                    if param.default_value:
+                        default = self._generate_expression(param.default_value)
+                        params.append(f"{prefix}{param_name} = {default}")
+                    else:
+                        params.append(f"{prefix}{param_name}")
+                params_str = ", ".join(params)
+
+                # Body
+                if member.body:
+                    body = self._generate_block_statement(member.body)
+                else:
+                    body = "{}"
+
+                lines.append(f"{self._indent()}{static_prefix}{async_prefix}{method_name}({params_str}) {body}")
+
+                # Restore context
+                self._current_class_properties = prev_props
+                self._in_class_method = prev_in_method
+                self._method_local_names = prev_locals
 
         self.indent_level -= 1
         lines.append(f"{self._indent()}}}")
@@ -354,6 +419,10 @@ class JSCodeGenerator:
             # Auto-transform reactive variable access
             if expr.name in self.reactive_vars:
                 return f"{expr.name}.value"
+            # Add this. prefix for class property references inside methods
+            # but not for local names (parameters, local vars) that shadow them
+            if self._in_class_method and expr.name in self._current_class_properties and expr.name not in self._method_local_names:
+                return f"this.{expr.name}"
             return expr.name
         elif isinstance(expr, BinaryExpression):
             return self._generate_binary_expression(expr)
@@ -379,6 +448,8 @@ class JSCodeGenerator:
             return self._generate_arrow_function(expr)
         elif isinstance(expr, NewExpression):
             return self._generate_new_expression(expr)
+        elif isinstance(expr, TemplateString):
+            return self._generate_template_string(expr)
         else:
             return f"/* TODO: {expr.__class__.__name__} */"
 
@@ -393,7 +464,9 @@ class JSCodeGenerator:
             # Use raw if available for correct escaping
             if hasattr(literal, 'raw') and literal.raw:
                 return literal.raw
-            return f'"{literal.value}"'
+            # Escape special characters when raw is not available
+            escaped = literal.value.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+            return f'"{escaped}"'
         elif isinstance(literal, BooleanLiteral):
             return "true" if literal.value else "false"
         elif isinstance(literal, NullLiteral):
@@ -404,19 +477,42 @@ class JSCodeGenerator:
         else:
             return str(literal.value)
 
+    # Operator precedence table (higher number = higher precedence)
+    _PRECEDENCE = {
+        '=': 1, '+=': 1, '-=': 1, '*=': 1, '/=': 1, '%=': 1, '**=': 1,
+        '??': 2,
+        '||': 3,
+        '&&': 4,
+        '|': 5,
+        '^': 6,
+        '&': 7,
+        '==': 8, '!=': 8, '===': 8, '!==': 8,
+        '<': 9, '>': 9, '<=': 9, '>=': 9, 'instanceof': 9, 'in': 9,
+        '<<': 10, '>>': 10, '>>>': 10,
+        '+': 11, '-': 11,
+        '*': 12, '/': 12, '%': 12,
+        '**': 13,
+    }
+
     def _generate_binary_expression(self, binary: BinaryExpression) -> str:
-        """Generate binary expression"""
+        """Generate binary expression with proper precedence"""
         left = self._generate_expression(binary.left)
         right = self._generate_expression(binary.right)
 
-        # Only add parentheses for complex expressions
-        # Simple operators don't need wrapping
-        # Include compound assignment operators
-        if binary.operator in ['=', '+=', '-=', '*=', '/=', '%=', '==', '!=', '===', '!==', '<', '>', '<=', '>=', '&&', '||']:
-            return f"{left} {binary.operator} {right}"
-        else:
-            # Arithmetic operators - add parentheses only if needed
-            return f"{left} {binary.operator} {right}"
+        # Add parentheses around child binary expressions with lower precedence
+        my_prec = self._PRECEDENCE.get(binary.operator, 11)
+
+        if isinstance(binary.left, BinaryExpression):
+            left_prec = self._PRECEDENCE.get(binary.left.operator, 11)
+            if left_prec < my_prec:
+                left = f"({left})"
+
+        if isinstance(binary.right, BinaryExpression):
+            right_prec = self._PRECEDENCE.get(binary.right.operator, 11)
+            if right_prec <= my_prec:
+                right = f"({right})"
+
+        return f"{left} {binary.operator} {right}"
 
     def _generate_unary_expression(self, unary: UnaryExpression) -> str:
         """Generate unary expression"""
@@ -525,18 +621,19 @@ class JSCodeGenerator:
         async_keyword = "async " if arrow.is_async else ""
 
         # Parameters
-        if len(arrow.params) == 1 and not arrow.params[0].default_value:
-            # Single parameter without default - no parentheses needed
+        if len(arrow.params) == 1 and not arrow.params[0].default_value and not arrow.params[0].is_rest:
+            # Single parameter without default and not rest - no parentheses needed
             params_str = arrow.params[0].name
         else:
             params = []
             for param in arrow.params:
                 param_name = param.name
+                prefix = "..." if param.is_rest else ""
                 if param.default_value:
                     default = self._generate_expression(param.default_value)
-                    params.append(f"{param_name} = {default}")
+                    params.append(f"{prefix}{param_name} = {default}")
                 else:
-                    params.append(param_name)
+                    params.append(f"{prefix}{param_name}")
             params_str = f"({', '.join(params)})"
 
         # Body
@@ -558,6 +655,103 @@ class JSCodeGenerator:
         args = [self._generate_expression(arg) for arg in new_expr.arguments]
         args_str = ", ".join(args)
         return f"new {callee}({args_str})"
+
+    def _generate_for_in_statement(self, stmt: ForInStatement) -> str:
+        """Generate for-in statement: for (key in obj)"""
+        if isinstance(stmt.left, VariableDeclaration):
+            keyword = "const" if stmt.left.is_const else "let"
+            left = f"{keyword} {stmt.left.name}"
+        else:
+            left = self._generate_expression(stmt.left)
+        right = self._generate_expression(stmt.right)
+        body = self._generate_statement(stmt.body)
+        return f"{self._indent()}for ({left} in {right}) {body}"
+
+    def _generate_for_of_statement(self, stmt: ForOfStatement) -> str:
+        """Generate for-of statement: for (item of array)"""
+        if isinstance(stmt.left, VariableDeclaration):
+            keyword = "const" if stmt.left.is_const else "let"
+            left = f"{keyword} {stmt.left.name}"
+        else:
+            left = self._generate_expression(stmt.left)
+        right = self._generate_expression(stmt.right)
+        body = self._generate_statement(stmt.body)
+        return f"{self._indent()}for ({left} of {right}) {body}"
+
+    def _generate_try_statement(self, stmt: TryStatement) -> str:
+        """Generate try-catch-finally statement"""
+        lines = []
+        block = self._generate_block_statement(stmt.block)
+        lines.append(f"{self._indent()}try {block}")
+
+        if stmt.handler:
+            if stmt.handler.param:
+                catch_body = self._generate_block_statement(stmt.handler.body)
+                lines.append(f"{self._indent()}catch ({stmt.handler.param}) {catch_body}")
+            else:
+                catch_body = self._generate_block_statement(stmt.handler.body)
+                lines.append(f"{self._indent()}catch {catch_body}")
+
+        if stmt.finalizer:
+            finally_body = self._generate_block_statement(stmt.finalizer)
+            lines.append(f"{self._indent()}finally {finally_body}")
+
+        return "\n".join(lines)
+
+    def _generate_throw_statement(self, stmt: ThrowStatement) -> str:
+        """Generate throw statement"""
+        arg = self._generate_expression(stmt.argument)
+        return f"{self._indent()}throw {arg};"
+
+    def _generate_break_statement(self, stmt: BreakStatement) -> str:
+        """Generate break statement"""
+        if stmt.label:
+            return f"{self._indent()}break {stmt.label};"
+        return f"{self._indent()}break;"
+
+    def _generate_continue_statement(self, stmt: ContinueStatement) -> str:
+        """Generate continue statement"""
+        if stmt.label:
+            return f"{self._indent()}continue {stmt.label};"
+        return f"{self._indent()}continue;"
+
+    def _generate_import_declaration(self, stmt: ImportDeclaration) -> str:
+        """Generate import declaration"""
+        if not stmt.specifiers:
+            return f'{self._indent()}import "{stmt.source}";'
+
+        specifiers = []
+        default_specifier = None
+        for spec in stmt.specifiers:
+            if spec.imported == 'default':
+                default_specifier = spec.local
+            elif spec.imported == spec.local:
+                specifiers.append(spec.local)
+            else:
+                specifiers.append(f"{spec.imported} as {spec.local}")
+
+        parts = []
+        if default_specifier:
+            parts.append(default_specifier)
+        if specifiers:
+            parts.append(f"{{ {', '.join(specifiers)} }}")
+
+        return f'{self._indent()}import {", ".join(parts)} from "{stmt.source}";'
+
+    def _generate_template_string(self, template: TemplateString) -> str:
+        """Generate template string: `Hello ${name}`"""
+        result = "`"
+        for part in template.parts:
+            if isinstance(part, StringLiteral):
+                # Raw text part - escape backticks only
+                text = part.value.replace('`', '\\`')
+                result += text
+            else:
+                # Expression part
+                expr = self._generate_expression(part)
+                result += f"${{{expr}}}"
+        result += "`"
+        return result
 
     def _indent(self) -> str:
         """Get current indentation"""

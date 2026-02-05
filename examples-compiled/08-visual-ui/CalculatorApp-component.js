@@ -173,7 +173,7 @@
             <div class='neo-panel-header'>🧮 Calculadora</div>
             <div class='neo-panel-body'>
               <div id='vbox_3' class='neo-vbox'>
-                <span id='label_4' class='display'></span>
+                <span id='label_4' class='neo-label display'></span>
                 <div id='box_5' class='neo-box'>
                   <button id='btn_6' class='neo-button calc-btn btn-clear'>C</button>
                   <button id='btn_7' class='neo-button calc-btn btn-operator'>÷</button>

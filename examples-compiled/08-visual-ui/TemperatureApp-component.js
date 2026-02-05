@@ -121,28 +121,28 @@
             <div class='neo-panel-body'>
               <div id='vbox_3' class='neo-vbox h-align-center'>
                 <div id='vbox_4' class='neo-vbox h-align-center'>
-                  <span id='label_5' class='emoji-display'></span>
-                  <span id='label_6' class='description'></span>
+                  <span id='label_5' class='neo-label emoji-display'></span>
+                  <span id='label_6' class='neo-label description'></span>
                 </div>
                 <div id='vbox_7' class='neo-vbox' style='width: 100%'>
                   <span id='label_8' class='neo-label'>Ajuste a temperatura (°C)</span>
-                  <input type='text' id='input_9' class='neo-textinput' placeholder='' />
+                  <input type='text' id='input_9' class='neo-textinput slider' placeholder='' />
                 </div>
                 <div id='hbox_10' class='neo-hbox h-align-center'>
                   <div id='box_11' class='neo-box'>
                     <span id='label_12' class='neo-label' style='color: #7f8c8d'>Celsius</span>
-                    <span id='label_13' class='temp-value'></span>
-                    <span id='label_14' class='temp-unit'>°C</span>
+                    <span id='label_13' class='neo-label temp-value'></span>
+                    <span id='label_14' class='neo-label temp-unit'>°C</span>
                   </div>
                   <div id='box_15' class='neo-box'>
                     <span id='label_16' class='neo-label' style='color: #7f8c8d'>Fahrenheit</span>
-                    <span id='label_17' class='temp-value'></span>
-                    <span id='label_18' class='temp-unit'>°F</span>
+                    <span id='label_17' class='neo-label temp-value'></span>
+                    <span id='label_18' class='neo-label temp-unit'>°F</span>
                   </div>
                   <div id='box_19' class='neo-box'>
                     <span id='label_20' class='neo-label' style='color: #7f8c8d'>Kelvin</span>
-                    <span id='label_21' class='temp-value'></span>
-                    <span id='label_22' class='temp-unit'>K</span>
+                    <span id='label_21' class='neo-label temp-value'></span>
+                    <span id='label_22' class='neo-label temp-unit'>K</span>
                   </div>
                 </div>
               </div>

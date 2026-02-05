@@ -8,6 +8,7 @@ Parses MXML files with Neo namespace and extracts:
 - Data bindings
 """
 
+import re
 from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -75,6 +76,9 @@ class MXMLParser:
         Returns:
             MXMLApplication with parsed content
         """
+        # Preprocess MXML to normalize binding syntax before XML parsing
+        source = self._preprocess_mxml(source)
+
         # Parse XML
         try:
             root = etree.fromstring(source.encode('utf-8'))
@@ -118,6 +122,10 @@ class MXMLParser:
         with open(filepath, 'r', encoding='utf-8') as f:
             source = f.read()
         return self.parse(source, filepath)
+
+    def _preprocess_mxml(self, source: str) -> str:
+        """Preprocess MXML to normalize binding syntax before XML parsing."""
+        return preprocess_mxml_bindings(source)
 
     def _extract_scripts(self, root: etree.Element, fx_ns: str, filename: str) -> str:
         """Extract all <fx:Script> blocks"""
@@ -289,6 +297,84 @@ class MXMLParser:
 # ============================================================================
 # Helper Functions
 # ============================================================================
+
+def preprocess_mxml_bindings(source: str) -> str:
+    """
+    Preprocess MXML to normalize binding syntax before XML parsing.
+
+    Converts JSX-like unquoted bindings:
+        attr={expr}  →  attr="{expr}"
+
+    Handles nested braces (e.g. arrow functions: onClick={() => { ... }}).
+    Skips content inside <fx:Script> and <fx:Style> blocks.
+
+    This is a standalone function that can be used by any MXML compiler.
+    """
+    # Protect fx:Script and fx:Style blocks from modification
+    protected = {}
+    counter = [0]
+
+    def protect_block(match):
+        key = f'\x00PROT_{counter[0]}\x00'
+        counter[0] += 1
+        protected[key] = match.group(0)
+        return key
+
+    source = re.sub(
+        r'(<fx:Script\b[\s\S]*?</fx:Script>|<fx:Style\b[\s\S]*?</fx:Style>)',
+        protect_block, source
+    )
+
+    # Find all unquoted bindings: attr={...} with nested brace support
+    attr_pattern = re.compile(r'(\s)([\w:.-]+)=\{')
+    replacements = []
+    matched_ranges = []
+
+    for match in attr_pattern.finditer(source):
+        # Skip if inside a previously matched range
+        if any(s <= match.start() < e for s, e in matched_ranges):
+            continue
+
+        brace_start = match.end()  # position after ={
+
+        # Find matching } with depth tracking, respecting string literals
+        depth = 1
+        k = brace_start
+        in_string = None
+        while k < len(source) and depth > 0:
+            ch = source[k]
+            if in_string:
+                if ch == in_string and (k == 0 or source[k - 1] != '\\'):
+                    in_string = None
+            else:
+                if ch == '"' or ch == "'":
+                    in_string = ch
+                elif ch == '{':
+                    depth += 1
+                elif ch == '}':
+                    depth -= 1
+            k += 1
+
+        if depth == 0:
+            expr = source[brace_start:k - 1]
+            # Escape XML-special characters inside the expression
+            expr = expr.replace('&', '&amp;')
+            expr = expr.replace('"', '&quot;')
+            expr = expr.replace('<', '&lt;')
+            replacement = f'{match.group(1)}{match.group(2)}="{{{expr}}}"'
+            replacements.append((match.start(), k, replacement))
+            matched_ranges.append((match.start(), k))
+
+    # Apply replacements in reverse order to preserve positions
+    for start, end, replacement in reversed(replacements):
+        source = source[:start] + replacement + source[end:]
+
+    # Restore protected blocks
+    for key, value in protected.items():
+        source = source.replace(key, value)
+
+    return source
+
 
 def parse_mxml_file(filepath: str) -> MXMLApplication:
     """Convenience function to parse MXML file"""

@@ -11,7 +11,7 @@ class Animal {
     return "Some generic sound";
   }
   describe() {
-    return name + " is " + age + " years old";
+    return this.name + " is " + this.age + " years old";
   }
 }
 
@@ -21,7 +21,7 @@ class Dog extends Animal {
     return "Woof!";
   }
   fetch() {
-    return name + " is fetching the ball!";
+    return this.name + " is fetching the ball!";
   }
 }
 
@@ -89,10 +89,10 @@ class Calculator {
     return result;
   }
   storeInMemory(value) {
-    memory = value;
+    this.memory = value;
   }
   recall() {
-    return memory;
+    return this.memory;
   }
 }
 

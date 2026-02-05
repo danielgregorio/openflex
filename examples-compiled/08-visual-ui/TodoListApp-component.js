@@ -160,7 +160,7 @@
             <div class='neo-panel-header'>✅ Lista de Tarefas Reativa</div>
             <div class='neo-panel-body'>
               <div id='vbox_3' class='neo-vbox'>
-                <input type='text' id='input_4' class='neo-textinput' placeholder='Digite uma nova tarefa...' />
+                <input type='text' id='input_4' class='neo-textinput input-todo' placeholder='Digite uma nova tarefa...' />
                 <div id='hbox_5' class='neo-hbox h-align-center'>
                   <button id='btn_6' class='neo-button'></button>
                   <button id='btn_7' class='neo-button'></button>

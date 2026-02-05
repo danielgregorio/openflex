@@ -62,17 +62,23 @@ class AS4Parser:
 
         # Load language
         try:
-            # Load the shared library
-            lib = ctypes.cdll.LoadLibrary(str(lib_path))
+            # Try new API first (tree-sitter >= 0.22), then fall back to old API (0.21.x)
+            try:
+                # New API: load via ctypes
+                lib = ctypes.cdll.LoadLibrary(str(lib_path))
+                lang_func = lib.tree_sitter_actionscript4
+                lang_func.restype = ctypes.c_void_p
+                self.language = Language(lang_func())
+            except (TypeError, AttributeError):
+                # Old API (0.21.x): Language(path, name)
+                self.language = Language(str(lib_path), 'actionscript4')
 
-            # Get the language function (tree_sitter_actionscript4)
-            lang_func = lib.tree_sitter_actionscript4
-            lang_func.restype = ctypes.c_void_p
-
-            # Create Language object
-            self.language = Language(lang_func())
             self.parser = TSParser()
-            self.parser.language = self.language
+            # set_language works in 0.21.x, .language property in newer versions
+            if hasattr(self.parser, 'set_language'):
+                self.parser.set_language(self.language)
+            else:
+                self.parser.language = self.language
         except Exception as e:
             raise RuntimeError(
                 f"Failed to load tree-sitter grammar: {e}\n"
@@ -1304,7 +1310,19 @@ class ASTVisitor:
         members = []
         body_node = next((c for c in node.children if c.type == 'class_body'), None)
         if body_node:
+            # Collect all member nodes, including those inside ERROR nodes
+            # (ERROR nodes are created when `var`/`function` keywords appear before
+            # property/method declarations in class bodies)
+            member_nodes = []
             for child in body_node.children:
+                if child.type == 'ERROR':
+                    # Extract valid declarations from inside ERROR nodes
+                    for err_child in child.children:
+                        member_nodes.append(err_child)
+                else:
+                    member_nodes.append(child)
+
+            for child in member_nodes:
                 if child.type == 'property_declaration':
                     # Property declaration (no var/const keyword)
                     prop_decl = self.visit_property_declaration(child)

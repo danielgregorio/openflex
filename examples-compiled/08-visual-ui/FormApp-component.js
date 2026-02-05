@@ -200,22 +200,22 @@
           <div id='box_2' class='neo-box'>
             <div id='vbox_3' class='neo-vbox'>
               <span id='label_4' class='neo-label'>📝 Formulário de Contato</span>
-              <div id='vbox_5' class='neo-vbox'>
-                <span id='label_6' class='form-label'>Nome</span>
+              <div id='vbox_5' class='neo-vbox form-group'>
+                <span id='label_6' class='neo-label form-label'>Nome</span>
                 <input type='text' id='input_7' class='neo-textinput' placeholder='Digite seu nome completo' />
-                <span id='label_8' class='error-message'></span>
+                <span id='label_8' class='neo-label error-message'></span>
               </div>
-              <div id='vbox_9' class='neo-vbox'>
-                <span id='label_10' class='form-label'>Email</span>
+              <div id='vbox_9' class='neo-vbox form-group'>
+                <span id='label_10' class='neo-label form-label'>Email</span>
                 <input type='text' id='input_11' class='neo-textinput' placeholder='seu@email.com' />
-                <span id='label_12' class='error-message'></span>
+                <span id='label_12' class='neo-label error-message'></span>
               </div>
-              <div id='vbox_13' class='neo-vbox'>
-                <span id='label_14' class='form-label'>Mensagem</span>
+              <div id='vbox_13' class='neo-vbox form-group'>
+                <span id='label_14' class='neo-label form-label'>Mensagem</span>
                 <input type='text' id='input_15' class='neo-textinput' placeholder='Digite sua mensagem aqui...' />
-                <span id='label_16' class='error-message'></span>
+                <span id='label_16' class='neo-label error-message'></span>
               </div>
-              <div id='hbox_17' class='neo-hbox'>
+              <div id='hbox_17' class='neo-hbox checkbox-container'>
                 <input type='checkbox' id='checkbox_18' class='neo-checkbox' />
                 <span id='label_19' class='neo-label'>Quero receber novidades por email</span>
               </div>

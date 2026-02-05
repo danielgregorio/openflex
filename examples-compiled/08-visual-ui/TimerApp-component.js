@@ -128,7 +128,7 @@
           <div id='box_2' class='neo-box'>
             <div id='vbox_3' class='neo-vbox h-align-center'>
               <span id='label_4' class='neo-label' style='color: #2c3e50'>⏱️ Cronômetro</span>
-              <span id='label_5' class='timer-display'></span>
+              <span id='label_5' class='neo-label timer-display'></span>
               <div id='hbox_6' class='neo-hbox h-align-center'>
                 <button id='btn_7' class='neo-button btn-primary'></button>
                 <button id='btn_8' class='neo-button btn-secondary'>🔄 Resetar</button>

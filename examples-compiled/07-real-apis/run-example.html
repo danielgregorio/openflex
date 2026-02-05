@@ -178,7 +178,8 @@
                 const code = await response.text();
 
                 // Execute the code
-                eval(code);
+                const fn = new Function(code);
+                fn();
 
                 // No tracemos o sucesso aqui porque as apps já fazem isso
             } catch (error) {

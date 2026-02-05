@@ -23,7 +23,7 @@
 
   function addEmployee() {
     const newEmp = { name: 'Novo Funcionário', department: 'Engenharia', salary: 7000, status: 'Ativo' };
-    employees.value = [newEmp];
+    employees.value = [...employees.value, newEmp];
     statusMessage.value = 'Funcionário adicionado! Total: ' + employees.value.length;
   }
 
@@ -37,7 +37,7 @@
   function addActivity() {
     const messages = ['🎉 Nova conquista desbloqueada!', '📊 Dashboard atualizado', '🔔 Notificação recebida', '⚡ Sistema otimizado', '🎨 Interface melhorada'];
     const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-    activities.value = [{ label: randomMsg }];
+    activities.value = [{ label: randomMsg }, ...activities.value];
   }
 
   const totalEmployees = new Computed(() => {
@@ -113,10 +113,10 @@
       <div id='app_0' class='neo-application'>
         <div id='vbox_1' class='neo-vbox' style='width: 100%; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto;'>
           <div id='vbox_2' class='neo-vbox' style='gap: 8px'>
-            <span id='label_3' class='demo-title'>📊 Data Components Showcase</span>
+            <span id='label_3' class='neo-label demo-title'>📊 Data Components Showcase</span>
             <span id='label_4' class='neo-label'>DataGrid, ComboBox e List - Os componentes Flex mais versáteis</span>
           </div>
-          <span id='label_5' class='status-bar'></span>
+          <span id='label_5' class='neo-label status-bar'></span>
           <div id='panel_6' class='neo-panel'>
             <div class='neo-panel-header'>DataGrid - Tabela de Funcionários</div>
             <div class='neo-panel-body'>
@@ -125,11 +125,11 @@
                   <button id='btn_9' class='neo-button'>➕ Adicionar Funcionário</button>
                   <button id='btn_10' class='neo-button'>➖ Remover Último</button>
                   <span id='label_11' class='neo-label'>ComboBox de Filtro:</span>
-                  <select id='combobox_12' class='neo-combobox neo-combobox'>
+                  <select id='combobox_12' class='neo-combobox'>
                     <option>-- Select --</option>
                   </select>
                 </div>
-                <div id='datagrid_13' class='neo-datagrid neo-datagrid' style='width: 100%'>
+                <div id='datagrid_13' class='neo-datagrid' style='width: 100%'>
                   <table class='neo-datagrid-table'>
                     <thead>
                       <tr>
@@ -145,17 +145,17 @@
                   </table>
                 </div>
                 <div id='hbox_14' class='neo-hbox' style='width: 100%; gap: 12px'>
-                  <div id='vbox_15' class='neo-vbox' style='gap: 4px; flex: 1;'>
-                    <span id='label_16' class='info-label'>Total de Funcionários</span>
-                    <span id='label_17' class='info-value'></span>
+                  <div id='vbox_15' class='neo-vbox info-card' style='gap: 4px; flex: 1;'>
+                    <span id='label_16' class='neo-label info-label'>Total de Funcionários</span>
+                    <span id='label_17' class='neo-label info-value'></span>
                   </div>
-                  <div id='vbox_18' class='neo-vbox' style='gap: 4px; flex: 1;'>
-                    <span id='label_19' class='info-label'>Folha Salarial Total</span>
-                    <span id='label_20' class='info-value'></span>
+                  <div id='vbox_18' class='neo-vbox info-card' style='gap: 4px; flex: 1;'>
+                    <span id='label_19' class='neo-label info-label'>Folha Salarial Total</span>
+                    <span id='label_20' class='neo-label info-value'></span>
                   </div>
-                  <div id='vbox_21' class='neo-vbox' style='gap: 4px; flex: 1;'>
-                    <span id='label_22' class='info-label'>Salário Médio</span>
-                    <span id='label_23' class='info-value'></span>
+                  <div id='vbox_21' class='neo-vbox info-card' style='gap: 4px; flex: 1;'>
+                    <span id='label_22' class='neo-label info-label'>Salário Médio</span>
+                    <span id='label_23' class='neo-label info-value'></span>
                   </div>
                 </div>
               </div>
@@ -166,9 +166,9 @@
               <div class='neo-panel-header'>List - Atividades Recentes</div>
               <div class='neo-panel-body'>
                 <div id='vbox_26' class='neo-vbox' style='width: 100%; gap: 8px'>
-                  <span id='label_27' class='section-header'>Feed de atividades em tempo real</span>
+                  <span id='label_27' class='neo-label section-header'>Feed de atividades em tempo real</span>
                   <button id='btn_28' class='neo-button'>➕ Adicionar Atividade</button>
-                  <div id='list_29' class='neo-list neo-list'>
+                  <div id='list_29' class='neo-list'>
                     <!-- List items will be dynamically generated -->
                   </div>
                   <span id='label_30' class='neo-label' style='font-size: 10px; color: #999;'>Clique nos itens para selecioná-los</span>
@@ -179,16 +179,16 @@
               <div class='neo-panel-header'>ComboBox - Seleção de Categoria</div>
               <div class='neo-panel-body'>
                 <div id='vbox_32' class='neo-vbox' style='width: 100%; gap: 12px'>
-                  <span id='label_33' class='section-header'>Dropdown interativo com dados dinâmicos</span>
+                  <span id='label_33' class='neo-label section-header'>Dropdown interativo com dados dinâmicos</span>
                   <div id='vbox_34' class='neo-vbox' style='gap: 4px'>
                     <span id='label_35' class='neo-label'>Filtrar por Departamento:</span>
-                    <select id='combobox_36' class='neo-combobox neo-combobox' style='width: 100%;'>
+                    <select id='combobox_36' class='neo-combobox' style='width: 100%;'>
                       <option>-- Select --</option>
                     </select>
                   </div>
                   <div id='vbox_37' class='neo-vbox' style='gap: 4px'>
                     <span id='label_38' class='neo-label'>Status de Funcionário:</span>
-                    <select id='combobox_39' class='neo-combobox neo-combobox' style='width: 100%;'>
+                    <select id='combobox_39' class='neo-combobox' style='width: 100%;'>
                       <option>-- Select --</option>
                     </select>
                   </div>
