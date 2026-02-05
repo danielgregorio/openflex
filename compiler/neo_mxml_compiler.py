@@ -32,8 +32,14 @@ class NeoMXMLCompiler:
 
     # DnD-related attribute names
     DND_ATTRS = {
-        'dragEnabled', 'dropEnabled', 'dragMoveEnabled', 'allowMultipleSelection',
+        'dragEnabled', 'dropEnabled', 'dragMoveEnabled',
         'dragStart', 'dragEnter', 'dragOver', 'dragExit', 'dragDrop', 'dragComplete'
+    }
+
+    # Selection-related attribute names
+    SELECTION_ATTRS = {
+        'selectedIndex', 'selectedItem', 'selectedIndices', 'allowMultipleSelection',
+        'change', 'itemClick', 'itemDoubleClick'
     }
 
     def __init__(self):
@@ -287,6 +293,7 @@ class NeoMXMLCompiler:
                 if is_list:
                     template = binding.get('template', 'label')  # labelField
                     dnd_config = binding.get('dnd_config', None)
+                    selection_config = binding.get('selection_config', None)
                     lines.append(f"    // List: {elem_id}")
                     lines.append(f"    createEffect(() => {{")
                     lines.append(f"      const el = this.shadowRoot.getElementById('{elem_id}');")
@@ -295,15 +302,49 @@ class NeoMXMLCompiler:
                     lines.append(f"      // Limpar conteúdo anterior")
                     lines.append(f"      el.innerHTML = '';")
                     lines.append(f"      ")
+                    # Selection: get current selectedIndex value
+                    if selection_config and selection_config.get('selectedIndexVar'):
+                        sel_var = selection_config['selectedIndexVar']
+                        lines.append(f"      // Get current selection")
+                        lines.append(f"      const currentSelectedIndex = {sel_var}.value;")
+                        lines.append(f"      ")
                     lines.append(f"      // Renderizar itens do array")
                     expr_with_value = self._add_value_access(expr) if expr not in self.reactive_vars else f"{expr}.value"
                     items_var = 'listItems' if expr.strip() == 'items' else 'items'
                     lines.append(f"      const {items_var} = {expr_with_value} || [];")
                     lines.append(f"      {items_var}.forEach((item, index) => {{")
                     lines.append(f"        const itemEl = document.createElement('div');")
-                    lines.append(f"        itemEl.className = 'neo-list-item';")
+                    # Selection: add 'selected' class if this item is selected
+                    if selection_config and selection_config.get('selectedIndexVar'):
+                        lines.append(f"        itemEl.className = index === currentSelectedIndex ? 'neo-list-item selected' : 'neo-list-item';")
+                    else:
+                        lines.append(f"        itemEl.className = 'neo-list-item';")
                     lines.append(f"        itemEl.textContent = item.{template} || item || '';")
                     lines.append(f"        itemEl.dataset.index = index;")
+                    # Selection: add click listener
+                    if selection_config:
+                        sel_var = selection_config.get('selectedIndexVar')
+                        change_handler = selection_config.get('changeHandler', '')
+                        item_click_handler = selection_config.get('itemClickHandler', '')
+                        item_dblclick_handler = selection_config.get('itemDoubleClickHandler', '')
+                        lines.append(f"        // Selection click handler")
+                        lines.append(f"        itemEl.addEventListener('click', (e) => {{")
+                        if sel_var:
+                            lines.append(f"          const oldIndex = {sel_var}.value;")
+                            lines.append(f"          {sel_var}.value = index;")
+                        if item_click_handler:
+                            lines.append(f"          {item_click_handler}({{ item: item, index: index, target: itemEl }});")
+                        if change_handler and sel_var:
+                            lines.append(f"          if (oldIndex !== index) {{")
+                            lines.append(f"            {change_handler}({{ item: item, index: index, oldIndex: oldIndex }});")
+                            lines.append(f"          }}")
+                        elif change_handler:
+                            lines.append(f"          {change_handler}({{ item: item, index: index }});")
+                        lines.append(f"        }});")
+                        if item_dblclick_handler:
+                            lines.append(f"        itemEl.addEventListener('dblclick', (e) => {{")
+                            lines.append(f"          {item_dblclick_handler}({{ item: item, index: index, target: itemEl }});")
+                            lines.append(f"        }});")
                     # DnD: setupDragSource for each item
                     if dnd_config and dnd_config.get('dragEnabled'):
                         action = dnd_config.get('action', 'copy')
@@ -334,6 +375,7 @@ class NeoMXMLCompiler:
                 if is_datagrid:
                     columns = binding.get('template', [])  # columns array
                     dnd_config = binding.get('dnd_config', None)
+                    selection_config = binding.get('selection_config', None)
                     lines.append(f"    // DataGrid: {elem_id}")
                     lines.append(f"    createEffect(() => {{")
                     lines.append(f"      const tbody = this.shadowRoot.getElementById('{elem_id}_body');")
@@ -342,23 +384,57 @@ class NeoMXMLCompiler:
                     lines.append(f"      // Limpar linhas anteriores")
                     lines.append(f"      tbody.innerHTML = '';")
                     lines.append(f"      ")
+                    # Selection: get current selectedIndex value
+                    if selection_config and selection_config.get('selectedIndexVar'):
+                        sel_var = selection_config['selectedIndexVar']
+                        lines.append(f"      // Get current selection")
+                        lines.append(f"      const currentSelectedIndex = {sel_var}.value;")
+                        lines.append(f"      ")
                     lines.append(f"      // Renderizar linhas do array")
                     expr_with_value = self._add_value_access(expr) if expr not in self.reactive_vars else f"{expr}.value"
                     items_var = 'gridData' if expr.strip() == 'items' else 'items'
                     lines.append(f"      const {items_var} = {expr_with_value} || [];")
                     lines.append(f"      {items_var}.forEach((item, index) => {{")
                     lines.append(f"        const row = document.createElement('tr');")
+                    lines.append(f"        row.dataset.index = index;")
+                    # Selection: add 'selected' class if this row is selected
+                    if selection_config and selection_config.get('selectedIndexVar'):
+                        lines.append(f"        row.className = index === currentSelectedIndex ? 'selected' : '';")
                     for col in columns:
                         data_field = col['dataField']
                         lines.append(f"        const td_{data_field} = document.createElement('td');")
                         lines.append(f"        td_{data_field}.textContent = item.{data_field} || '';")
                         lines.append(f"        row.appendChild(td_{data_field});")
+                    # Selection: add click listener
+                    if selection_config:
+                        sel_var = selection_config.get('selectedIndexVar')
+                        change_handler = selection_config.get('changeHandler', '')
+                        item_click_handler = selection_config.get('itemClickHandler', '')
+                        item_dblclick_handler = selection_config.get('itemDoubleClickHandler', '')
+                        lines.append(f"        // Selection click handler")
+                        lines.append(f"        row.addEventListener('click', (e) => {{")
+                        if sel_var:
+                            lines.append(f"          const oldIndex = {sel_var}.value;")
+                            lines.append(f"          {sel_var}.value = index;")
+                        if item_click_handler:
+                            lines.append(f"          {item_click_handler}({{ item: item, index: index, target: row }});")
+                        if change_handler and sel_var:
+                            lines.append(f"          if (oldIndex !== index) {{")
+                            lines.append(f"            {change_handler}({{ item: item, index: index, oldIndex: oldIndex }});")
+                            lines.append(f"          }}")
+                        elif change_handler:
+                            lines.append(f"          {change_handler}({{ item: item, index: index }});")
+                        lines.append(f"        }});")
+                        if item_dblclick_handler:
+                            lines.append(f"        row.addEventListener('dblclick', (e) => {{")
+                            lines.append(f"          {item_dblclick_handler}({{ item: item, index: index, target: row }});")
+                            lines.append(f"        }});")
                     # DnD: setupDragSource for each row
                     if dnd_config and dnd_config.get('dragEnabled'):
                         action = dnd_config.get('action', 'copy')
                         drag_start_handler = dnd_config.get('events', {}).get('dragStart', '')
                         drag_complete_handler = dnd_config.get('events', {}).get('dragComplete', '')
-                        lines.append(f"        row.className = 'neo-datagrid-row';")
+                        lines.append(f"        row.className = (row.className ? row.className + ' ' : '') + 'neo-datagrid-row';")
                         lines.append(f"        setupDragSource(row, {{ item: item, index: index, action: '{action}'"
                                      + (f", onDragStart: (e) => {drag_start_handler}(e)" if drag_start_handler else "")
                                      + (f", onDragComplete: (e) => {drag_complete_handler}(e)" if drag_complete_handler else "")
@@ -503,6 +579,10 @@ class NeoMXMLCompiler:
             if attr_name in self.DND_ATTRS:
                 continue
 
+            # Ignorar Selection attributes (handled separately)
+            if attr_name in self.SELECTION_ATTRS:
+                continue
+
             # Detectar binding
             if '{' in attr_value and '}' in attr_value:
                 match = re.search(r'\{([^}]+)\}', attr_value)
@@ -631,6 +711,49 @@ class NeoMXMLCompiler:
 
         self.dnd_configs.append(config)
         return config
+
+    def _extract_selection_config(self, element: ET.Element, elem_id: str, component_type: str) -> Optional[Dict]:
+        """Extract selection configuration from element attributes"""
+        selected_index = element.get('selectedIndex', '')
+        selected_item = element.get('selectedItem', '')
+        allow_multiple = element.get('allowMultipleSelection', 'false').lower() == 'true'
+
+        # Extract selection event handlers
+        change_handler = element.get('change', '')
+        item_click_handler = element.get('itemClick', '')
+        item_double_click_handler = element.get('itemDoubleClick', '')
+
+        # Check if any selection feature is used
+        has_selection = bool(selected_index or selected_item or change_handler or
+                           item_click_handler or item_double_click_handler)
+
+        if not has_selection:
+            return None
+
+        # Parse selectedIndex binding
+        selected_index_var = None
+        if selected_index and '{' in selected_index and '}' in selected_index:
+            match = re.search(r'\{([^}]+)\}', selected_index)
+            if match:
+                selected_index_var = match.group(1).strip()
+
+        # Clean handlers (remove {} if present)
+        if change_handler:
+            change_handler = change_handler.strip('{}').strip()
+        if item_click_handler:
+            item_click_handler = item_click_handler.strip('{}').strip()
+        if item_double_click_handler:
+            item_double_click_handler = item_double_click_handler.strip('{}').strip()
+
+        return {
+            'id': elem_id,
+            'component_type': component_type,
+            'selectedIndexVar': selected_index_var,
+            'allowMultipleSelection': allow_multiple,
+            'changeHandler': change_handler,
+            'itemClickHandler': item_click_handler,
+            'itemDoubleClickHandler': item_double_click_handler
+        }
 
     def _generate_html_from_element(self, element: ET.Element, indent: int = 0) -> List[str]:
         """Gera HTML recursivamente a partir do elemento XML"""
@@ -844,6 +967,9 @@ class NeoMXMLCompiler:
             # Extract DnD config
             dnd_config = self._extract_dnd_config(element, elem_id, 'List')
 
+            # Extract Selection config
+            selection_config = self._extract_selection_config(element, elem_id, 'List')
+
             # Detectar binding no dataProvider
             if data_provider and '{' in data_provider and '}' in data_provider:
                 match = re.search(r'\{([^}]+)\}', data_provider)
@@ -855,7 +981,8 @@ class NeoMXMLCompiler:
                         'expression': array_var,
                         'template': label_field,
                         'is_list': True,
-                        'dnd_config': dnd_config
+                        'dnd_config': dnd_config,
+                        'selection_config': selection_config
                     })
 
             lines.append(f"{prefix}<div id='{elem_id}'{class_str}{style_str}>")
@@ -875,6 +1002,9 @@ class NeoMXMLCompiler:
 
             # Extract DnD config
             dnd_config = self._extract_dnd_config(element, elem_id, 'DataGrid')
+
+            # Extract Selection config
+            selection_config = self._extract_selection_config(element, elem_id, 'DataGrid')
 
             # Coletar colunas
             columns = []
@@ -898,7 +1028,8 @@ class NeoMXMLCompiler:
                         'expression': array_var,
                         'template': columns,
                         'is_datagrid': True,
-                        'dnd_config': dnd_config
+                        'dnd_config': dnd_config,
+                        'selection_config': selection_config
                     })
 
             lines.append(f"{prefix}<div id='{elem_id}'{class_str}{style_str}>")

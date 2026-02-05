@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenFlex Neo - Selection Demo</title>
+    <link rel="stylesheet" href="../runtime/neo-flex-classic-theme.css">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #E8E8E8;
+        }
+        h1 {
+            color: #333;
+            font-size: 16px;
+            border-bottom: 2px solid #708090;
+            padding-bottom: 8px;
+        }
+        .instructions {
+            background: white;
+            border: 1px solid #999;
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 11px;
+            color: #333;
+        }
+        .instructions ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>OpenFlex Neo - Selection Demo</h1>
+
+    <div class="instructions">
+        <strong>Features Demonstrated:</strong>
+        <ul>
+            <li><code>selectedIndex</code> - Two-way binding tracks which item is selected</li>
+            <li><code>change</code> event - Fires when selection changes</li>
+            <li><code>itemClick</code> event - Fires on every click with item data</li>
+            <li><code>itemDoubleClick</code> event - Fires on double-click (try on DataGrid)</li>
+            <li>Reactive labels update automatically when selection changes</li>
+        </ul>
+    </div>
+
+    <!-- OpenFlex Runtime -->
+    <script src="../runtime/openflex-runtime.js"></script>
+
+    <!-- Compiled Component -->
+    <script src="SelectionDemo-component.js"></script>
+
+    <!-- Render -->
+    <app-root></app-root>
+
+    <script src="../runtime/mxml-source-viewer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof MXMLSourceViewer !== 'undefined') {
+                window.mxmlSourceViewer = new MXMLSourceViewer();
+                window.mxmlSourceViewer.init('SelectionDemo.mxml');
+            }
+        });
+    </script>
+</body>
+</html>

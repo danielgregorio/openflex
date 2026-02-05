@@ -336,6 +336,20 @@ textarea.neo-textinput {
     background: #F0F0F0;
 }
 
+/* DataGrid row selection */
+.neo-datagrid-table tbody tr.selected {
+    background: var(--flex-selection);
+    color: white;
+}
+
+.neo-datagrid-table tbody tr.selected:hover {
+    background: #0088EE;
+}
+
+.neo-datagrid-table tbody tr {
+    cursor: pointer;
+}
+
 /* ========================================
    BOX (Generic Container)
    ======================================== */

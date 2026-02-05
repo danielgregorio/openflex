@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns:fx="http://openflex.dev/core"
+             title="Selection Demo">
+
+    <fx:Script><![CDATA[
+        @reactive var fruits: Array = [
+            {label: "Apple", color: "Red"},
+            {label: "Banana", color: "Yellow"},
+            {label: "Cherry", color: "Red"},
+            {label: "Date", color: "Brown"},
+            {label: "Elderberry", color: "Purple"}
+        ];
+
+        @reactive var employees: Array = [
+            {name: "Alice", department: "Engineering", salary: 75000},
+            {name: "Bob", department: "Marketing", salary: 65000},
+            {name: "Carol", department: "Engineering", salary: 80000},
+            {name: "Dave", department: "Sales", salary: 70000}
+        ];
+
+        @reactive var selectedFruit: Number = -1;
+        @reactive var selectedEmployee: Number = -1;
+
+        @reactive var lastAction: String = "No action yet";
+
+        function onFruitChange(event): void {
+            lastAction = "Fruit changed to: " + fruits[event.index].label;
+        }
+
+        function onFruitClick(event): void {
+            lastAction = "Clicked fruit: " + event.item.label + " (index " + event.index + ")";
+        }
+
+        function onEmployeeChange(event): void {
+            lastAction = "Employee changed to: " + employees[event.index].name;
+        }
+
+        function onEmployeeClick(event): void {
+            lastAction = "Clicked employee: " + event.item.name;
+        }
+
+        function onEmployeeDoubleClick(event): void {
+            lastAction = "Double-clicked: " + event.item.name + " - Salary: $" + event.item.salary;
+        }
+
+        @computed var selectedFruitName: String {
+            if (selectedFruit >= 0 && selectedFruit < fruits.length) {
+                return fruits[selectedFruit].label;
+            }
+            return "(none)";
+        }
+
+        @computed var selectedEmployeeName: String {
+            if (selectedEmployee >= 0 && selectedEmployee < employees.length) {
+                return employees[selectedEmployee].name;
+            }
+            return "(none)";
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        .demo-layout {
+            display: flex;
+            gap: 20px;
+            padding: 10px;
+        }
+        .demo-column {
+            flex: 1;
+        }
+        .neo-list {
+            min-height: 150px;
+        }
+        .neo-datagrid {
+            min-height: 150px;
+        }
+        .status-bar {
+            background: #f0f0f0;
+            border: 1px solid #999;
+            padding: 8px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+        .selection-info {
+            color: #0066cc;
+            font-weight: bold;
+        }
+    </fx:Style>
+
+    <Panel title="Selection Demo - List and DataGrid">
+        <VBox>
+            <Label text="Click items to select. The selection is tracked reactively." />
+
+            <HBox styleClass="demo-layout">
+                <VBox styleClass="demo-column">
+                    <Label text="Fruits List" fontWeight="bold" />
+                    <List dataProvider="{fruits}" labelField="label"
+                          selectedIndex="{selectedFruit}"
+                          change="onFruitChange"
+                          itemClick="onFruitClick" />
+                    <Label text="Selected: {selectedFruitName}" styleClass="selection-info" />
+                </VBox>
+
+                <VBox styleClass="demo-column">
+                    <Label text="Employees DataGrid" fontWeight="bold" />
+                    <Label text="(Double-click to see salary)" fontSize="10" />
+                    <DataGrid dataProvider="{employees}"
+                              selectedIndex="{selectedEmployee}"
+                              change="onEmployeeChange"
+                              itemClick="onEmployeeClick"
+                              itemDoubleClick="onEmployeeDoubleClick">
+                        <DataGridColumn headerText="Name" dataField="name" width="120" />
+                        <DataGridColumn headerText="Department" dataField="department" width="120" />
+                    </DataGrid>
+                    <Label text="Selected: {selectedEmployeeName}" styleClass="selection-info" />
+                </VBox>
+            </HBox>
+
+            <Label text="Last Action:" fontWeight="bold" />
+            <Label text="{lastAction}" styleClass="status-bar" />
+        </VBox>
+    </Panel>
+</Application>
