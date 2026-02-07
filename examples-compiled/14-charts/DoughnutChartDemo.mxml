@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Doughnut Chart Demo">
+
+    <fx:Script><![CDATA[
+        // Dados de alocacao de orcamento
+        @reactive var budgetData: Array = [
+            {name: "Marketing", value: 35000},
+            {name: "Desenvolvimento", value: 50000},
+            {name: "Infraestrutura", value: 25000},
+            {name: "RH", value: 20000},
+            {name: "Operacoes", value: 30000}
+        ];
+
+        @computed var totalBudget: String {
+            const total = budgetData.reduce((sum, d) => sum + d.value, 0);
+            return "R$ " + total.toLocaleString('pt-BR');
+        }
+
+        function randomizeData(): void {
+            budgetData = budgetData.map(d => ({
+                ...d,
+                value: Math.floor(Math.random() * 40000) + 15000
+            }));
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./doughnut-chart-demo.css');
+    </fx:Style>
+
+    <Panel title="DoughnutChart - Grafico de Rosca">
+        <VBox gap="15" width="100%">
+            <Label text="O DoughnutChart e similar ao PieChart mas com um furo no centro, util para destacar o total ou adicionar informacao extra." />
+
+            <HBox horizontalAlign="right" width="100%">
+                <Button label="Atualizar Dados" click="{randomizeData}" />
+            </HBox>
+
+            <VBox horizontalAlign="center" width="100%">
+                <Label text="Orcamento Total: {totalBudget}" styleClass="total-label" />
+
+                <DoughnutChart dataProvider="{budgetData}" width="500" height="350">
+                    <series>
+                        <PieSeries field="value" nameField="name" displayName="Alocacao de Orcamento" />
+                    </series>
+                </DoughnutChart>
+            </VBox>
+
+            <Panel title="Codigo Fonte">
+                <VBox gap="5">
+                    <Label text="&lt;DoughnutChart dataProvider='{budgetData}' width='500' height='350'&gt;" />
+                    <Label text="    &lt;series&gt;" />
+                    <Label text="        &lt;PieSeries field='value' nameField='name' displayName='Alocacao' /&gt;" />
+                    <Label text="    &lt;/series&gt;" />
+                    <Label text="&lt;/DoughnutChart&gt;" />
+                </VBox>
+            </Panel>
+
+            <Panel title="Dados">
+                <VBox gap="5">
+                    <Label text="@reactive var budgetData: Array = [" />
+                    <Label text="    {name: 'Marketing', value: 35000}," />
+                    <Label text="    {name: 'Desenvolvimento', value: 50000}," />
+                    <Label text="    {name: 'Infraestrutura', value: 25000}," />
+                    <Label text="    {name: 'RH', value: 20000}," />
+                    <Label text="    {name: 'Operacoes', value: 30000}" />
+                    <Label text="];" />
+                </VBox>
+            </Panel>
+        </VBox>
+    </Panel>
+</Application>

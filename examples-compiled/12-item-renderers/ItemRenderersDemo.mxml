@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Item Renderers - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var products: Array = [
+            {name: 'MacBook Pro', price: 2499.99, inStock: true, rating: 4.8, emoji: '💻'},
+            {name: 'iPhone 15', price: 999.00, inStock: true, rating: 4.5, emoji: '📱'},
+            {name: 'AirPods Pro', price: 249.00, inStock: false, rating: 4.7, emoji: '🎧'},
+            {name: 'iPad Air', price: 599.00, inStock: true, rating: 4.6, emoji: '📱'},
+            {name: 'Apple Watch', price: 399.00, inStock: false, rating: 4.4, emoji: '⌚'}
+        ];
+
+        @reactive var employees: Array = [
+            {name: 'Alice Johnson', department: 'Engineering', salary: 95000, hireDate: '2021-03-15'},
+            {name: 'Bob Smith', department: 'Marketing', salary: 72000, hireDate: '2020-06-01'},
+            {name: 'Carol Williams', department: 'Engineering', salary: 105000, hireDate: '2019-09-20'},
+            {name: 'David Brown', department: 'Sales', salary: 68000, hireDate: '2022-01-10'}
+        ];
+
+        @reactive var selectedProduct: Number = -1;
+        @reactive var selectedEmployee: Number = -1;
+
+        function selectProduct(index): void {
+            selectedProduct = index;
+        }
+
+        function selectEmployee(index): void {
+            selectedEmployee = index;
+        }
+
+        function formatPrice(amount): String {
+            return '$' + amount.toFixed(2);
+        }
+
+        function formatSalary(amount): String {
+            return '$' + amount.toLocaleString();
+        }
+
+        function formatDate(dateStr): String {
+            var date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'});
+        }
+
+        function formatTenure(dateStr): String {
+            var hireDate = new Date(dateStr);
+            var today = new Date();
+            var years = Math.floor((today - hireDate) / (365.25 * 24 * 60 * 60 * 1000));
+            return years + (years === 1 ? ' year' : ' years');
+        }
+
+        function getRatingStars(rating): String {
+            var stars = Math.round(rating);
+            var result = '';
+            for (var i = 0; i < 5; i++) {
+                result += i < stars ? '★' : '☆';
+            }
+            return result;
+        }
+
+        function getDeptColor(dept): String {
+            if (dept === 'Engineering') return '#5856d6';
+            if (dept === 'Marketing') return '#ff9500';
+            if (dept === 'Sales') return '#34c759';
+            return '#8e8e93';
+        }
+
+        @computed var selectedProductInfo: String {
+            if (selectedProduct >= 0) {
+                return products[selectedProduct].name + ' - ' + formatPrice(products[selectedProduct].price);
+            }
+            return 'None selected';
+        }
+
+        @computed var selectedEmployeeInfo: String {
+            if (selectedEmployee >= 0) {
+                return employees[selectedEmployee].name + ' - ' + employees[selectedEmployee].department;
+            }
+            return 'None selected';
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./item-renderers-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Item Renderers" styleClass="title" />
+                <Label text="Custom data formatting with labelFunction" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Info Banner -->
+            <HBox styleClass="info-banner">
+                <Label text="💡" styleClass="info-icon" />
+                <Label text="The labelFunction attribute allows custom formatting of data in List and DataGrid components." styleClass="info-text" />
+            </HBox>
+
+            <!-- Grid -->
+            <HBox styleClass="grid">
+                <!-- Products List -->
+                <VBox styleClass="card">
+                    <VBox styleClass="card-header">
+                        <Label text="Products List" styleClass="card-title" />
+                        <Label text="Custom item rendering with price, stock and rating" styleClass="card-subtitle" />
+                    </VBox>
+                    <VBox styleClass="product-list">
+                        <Repeater dataProvider="{products}">
+                            <HBox styleClass="product-item {index === selectedProduct ? 'selected' : ''}"
+                                  click="{() => selectProduct(index)}">
+                                <Label text="{item.emoji}" styleClass="product-emoji" />
+                                <VBox styleClass="product-info">
+                                    <Label text="{item.name}" styleClass="product-name" />
+                                    <HBox styleClass="product-details">
+                                        <Label text="{formatPrice(item.price)}" styleClass="product-price" />
+                                        <Label text="{getRatingStars(item.rating)}" styleClass="product-rating" />
+                                    </HBox>
+                                </VBox>
+                                <Label text="{item.inStock ? 'In Stock' : 'Out'}"
+                                       styleClass="stock-badge {item.inStock ? 'in-stock' : 'out-of-stock'}" />
+                            </HBox>
+                        </Repeater>
+                    </VBox>
+                    <HBox styleClass="selection-info">
+                        <Label text="Selected:" styleClass="selection-label" />
+                        <Label text="{selectedProductInfo}" styleClass="selection-value" />
+                    </HBox>
+                </VBox>
+
+                <!-- Products DataGrid -->
+                <VBox styleClass="card">
+                    <VBox styleClass="card-header">
+                        <Label text="Products DataGrid" styleClass="card-title" />
+                        <Label text="Column-based formatting with labelFunction" styleClass="card-subtitle" />
+                    </VBox>
+                    <VBox styleClass="datagrid">
+                        <HBox styleClass="datagrid-header">
+                            <Label text="Product" styleClass="datagrid-header-cell" />
+                            <Label text="Price" styleClass="datagrid-header-cell" />
+                            <Label text="Stock" styleClass="datagrid-header-cell" />
+                            <Label text="Rating" styleClass="datagrid-header-cell" />
+                        </HBox>
+                        <Repeater dataProvider="{products}">
+                            <HBox styleClass="datagrid-row {index === selectedProduct ? 'selected' : ''}"
+                                  click="{() => selectProduct(index)}">
+                                <Label text="{item.name}" styleClass="datagrid-cell cell-name" />
+                                <Label text="{formatPrice(item.price)}" styleClass="datagrid-cell" style="color: #34c759;" />
+                                <Label text="{item.inStock ? 'Yes' : 'No'}"
+                                       styleClass="datagrid-cell" style="color: {item.inStock ? '#34c759' : '#ff3b30'};" />
+                                <Label text="{getRatingStars(item.rating)}" styleClass="datagrid-cell" style="color: #ff9500;" />
+                            </HBox>
+                        </Repeater>
+                    </VBox>
+                </VBox>
+
+                <!-- Employees DataGrid (full width) -->
+                <VBox styleClass="card full-card">
+                    <VBox styleClass="card-header">
+                        <Label text="Employees DataGrid" styleClass="card-title" />
+                        <Label text="Date formatting and computed tenure column" styleClass="card-subtitle" />
+                    </VBox>
+                    <VBox styleClass="datagrid">
+                        <HBox styleClass="datagrid-header">
+                            <Label text="Name" styleClass="datagrid-header-cell" />
+                            <Label text="Department" styleClass="datagrid-header-cell" />
+                            <Label text="Salary" styleClass="datagrid-header-cell" />
+                            <Label text="Hire Date" styleClass="datagrid-header-cell" />
+                            <Label text="Tenure" styleClass="datagrid-header-cell" />
+                        </HBox>
+                        <Repeater dataProvider="{employees}">
+                            <HBox styleClass="datagrid-row {index === selectedEmployee ? 'selected' : ''}"
+                                  click="{() => selectEmployee(index)}">
+                                <Label text="{item.name}" styleClass="datagrid-cell cell-name" />
+                                <HBox styleClass="datagrid-cell">
+                                    <Label text="{item.department}" styleClass="dept-badge"
+                                           style="background: {getDeptColor(item.department)}20; color: {getDeptColor(item.department)};" />
+                                </HBox>
+                                <Label text="{formatSalary(item.salary)}" styleClass="datagrid-cell cell-salary" />
+                                <Label text="{formatDate(item.hireDate)}" styleClass="datagrid-cell" />
+                                <Label text="{formatTenure(item.hireDate)}" styleClass="datagrid-cell cell-tenure" />
+                            </HBox>
+                        </Repeater>
+                    </VBox>
+                    <HBox styleClass="selection-info">
+                        <Label text="Selected:" styleClass="selection-label" />
+                        <Label text="{selectedEmployeeInfo}" styleClass="selection-value" />
+                    </HBox>
+                </VBox>
+            </HBox>
+        </VBox>
+    </VBox>
+
+</Application>

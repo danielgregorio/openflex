@@ -2,241 +2,226 @@
 <Application
     xmlns:fx="http://openflex.dev/core"
     xmlns="http://openflex.dev/neo"
-    title="Formulário de Contato - OpenFlex Neo">
+    title="Sign Up - OpenFlex Neo">
 
     <fx:Script><![CDATA[
-        @reactive var name: String = "";
+        @reactive var fullName: String = "";
         @reactive var email: String = "";
-        @reactive var message: String = "";
-        @reactive var subscribe: Boolean = false;
+        @reactive var password: String = "";
+        @reactive var confirmPassword: String = "";
+        @reactive var agreeTerms: Boolean = false;
         @reactive var submitted: Boolean = false;
+        @reactive var nameTouched: Boolean = false;
+        @reactive var emailTouched: Boolean = false;
+        @reactive var passwordTouched: Boolean = false;
+        @reactive var confirmTouched: Boolean = false;
 
         @computed var isNameValid: Boolean {
-            return name.trim().length >= 3;
+            return fullName.trim().length >= 2;
         }
 
         @computed var isEmailValid: Boolean {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(email);
         }
 
-        @computed var isMessageValid: Boolean {
-            return message.trim().length >= 10;
+        @computed var isPasswordValid: Boolean {
+            return password.length >= 8;
+        }
+
+        @computed var doPasswordsMatch: Boolean {
+            return password === confirmPassword && confirmPassword.length > 0;
         }
 
         @computed var isFormValid: Boolean {
-            return isNameValid && isEmailValid && isMessageValid;
+            return isNameValid && isEmailValid && isPasswordValid && doPasswordsMatch && agreeTerms;
         }
 
-        @computed var nameError: String {
-            if (name.length === 0) return "";
-            return isNameValid ? "" : "Nome deve ter pelo menos 3 caracteres";
+        @computed var showNameError: Boolean {
+            return nameTouched && !isNameValid;
         }
 
-        @computed var emailError: String {
-            if (email.length === 0) return "";
-            return isEmailValid ? "" : "Email inválido";
+        @computed var showEmailError: Boolean {
+            return emailTouched && !isEmailValid;
         }
 
-        @computed var messageError: String {
-            if (message.length === 0) return "";
-            return isMessageValid ? "" : "Mensagem deve ter pelo menos 10 caracteres";
+        @computed var showConfirmError: Boolean {
+            return confirmTouched && !doPasswordsMatch;
+        }
+
+        @computed var nameInputClass: String {
+            if (!nameTouched) return 'form-input';
+            return isNameValid ? 'form-input input-valid' : 'form-input input-invalid';
+        }
+
+        @computed var emailInputClass: String {
+            if (!emailTouched) return 'form-input';
+            return isEmailValid ? 'form-input input-valid' : 'form-input input-invalid';
+        }
+
+        @computed var passwordInputClass: String {
+            if (!passwordTouched) return 'form-input';
+            return isPasswordValid ? 'form-input input-valid' : 'form-input input-invalid';
+        }
+
+        @computed var confirmInputClass: String {
+            if (!confirmTouched) return 'form-input';
+            return doPasswordsMatch ? 'form-input input-valid' : 'form-input input-invalid';
+        }
+
+        @computed var passwordStrength: String {
+            if (password.length === 0) return "none";
+            if (password.length < 6) return "weak";
+            if (password.length < 10) return "medium";
+            return "strong";
+        }
+
+        @computed var strengthLabel: String {
+            if (passwordStrength === "weak") return "Weak";
+            if (passwordStrength === "medium") return "Medium";
+            if (passwordStrength === "strong") return "Strong";
+            return "";
+        }
+
+        @computed var strengthColor: String {
+            if (passwordStrength === "weak") return "#ff3b30";
+            if (passwordStrength === "medium") return "#ff9500";
+            if (passwordStrength === "strong") return "#34c759";
+            return "#3a3a3c";
+        }
+
+        @computed var showStrength: Boolean {
+            return password.length > 0;
+        }
+
+        @computed var bar1Color: String {
+            return password.length >= 1 ? strengthColor : "#3a3a3c";
+        }
+
+        @computed var bar2Color: String {
+            return password.length >= 6 ? strengthColor : "#3a3a3c";
+        }
+
+        @computed var bar3Color: String {
+            return password.length >= 10 ? strengthColor : "#3a3a3c";
         }
 
         function submitForm(): void {
             if (!isFormValid) return;
-
-            // Simular envio
-            console.log("Enviando formulário:", { name, email, message, subscribe });
             submitted = true;
-
-            // Reset após 3 segundos
-            setTimeout(() => {
-                submitted = false;
-                name = "";
-                email = "";
-                message = "";
-                subscribe = false;
-            }, 3000);
         }
 
-        function resetForm(): void {
-            name = "";
+        function goBack(): void {
+            submitted = false;
+            fullName = "";
             email = "";
-            message = "";
-            subscribe = false;
+            password = "";
+            confirmPassword = "";
+            agreeTerms = false;
+            nameTouched = false;
+            emailTouched = false;
+            passwordTouched = false;
+            confirmTouched = false;
+        }
+
+        function toggleTerms(): void {
+            agreeTerms = !agreeTerms;
         }
     ]]></fx:Script>
 
     <fx:Style>
-        @import url('../runtime/neo-flex-classic-theme.css');
-
-        .form-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            font-size: 14px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 8px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            font-size: 16px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .form-input-error {
-            border-color: #e74c3c;
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 12px 16px;
-            font-size: 16px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            min-height: 120px;
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        .error-message {
-            font-size: 12px;
-            color: #e74c3c;
-            margin-top: 5px;
-        }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .reset-btn {
-            background: transparent;
-            color: #7f8c8d;
-            padding: 12px 30px;
-            font-size: 16px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .success-message {
-            background: #27ae60;
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-        }
+        @import url('./form-app.css');
     </fx:Style>
 
-    <VBox gap="{20}" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%"
-          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <VBox styleClass="form-container">
+        <!-- Sign Up Form -->
+        <VBox styleClass="form-card" visible="{!submitted}">
+            <VBox styleClass="form-header">
+                <Label text="Create Account" styleClass="form-title" />
+                <Label text="Sign up to get started" styleClass="form-subtitle" />
+            </VBox>
 
-        <Box styleClass="form-container" visible="{!submitted}">
-            <VBox gap="{25}">
-                <Label text="📝 Formulário de Contato" fontSize="{32}" fontWeight="bold" textAlign="center" />
-
-                <VBox gap="{5}" styleClass="form-group">
-                    <Label text="Nome" styleClass="form-label" />
-                    <TextInput type="text" placeholder="Digite seu nome completo"
-                               value="{name}"
-                               styleClass="{'form-input ' + (nameError ? 'form-input-error' : '')}" />
-                    <Label text="{nameError}" styleClass="error-message" visible="{nameError.length > 0}" />
+            <VBox styleClass="form-body">
+                <!-- Full Name -->
+                <VBox styleClass="input-group">
+                    <Label text="Full Name" styleClass="input-label" />
+                    <TextInput placeholder="John Doe"
+                               value="{fullName}"
+                               blur="{() => nameTouched = true}"
+                               styleClass="{nameInputClass}" />
+                    <Label text="Name must be at least 2 characters"
+                           styleClass="error-text"
+                           visible="{showNameError}" />
                 </VBox>
 
-                <VBox gap="{5}" styleClass="form-group">
-                    <Label text="Email" styleClass="form-label" />
-                    <TextInput type="email" placeholder="seu@email.com"
+                <!-- Email -->
+                <VBox styleClass="input-group">
+                    <Label text="Email Address" styleClass="input-label" />
+                    <TextInput type="email"
+                               placeholder="john@example.com"
                                value="{email}"
-                               styleClass="{'form-input ' + (emailError ? 'form-input-error' : '')}" />
-                    <Label text="{emailError}" styleClass="error-message" visible="{emailError.length > 0}" />
+                               blur="{() => emailTouched = true}"
+                               styleClass="{emailInputClass}" />
+                    <Label text="Please enter a valid email address"
+                           styleClass="error-text"
+                           visible="{showEmailError}" />
                 </VBox>
 
-                <VBox gap="{5}" styleClass="form-group">
-                    <Label text="Mensagem" styleClass="form-label" />
-                    <TextInput type="textarea" placeholder="Digite sua mensagem aqui..."
-                               value="{message}"
-                               styleClass="{'form-textarea ' + (messageError ? 'form-input-error' : '')}" />
-                    <Label text="{messageError}" styleClass="error-message" visible="{messageError.length > 0}" />
+                <!-- Password -->
+                <VBox styleClass="input-group">
+                    <Label text="Password" styleClass="input-label" />
+                    <TextInput type="password"
+                               placeholder="At least 8 characters"
+                               value="{password}"
+                               blur="{() => passwordTouched = true}"
+                               styleClass="{passwordInputClass}" />
+                    <HBox styleClass="password-strength" visible="{showStrength}">
+                        <Box styleClass="strength-bar" backgroundColor="{bar1Color}" />
+                        <Box styleClass="strength-bar" backgroundColor="{bar2Color}" />
+                        <Box styleClass="strength-bar" backgroundColor="{bar3Color}" />
+                        <Label text="{strengthLabel}" styleClass="strength-label" color="{strengthColor}" />
+                    </HBox>
                 </VBox>
 
-                <HBox gap="{10}" styleClass="checkbox-container">
-                    <CheckBox checked="{subscribe}" />
-                    <Label text="Quero receber novidades por email" fontSize="{14}" />
+                <!-- Confirm Password -->
+                <VBox styleClass="input-group">
+                    <Label text="Confirm Password" styleClass="input-label" />
+                    <TextInput type="password"
+                               placeholder="Repeat your password"
+                               value="{confirmPassword}"
+                               blur="{() => confirmTouched = true}"
+                               styleClass="{confirmInputClass}" />
+                    <Label text="Passwords do not match"
+                           styleClass="error-text"
+                           visible="{showConfirmError}" />
+                </VBox>
+
+                <!-- Terms Checkbox -->
+                <HBox styleClass="checkbox-row">
+                    <Button label="{agreeTerms ? '✓' : ''}"
+                            click="{toggleTerms}"
+                            styleClass="checkbox-custom {agreeTerms ? 'checkbox-checked' : ''}" />
+                    <Label text="I agree to the Terms and Privacy Policy" styleClass="checkbox-label" />
                 </HBox>
 
-                <VBox gap="{10}">
-                    <Button label="📨 Enviar Mensagem"
-                            click="{submitForm}"
-                            styleClass="submit-btn"
-                            disabled="{!isFormValid}" />
-                    <Button label="🔄 Limpar Formulário"
-                            click="{resetForm}"
-                            styleClass="reset-btn" />
-                </VBox>
-
-                <Label text="{'Campos preenchidos: ' + (isNameValid ? '✅' : '❌') + ' Nome | ' + (isEmailValid ? '✅' : '❌') + ' Email | ' + (isMessageValid ? '✅' : '❌') + ' Mensagem'}"
-                       fontSize="{12}" color="#7f8c8d" textAlign="center" />
+                <!-- Submit -->
+                <Button label="Create Account"
+                        click="{submitForm}"
+                        disabled="{!isFormValid}"
+                        styleClass="submit-btn" />
             </VBox>
-        </Box>
+        </VBox>
 
-        <Box styleClass="form-container" visible="{submitted}">
-            <VBox gap="{30}" horizontalAlign="center">
-                <Label text="✅ Mensagem Enviada!" fontSize="{32}" fontWeight="bold" />
-                <Label text="Obrigado pelo contato! Responderemos em breve." fontSize="{18}" textAlign="center" />
-                <Label text="Este formulário será resetado automaticamente..." fontSize="{14}" color="#7f8c8d" />
+        <!-- Success State -->
+        <VBox styleClass="form-card" visible="{submitted}">
+            <VBox styleClass="success-content">
+                <Label text="🎉" styleClass="success-icon" />
+                <Label text="Welcome Aboard!" styleClass="success-title" />
+                <Label text="{'Your account has been created successfully. Welcome, ' + fullName + '!'}"
+                       styleClass="success-text" />
+                <Button label="Back to Form" click="{goBack}" styleClass="back-btn" />
             </VBox>
-        </Box>
-
+        </VBox>
     </VBox>
 
 </Application>

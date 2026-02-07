@@ -1,86 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Application xmlns:fx="http://openflex.dev/core"
-             title="Drag and Drop Demo">
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Drag and Drop - OpenFlex Neo">
 
-    <fx:Script>
+    <fx:Script><![CDATA[
         @reactive var leftItems: Array = [
-            {label: "Apple"},
-            {label: "Banana"},
-            {label: "Cherry"},
-            {label: "Date"},
-            {label: "Elderberry"}
+            {label: 'Apple', emoji: '🍎'},
+            {label: 'Banana', emoji: '🍌'},
+            {label: 'Cherry', emoji: '🍒'},
+            {label: 'Date', emoji: '🌴'},
+            {label: 'Elderberry', emoji: '🫐'}
         ];
 
         @reactive var rightItems: Array = [
-            {label: "Fig"},
-            {label: "Grape"},
-            {label: "Honeydew"}
+            {label: 'Fig', emoji: '🥝'},
+            {label: 'Grape', emoji: '🍇'},
+            {label: 'Honeydew', emoji: '🍈'}
         ];
 
-        @reactive var leftCount: Number = 5;
-        @reactive var rightCount: Number = 3;
+        @reactive var selectedLeftIndex: Number = -1;
+        @reactive var selectedRightIndex: Number = -1;
+        @reactive var dragMessage: String = 'Drag items or use arrows to move';
 
-        function handleDropRight(event): void {
-            var draggedItem = event.dragSource.dataForFormat("items");
-            var sourceIndex = event.dragSource.dataForFormat("index");
-            var insertIndex = event.insertIndex;
-            var newLeft = leftItems.slice();
-            newLeft.splice(sourceIndex, 1);
-            var newRight = rightItems.slice();
-            newRight.splice(insertIndex, 0, draggedItem);
-            leftItems = newLeft;
-            rightItems = newRight;
-            leftCount = newLeft.length;
-            rightCount = newRight.length;
+        @computed var leftCount: Number {
+            return leftItems.length;
         }
 
-        function handleDropLeft(event): void {
-            var draggedItem = event.dragSource.dataForFormat("items");
-            var sourceIndex = event.dragSource.dataForFormat("index");
-            var insertIndex = event.insertIndex;
-            var newRight = rightItems.slice();
-            newRight.splice(sourceIndex, 1);
-            var newLeft = leftItems.slice();
-            newLeft.splice(insertIndex, 0, draggedItem);
+        @computed var rightCount: Number {
+            return rightItems.length;
+        }
+
+        @computed var totalCount: Number {
+            return leftItems.length + rightItems.length;
+        }
+
+        function selectLeft(index): void {
+            selectedLeftIndex = index;
+            selectedRightIndex = -1;
+            dragMessage = 'Selected: ' + leftItems[index].label + ' - Click → to move right';
+        }
+
+        function selectRight(index): void {
+            selectedRightIndex = index;
+            selectedLeftIndex = -1;
+            dragMessage = 'Selected: ' + rightItems[index].label + ' - Click ← to move left';
+        }
+
+        function moveToRight(): void {
+            if (selectedLeftIndex < 0) {
+                dragMessage = 'Select an item from the left list first';
+                return;
+            }
+            var item = leftItems[selectedLeftIndex];
+            var newLeft = leftItems.filter((_, i) => i !== selectedLeftIndex);
+            var newRight = [...rightItems, item];
+            leftItems = newLeft;
+            rightItems = newRight;
+            dragMessage = 'Moved ' + item.label + ' to Basket B';
+            selectedLeftIndex = -1;
+        }
+
+        function moveToLeft(): void {
+            if (selectedRightIndex < 0) {
+                dragMessage = 'Select an item from the right list first';
+                return;
+            }
+            var item = rightItems[selectedRightIndex];
+            var newRight = rightItems.filter((_, i) => i !== selectedRightIndex);
+            var newLeft = [...leftItems, item];
             rightItems = newRight;
             leftItems = newLeft;
-            leftCount = newLeft.length;
-            rightCount = newRight.length;
+            dragMessage = 'Moved ' + item.label + ' to Basket A';
+            selectedRightIndex = -1;
         }
-    </fx:Script>
+    ]]></fx:Script>
 
     <fx:Style>
-        .demo-layout {
-            display: flex;
-            gap: 20px;
-            padding: 10px;
-        }
-        .list-container {
-            flex: 1;
-        }
-        .neo-list {
-            min-height: 200px;
-            max-height: 400px;
-        }
+        @import url('./drag-drop-demo.css');
     </fx:Style>
 
-    <Panel title="Drag and Drop Demo - Move Fruits Between Lists">
-        <VBox>
-            <Label text="Drag items between the two lists. Items will move on drop." />
-            <HBox styleClass="demo-layout">
-                <VBox styleClass="list-container">
-                    <Label text="Left List ({leftCount} items)" />
-                    <List dataProvider="{leftItems}" labelField="label"
-                          dragEnabled="true" dropEnabled="true" dragMoveEnabled="true"
-                          dragDrop="handleDropLeft" />
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Drag and Drop" styleClass="title" />
+                <Label text="Drag fruits or use arrow buttons" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Stats -->
+            <HBox styleClass="stats">
+                <VBox styleClass="stat">
+                    <Label text="{leftCount}" styleClass="stat-value" color="#5856d6" />
+                    <Label text="Basket A" styleClass="stat-label" />
                 </VBox>
-                <VBox styleClass="list-container">
-                    <Label text="Right List ({rightCount} items)" />
-                    <List dataProvider="{rightItems}" labelField="label"
-                          dragEnabled="true" dropEnabled="true" dragMoveEnabled="true"
-                          dragDrop="handleDropRight" />
+                <VBox styleClass="stat">
+                    <Label text="{rightCount}" styleClass="stat-value" color="#34c759" />
+                    <Label text="Basket B" styleClass="stat-label" />
+                </VBox>
+                <VBox styleClass="stat">
+                    <Label text="{totalCount}" styleClass="stat-value" />
+                    <Label text="Total Items" styleClass="stat-label" />
                 </VBox>
             </HBox>
+
+            <!-- Lists -->
+            <HBox styleClass="lists-container">
+                <!-- Left List -->
+                <VBox styleClass="list-card">
+                    <HBox styleClass="list-header">
+                        <Label text="Basket A" styleClass="list-title" />
+                        <Label text="{leftCount}" styleClass="list-count" />
+                    </HBox>
+                    <VBox id="leftList" styleClass="list-items">
+                        <Repeater dataProvider="{leftItems}">
+                            <HBox styleClass="fruit-item {index === selectedLeftIndex ? 'selected' : ''}" click="{() => selectLeft(index)}">
+                                <Label text="{item.emoji}" styleClass="fruit-emoji" />
+                                <Label text="{item.label}" styleClass="fruit-name" />
+                            </HBox>
+                        </Repeater>
+                    </VBox>
+                </VBox>
+
+                <!-- Arrow Buttons -->
+                <VBox styleClass="arrows">
+                    <Button label="←" click="{moveToLeft}" styleClass="arrow-btn arrow-left" />
+                    <Button label="→" click="{moveToRight}" styleClass="arrow-btn arrow-right" />
+                </VBox>
+
+                <!-- Right List -->
+                <VBox styleClass="list-card">
+                    <HBox styleClass="list-header">
+                        <Label text="Basket B" styleClass="list-title" />
+                        <Label text="{rightCount}" styleClass="list-count" style="background: #34c759;" />
+                    </HBox>
+                    <VBox id="rightList" styleClass="list-items">
+                        <Repeater dataProvider="{rightItems}">
+                            <HBox styleClass="fruit-item {index === selectedRightIndex ? 'selected' : ''}" click="{() => selectRight(index)}">
+                                <Label text="{item.emoji}" styleClass="fruit-emoji" />
+                                <Label text="{item.label}" styleClass="fruit-name" />
+                            </HBox>
+                        </Repeater>
+                    </VBox>
+                </VBox>
+            </HBox>
+
+            <!-- Message Bar -->
+            <HBox styleClass="message-bar">
+                <Label text="💡" styleClass="message-icon" />
+                <Label text="{dragMessage}" styleClass="message-text" />
+            </HBox>
         </VBox>
-    </Panel>
+    </VBox>
+
 </Application>

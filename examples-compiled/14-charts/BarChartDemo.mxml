@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Bar Chart Demo">
+
+    <fx:Script><![CDATA[
+        // Dados de desempenho por departamento
+        @reactive var performanceData: Array = [
+            {department: "Vendas", score: 92, target: 85},
+            {department: "Marketing", score: 78, target: 80},
+            {department: "Suporte", score: 88, target: 75},
+            {department: "Desenvolvimento", score: 95, target: 90},
+            {department: "RH", score: 72, target: 70},
+            {department: "Financeiro", score: 85, target: 80}
+        ];
+
+        function randomizeData(): void {
+            performanceData = performanceData.map(d => ({
+                ...d,
+                score: Math.floor(Math.random() * 30) + 70,
+                target: Math.floor(Math.random() * 20) + 70
+            }));
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./bar-chart-demo.css');
+    </fx:Style>
+
+    <Panel title="BarChart - Grafico de Barras Horizontais">
+        <VBox gap="15" width="100%">
+            <Label text="O BarChart exibe dados em barras horizontais, otimo para comparar rankings ou categorias com nomes longos." />
+
+            <HBox horizontalAlign="right" width="100%">
+                <Button label="Atualizar Dados" click="{randomizeData}" />
+            </HBox>
+
+            <BarChart dataProvider="{performanceData}" width="100%" height="350">
+                <horizontalAxis>
+                    <CategoryAxis categoryField="department" title="Departamento" />
+                </horizontalAxis>
+                <verticalAxis>
+                    <LinearAxis minimum="0" maximum="100" title="Score" />
+                </verticalAxis>
+                <series>
+                    <ColumnSeries yField="score" displayName="Score Atual" />
+                    <ColumnSeries yField="target" displayName="Meta" />
+                </series>
+            </BarChart>
+
+            <Panel title="Codigo Fonte">
+                <VBox gap="5">
+                    <Label text="&lt;BarChart dataProvider='{performanceData}' width='100%' height='350'&gt;" />
+                    <Label text="    &lt;horizontalAxis&gt;" />
+                    <Label text="        &lt;CategoryAxis categoryField='department' title='Departamento' /&gt;" />
+                    <Label text="    &lt;/horizontalAxis&gt;" />
+                    <Label text="    &lt;verticalAxis&gt;" />
+                    <Label text="        &lt;LinearAxis minimum='0' maximum='100' title='Score' /&gt;" />
+                    <Label text="    &lt;/verticalAxis&gt;" />
+                    <Label text="    &lt;series&gt;" />
+                    <Label text="        &lt;ColumnSeries yField='score' displayName='Score Atual' /&gt;" />
+                    <Label text="        &lt;ColumnSeries yField='target' displayName='Meta' /&gt;" />
+                    <Label text="    &lt;/series&gt;" />
+                    <Label text="&lt;/BarChart&gt;" />
+                </VBox>
+            </Panel>
+        </VBox>
+    </Panel>
+</Application>

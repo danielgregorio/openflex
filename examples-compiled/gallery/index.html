@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenFlex Neo - Example Gallery</title>
+    <link rel="stylesheet" href="gallery.css">
+</head>
+<body>
+    <div class="gallery-container">
+        <!-- Header -->
+        <header class="gallery-header">
+            <h1>🚀 OpenFlex Neo</h1>
+            <span class="subtitle">Example Gallery</span>
+            <span class="spacer"></span>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search examples...">
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="gallery-main">
+            <!-- Sidebar (Tree Navigation) -->
+            <aside class="gallery-sidebar">
+                <div class="sidebar-header">Examples</div>
+                <div class="sidebar-tree" id="sidebar-tree">
+                    <!-- Tree will be rendered by JS -->
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <main class="gallery-content">
+                <!-- Preview Header -->
+                <div class="preview-header" id="preview-header">
+                    <span class="preview-title">Welcome</span>
+                    <span class="preview-spacer"></span>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="preview-area" id="preview-area">
+                    <!-- Example will be loaded here -->
+                </div>
+
+                <!-- Source Viewer -->
+                <div class="source-viewer" id="source-viewer">
+                    <div class="source-resize-handle"></div>
+                    <div class="source-header">
+                        <div class="source-tabs" id="source-tabs">
+                            <!-- Tabs will be added dynamically -->
+                        </div>
+                        <span class="source-spacer"></span>
+                        <button class="source-close" onclick="gallery.closeSource()">&times;</button>
+                    </div>
+                    <div class="source-content" id="source-content">
+                        <!-- Source code will be displayed here -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="examples-data.js"></script>
+    <script src="gallery.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+/* Counter App Styles */
+@import url('../runtime/openflex-ios-theme.css');
+
+.counter-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+.counter {
+    background: #1c1c1e;
+    padding: 30px;
+    border-radius: 30px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+    width: 320px;
+}
+.display {
+    background: #1c1c1e;
+    color: white;
+    font-size: 80px;
+    font-weight: 200;
+    text-align: center;
+    padding: 20px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    margin-bottom: 20px;
+}
+.btn-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    justify-content: center;
+}
+.counter-btn {
+    width: 65px;
+    height: 65px;
+    font-size: 28px;
+    font-weight: 500;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.1s;
+    background: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.counter-btn:active {
+    opacity: 0.7;
+    transform: scale(0.95);
+}
+.btn-green {
+    background: #34c759;
+    color: white;
+}
+.btn-red {
+    background: #ff3b30;
+    color: white;
+}
+.btn-orange {
+    background: #ff9f0a;
+    color: white;
+}
+.btn-gray {
+    background: #636366;
+    color: white;
+}
+.btn-wide {
+    width: 142px;
+    border-radius: 35px;
+}
+.status-label {
+    text-align: center;
+    font-size: 14px;
+    color: #8e8e93;
+    margin-top: 10px;
+}

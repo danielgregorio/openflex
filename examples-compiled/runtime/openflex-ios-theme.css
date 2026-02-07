@@ -1,0 +1,633 @@
+/**
+ * OpenFlex iOS Design System Theme
+ * Modern dark theme inspired by Apple iOS/macOS design language
+ */
+
+/* ============================================
+   CSS Variables - Design Tokens
+   ============================================ */
+:host {
+    --ios-bg-primary: #000000;
+    --ios-bg-secondary: #1c1c1e;
+    --ios-bg-tertiary: #2c2c2e;
+    --ios-bg-quaternary: #3a3a3c;
+
+    --ios-text-primary: #ffffff;
+    --ios-text-secondary: #8e8e93;
+    --ios-text-tertiary: #636366;
+
+    --ios-accent-blue: #007aff;
+    --ios-accent-purple: #5856d6;
+    --ios-accent-pink: #af52de;
+    --ios-accent-green: #34c759;
+    --ios-accent-orange: #ff9500;
+    --ios-accent-red: #ff3b30;
+    --ios-accent-yellow: #ffcc00;
+    --ios-accent-teal: #5ac8fa;
+
+    --ios-gradient-purple: linear-gradient(135deg, #5856d6, #af52de);
+    --ios-gradient-blue: linear-gradient(135deg, #007aff, #5ac8fa);
+    --ios-gradient-orange: linear-gradient(135deg, #ff9500, #ff3b30);
+
+    --ios-radius-sm: 8px;
+    --ios-radius-md: 12px;
+    --ios-radius-lg: 20px;
+    --ios-radius-xl: 25px;
+    --ios-radius-full: 9999px;
+
+    --ios-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+    --ios-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    --ios-font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    --ios-font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.ios-app {
+    font-family: var(--ios-font);
+    background: var(--ios-bg-primary);
+    color: var(--ios-text-primary);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.ios-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.ios-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+.ios-card {
+    background: var(--ios-bg-secondary);
+    border-radius: var(--ios-radius-xl);
+    box-shadow: var(--ios-shadow);
+    overflow: hidden;
+}
+
+.ios-card-sm {
+    border-radius: var(--ios-radius-lg);
+    padding: 20px;
+}
+
+.ios-card-header {
+    padding: 25px 25px 15px;
+}
+
+.ios-card-body {
+    padding: 15px 25px 25px;
+}
+
+.ios-card-footer {
+    padding: 15px 25px;
+    background: var(--ios-bg-tertiary);
+    border-top: 1px solid var(--ios-bg-quaternary);
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+.ios-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ios-text-primary);
+    margin-bottom: 8px;
+}
+
+.ios-title-lg {
+    font-size: 32px;
+}
+
+.ios-subtitle {
+    font-size: 15px;
+    color: var(--ios-text-secondary);
+}
+
+.ios-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ios-text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ios-label {
+    font-size: 13px;
+    color: var(--ios-text-secondary);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.ios-text-sm {
+    font-size: 13px;
+    color: var(--ios-text-secondary);
+}
+
+.ios-text-mono {
+    font-family: var(--ios-font-mono);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.ios-btn {
+    font-family: var(--ios-font);
+    font-size: 16px;
+    font-weight: 600;
+    padding: 14px 24px;
+    border: none;
+    border-radius: var(--ios-radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.ios-btn:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+}
+
+.ios-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ios-btn-primary {
+    background: var(--ios-accent-blue);
+    color: white;
+}
+
+.ios-btn-purple {
+    background: var(--ios-gradient-purple);
+    color: white;
+}
+
+.ios-btn-green {
+    background: var(--ios-accent-green);
+    color: white;
+}
+
+.ios-btn-orange {
+    background: var(--ios-accent-orange);
+    color: white;
+}
+
+.ios-btn-red {
+    background: var(--ios-accent-red);
+    color: white;
+}
+
+.ios-btn-secondary {
+    background: var(--ios-bg-tertiary);
+    color: var(--ios-text-primary);
+}
+
+.ios-btn-ghost {
+    background: transparent;
+    color: var(--ios-accent-blue);
+}
+
+.ios-btn-sm {
+    font-size: 14px;
+    padding: 10px 16px;
+}
+
+.ios-btn-lg {
+    font-size: 17px;
+    padding: 16px 32px;
+}
+
+.ios-btn-block {
+    width: 100%;
+}
+
+.ios-btn-round {
+    width: 65px;
+    height: 65px;
+    border-radius: var(--ios-radius-full);
+    padding: 0;
+    font-size: 24px;
+}
+
+.ios-btn-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--ios-radius-full);
+    padding: 0;
+    background: transparent;
+    border: 2px solid;
+}
+
+/* ============================================
+   Inputs
+   ============================================ */
+.ios-input {
+    width: 100%;
+    font-family: var(--ios-font);
+    font-size: 16px;
+    padding: 14px 16px;
+    background: var(--ios-bg-tertiary);
+    border: 2px solid transparent;
+    border-radius: var(--ios-radius-md);
+    color: var(--ios-text-primary);
+    transition: border-color 0.2s;
+}
+
+.ios-input:focus {
+    outline: none;
+    border-color: var(--ios-accent-blue);
+}
+
+.ios-input::placeholder {
+    color: var(--ios-text-tertiary);
+}
+
+.ios-input-valid {
+    border-color: var(--ios-accent-green);
+}
+
+.ios-input-invalid {
+    border-color: var(--ios-accent-red);
+}
+
+.ios-input-group {
+    margin-bottom: 16px;
+}
+
+/* ============================================
+   Toggle Switch
+   ============================================ */
+.ios-toggle {
+    width: 51px;
+    height: 31px;
+    background: var(--ios-bg-quaternary);
+    border-radius: 16px;
+    padding: 2px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    position: relative;
+}
+
+.ios-toggle-on {
+    background: var(--ios-accent-green);
+}
+
+.ios-toggle-knob {
+    width: 27px;
+    height: 27px;
+    background: white;
+    border-radius: var(--ios-radius-full);
+    transition: transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.ios-toggle-on .ios-toggle-knob {
+    transform: translateX(20px);
+}
+
+/* ============================================
+   Slider/Range
+   ============================================ */
+.ios-slider {
+    width: 100%;
+    height: 6px;
+    background: var(--ios-bg-quaternary);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+}
+
+.ios-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: var(--ios-radius-full);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* ============================================
+   Tabs
+   ============================================ */
+.ios-tabs {
+    display: flex;
+    background: var(--ios-bg-tertiary);
+    border-radius: var(--ios-radius-md);
+    padding: 4px;
+}
+
+.ios-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: var(--ios-radius-sm);
+    padding: 10px 16px;
+    color: var(--ios-text-secondary);
+    font-family: var(--ios-font);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ios-tab-active {
+    background: var(--ios-accent-purple);
+    color: white;
+}
+
+/* ============================================
+   List
+   ============================================ */
+.ios-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ios-list-item {
+    display: flex;
+    align-items: center;
+    padding: 14px;
+    background: var(--ios-bg-tertiary);
+    border-radius: var(--ios-radius-md);
+    gap: 14px;
+}
+
+.ios-list-item-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--ios-bg-quaternary);
+    border-radius: var(--ios-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.ios-list-item-content {
+    flex: 1;
+}
+
+.ios-list-item-title {
+    color: var(--ios-text-primary);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.ios-list-item-subtitle {
+    color: var(--ios-text-secondary);
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+/* ============================================
+   Badges & Status
+   ============================================ */
+.ios-badge {
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.ios-badge-green {
+    background: rgba(52, 199, 89, 0.15);
+    color: var(--ios-accent-green);
+}
+
+.ios-badge-orange {
+    background: rgba(255, 149, 0, 0.15);
+    color: var(--ios-accent-orange);
+}
+
+.ios-badge-red {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--ios-accent-red);
+}
+
+.ios-badge-blue {
+    background: rgba(0, 122, 255, 0.15);
+    color: var(--ios-accent-blue);
+}
+
+.ios-badge-purple {
+    background: rgba(88, 86, 214, 0.15);
+    color: var(--ios-accent-purple);
+}
+
+/* ============================================
+   Stats Card
+   ============================================ */
+.ios-stat {
+    background: var(--ios-bg-tertiary);
+    border-radius: var(--ios-radius-md);
+    padding: 16px;
+    text-align: center;
+}
+
+.ios-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ios-text-primary);
+}
+
+.ios-stat-label {
+    font-size: 12px;
+    color: var(--ios-text-secondary);
+    margin-top: 4px;
+}
+
+/* ============================================
+   Grid Layouts
+   ============================================ */
+.ios-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.ios-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.ios-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+/* ============================================
+   Flex Utilities
+   ============================================ */
+.ios-flex {
+    display: flex;
+}
+
+.ios-flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.ios-flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ios-flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ios-gap-sm { gap: 8px; }
+.ios-gap-md { gap: 12px; }
+.ios-gap-lg { gap: 16px; }
+.ios-gap-xl { gap: 20px; }
+
+/* ============================================
+   DataGrid / Table
+   ============================================ */
+.ios-datagrid {
+    width: 100%;
+    background: var(--ios-bg-tertiary);
+    border-radius: var(--ios-radius-md);
+    overflow: hidden;
+}
+
+.ios-datagrid-header {
+    display: flex;
+    background: var(--ios-bg-quaternary);
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ios-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ios-datagrid-row {
+    display: flex;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--ios-bg-quaternary);
+    align-items: center;
+}
+
+.ios-datagrid-row:last-child {
+    border-bottom: none;
+}
+
+.ios-datagrid-row:hover {
+    background: var(--ios-bg-quaternary);
+}
+
+.ios-datagrid-row-selected {
+    background: rgba(88, 86, 214, 0.15);
+}
+
+.ios-datagrid-cell {
+    flex: 1;
+    color: var(--ios-text-primary);
+    font-size: 15px;
+}
+
+/* ============================================
+   Checkbox
+   ============================================ */
+.ios-checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--ios-bg-quaternary);
+    border-radius: 6px;
+    background: var(--ios-bg-tertiary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.ios-checkbox-checked {
+    background: var(--ios-accent-blue);
+    border-color: var(--ios-accent-blue);
+}
+
+/* ============================================
+   Progress Bar
+   ============================================ */
+.ios-progress {
+    height: 6px;
+    background: var(--ios-bg-quaternary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.ios-progress-fill {
+    height: 100%;
+    background: var(--ios-gradient-purple);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* ============================================
+   Divider
+   ============================================ */
+.ios-divider {
+    height: 1px;
+    background: var(--ios-bg-quaternary);
+    margin: 16px 0;
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+.ios-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--ios-text-secondary);
+}
+
+.ios-empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes ios-fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ios-animate-in {
+    animation: ios-fade-in 0.3s ease-out;
+}

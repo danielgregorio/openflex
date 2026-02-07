@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Form Validators - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var email: String = '';
+        @reactive var password: String = '';
+        @reactive var age: String = '';
+        @reactive var phone: String = '';
+
+        @reactive var emailError: String = '';
+        @reactive var passwordError: String = '';
+        @reactive var ageError: String = '';
+        @reactive var phoneError: String = '';
+
+        @reactive var formResult: String = '';
+        @reactive var formSuccess: Boolean = false;
+
+        function validateEmail(): void {
+            var pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email.length === 0) {
+                emailError = '';
+            } else if (pattern.test(email)) {
+                emailError = 'valid';
+            } else {
+                emailError = 'Please enter a valid email';
+            }
+        }
+
+        function validatePassword(): void {
+            if (password.length === 0) {
+                passwordError = '';
+            } else if (password.length >= 8) {
+                passwordError = 'valid';
+            } else {
+                passwordError = 'Password must be at least 8 characters';
+            }
+        }
+
+        function validateAge(): void {
+            if (age.length === 0) {
+                ageError = '';
+                return;
+            }
+            var num = parseInt(age);
+            if (isNaN(num)) {
+                ageError = 'Please enter a number';
+            } else if (num >= 18) {
+                ageError = 'valid';
+            } else {
+                ageError = 'Must be at least 18';
+            }
+        }
+
+        function validatePhone(): void {
+            if (phone.length === 0) {
+                phoneError = '';
+                return;
+            }
+            var digits = phone.replace(/\D/g, '');
+            if (digits.length >= 10) {
+                phoneError = 'valid';
+            } else {
+                phoneError = 'Enter at least 10 digits';
+            }
+        }
+
+        function submitForm(): void {
+            validateEmail();
+            validatePassword();
+            validateAge();
+            validatePhone();
+
+            var allValid = (emailError === 'valid') &&
+                          (passwordError === 'valid') &&
+                          (ageError === 'valid') &&
+                          (phoneError === 'valid');
+
+            if (allValid) {
+                formResult = 'Form submitted successfully!';
+                formSuccess = true;
+            } else {
+                formResult = 'Please fix the errors above.';
+                formSuccess = false;
+            }
+        }
+
+        function resetForm(): void {
+            email = '';
+            password = '';
+            age = '';
+            phone = '';
+            emailError = '';
+            passwordError = '';
+            ageError = '';
+            phoneError = '';
+            formResult = '';
+            formSuccess = false;
+        }
+
+        @computed var emailIsValid: Boolean {
+            return emailError === 'valid';
+        }
+
+        @computed var passwordIsValid: Boolean {
+            return passwordError === 'valid';
+        }
+
+        @computed var ageIsValid: Boolean {
+            return ageError === 'valid';
+        }
+
+        @computed var phoneIsValid: Boolean {
+            return phoneError === 'valid';
+        }
+
+        @computed var emailMessage: String {
+            return emailError === 'valid' ? 'Valid email' : emailError;
+        }
+
+        @computed var passwordMessage: String {
+            return passwordError === 'valid' ? 'Strong password' : passwordError;
+        }
+
+        @computed var ageMessage: String {
+            return ageError === 'valid' ? 'Valid age' : ageError;
+        }
+
+        @computed var phoneMessage: String {
+            return phoneError === 'valid' ? 'Valid phone' : phoneError;
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./validators-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Form Validators" styleClass="title" />
+                <Label text="Real-time validation with visual feedback" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Form Card -->
+            <VBox styleClass="card">
+                <Label text="Registration Form" styleClass="card-title" />
+
+                <VBox styleClass="form-field">
+                    <Label text="Email Address" styleClass="field-label" />
+                    <TextInput text="{email}" placeholder="you@example.com" change="{validateEmail}"
+                               styleClass="field-input {emailIsValid ? 'valid' : (emailError.length > 0 ? 'invalid' : '')}" />
+                    <HBox styleClass="field-msg {emailIsValid ? 'msg-valid' : 'msg-invalid'}" visible="{emailError.length > 0}">
+                        <Label text="{emailIsValid ? '✓' : '✗'}" />
+                        <Label text="{emailMessage}" />
+                    </HBox>
+                </VBox>
+
+                <VBox styleClass="form-field">
+                    <Label text="Password" styleClass="field-label" />
+                    <TextInput text="{password}" placeholder="Minimum 8 characters" change="{validatePassword}"
+                               styleClass="field-input {passwordIsValid ? 'valid' : (passwordError.length > 0 ? 'invalid' : '')}" />
+                    <HBox styleClass="field-msg {passwordIsValid ? 'msg-valid' : 'msg-invalid'}" visible="{passwordError.length > 0}">
+                        <Label text="{passwordIsValid ? '✓' : '✗'}" />
+                        <Label text="{passwordMessage}" />
+                    </HBox>
+                </VBox>
+
+                <VBox styleClass="form-field">
+                    <Label text="Age" styleClass="field-label" />
+                    <TextInput text="{age}" placeholder="18 or older" change="{validateAge}" width="120"
+                               styleClass="field-input {ageIsValid ? 'valid' : (ageError.length > 0 ? 'invalid' : '')}" />
+                    <HBox styleClass="field-msg {ageIsValid ? 'msg-valid' : 'msg-invalid'}" visible="{ageError.length > 0}">
+                        <Label text="{ageIsValid ? '✓' : '✗'}" />
+                        <Label text="{ageMessage}" />
+                    </HBox>
+                </VBox>
+
+                <VBox styleClass="form-field">
+                    <Label text="Phone Number" styleClass="field-label" />
+                    <TextInput text="{phone}" placeholder="10+ digits" change="{validatePhone}"
+                               styleClass="field-input {phoneIsValid ? 'valid' : (phoneError.length > 0 ? 'invalid' : '')}" />
+                    <HBox styleClass="field-msg {phoneIsValid ? 'msg-valid' : 'msg-invalid'}" visible="{phoneError.length > 0}">
+                        <Label text="{phoneIsValid ? '✓' : '✗'}" />
+                        <Label text="{phoneMessage}" />
+                    </HBox>
+                </VBox>
+
+                <HBox styleClass="btn-row">
+                    <Button label="Submit" click="{submitForm}" styleClass="btn btn-primary" />
+                    <Button label="Reset" click="{resetForm}" styleClass="btn btn-secondary" />
+                </HBox>
+
+                <Label text="{formResult}" visible="{formResult.length > 0}"
+                       styleClass="{formSuccess ? 'result-success' : 'result-error'}" />
+            </VBox>
+        </VBox>
+    </VBox>
+
+</Application>

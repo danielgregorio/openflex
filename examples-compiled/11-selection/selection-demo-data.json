@@ -1,0 +1,15 @@
+{
+  "fruits": [
+    { "label": "Apple", "emoji": "🍎", "color": "Red" },
+    { "label": "Banana", "emoji": "🍌", "color": "Yellow" },
+    { "label": "Cherry", "emoji": "🍒", "color": "Red" },
+    { "label": "Grape", "emoji": "🍇", "color": "Purple" },
+    { "label": "Orange", "emoji": "🍊", "color": "Orange" }
+  ],
+  "employees": [
+    { "name": "Sarah Chen", "role": "Engineer", "salary": 95000, "status": "active" },
+    { "name": "Marcus Johnson", "role": "Designer", "salary": 82000, "status": "active" },
+    { "name": "Emily Davis", "role": "Manager", "salary": 110000, "status": "away" },
+    { "name": "Alex Rivera", "role": "Marketing", "salary": 75000, "status": "active" }
+  ]
+}

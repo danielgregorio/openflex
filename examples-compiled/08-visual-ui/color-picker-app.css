@@ -1,0 +1,133 @@
+/* Color Picker App Styles */
+@import url('../runtime/openflex-ios-theme.css');
+
+.picker-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+.picker-card {
+    background: #1c1c1e;
+    border-radius: 25px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+    width: 340px;
+    overflow: hidden;
+}
+.color-preview {
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+.preview-hex {
+    font-size: 32px;
+    font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, monospace;
+    margin-bottom: 5px;
+}
+.preview-rgb {
+    font-size: 14px;
+    opacity: 0.8;
+}
+.sliders-section {
+    padding: 25px;
+}
+.slider-row {
+    margin-bottom: 20px;
+}
+.slider-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.slider-label {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+}
+.slider-value {
+    color: #8e8e93;
+    font-size: 14px;
+    font-family: monospace;
+}
+.color-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+}
+.slider-red {
+    background: linear-gradient(to right, #000, #ff0000);
+}
+.slider-green {
+    background: linear-gradient(to right, #000, #00ff00);
+}
+.slider-blue {
+    background: linear-gradient(to right, #000, #0000ff);
+}
+.actions-section {
+    padding: 0 25px 15px;
+}
+.copy-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.copy-btn {
+    flex: 1;
+    background: #2c2c2e;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.copy-btn:active {
+    background: #3a3a3c;
+}
+.random-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #5856d6, #af52de);
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.presets-section {
+    padding: 15px 25px 25px;
+}
+.presets-label {
+    color: #8e8e93;
+    font-size: 12px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.presets-row {
+    display: flex;
+    gap: 8px;
+}
+.preset-btn {
+    flex: 1;
+    height: 36px;
+    border: 2px solid #3a3a3c;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.preset-btn:active {
+    transform: scale(0.95);
+}

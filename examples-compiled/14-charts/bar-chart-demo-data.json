@@ -1,0 +1,10 @@
+{
+  "performanceData": [
+    { "department": "Vendas", "score": 92, "target": 85 },
+    { "department": "Marketing", "score": 78, "target": 80 },
+    { "department": "Suporte", "score": 88, "target": 75 },
+    { "department": "Desenvolvimento", "score": 95, "target": 90 },
+    { "department": "RH", "score": 72, "target": 70 },
+    { "department": "Financeiro", "score": 85, "target": 80 }
+  ]
+}

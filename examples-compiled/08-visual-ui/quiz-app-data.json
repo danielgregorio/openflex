@@ -1,0 +1,29 @@
+{
+  "questions": [
+    {
+      "question": "What is the capital of France?",
+      "answers": ["London", "Berlin", "Paris", "Madrid"],
+      "correct": 2
+    },
+    {
+      "question": "Which planet is known as the Red Planet?",
+      "answers": ["Venus", "Mars", "Jupiter", "Saturn"],
+      "correct": 1
+    },
+    {
+      "question": "What year did the first iPhone launch?",
+      "answers": ["2005", "2006", "2007", "2008"],
+      "correct": 2
+    },
+    {
+      "question": "Who painted the Mona Lisa?",
+      "answers": ["Van Gogh", "Picasso", "Da Vinci", "Monet"],
+      "correct": 2
+    },
+    {
+      "question": "What is the largest ocean on Earth?",
+      "answers": ["Atlantic", "Indian", "Arctic", "Pacific"],
+      "correct": 3
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "employees": [
+    { "id": 1, "name": "Sarah Chen", "role": "Engineer", "salary": 95000, "status": "active" },
+    { "id": 2, "name": "Marcus Johnson", "role": "Designer", "salary": 82000, "status": "active" },
+    { "id": 3, "name": "Emily Davis", "role": "Manager", "salary": 110000, "status": "away" },
+    { "id": 4, "name": "Alex Rivera", "role": "Engineer", "salary": 88000, "status": "active" },
+    { "id": 5, "name": "Jordan Lee", "role": "Marketing", "salary": 75000, "status": "active" }
+  ],
+  "activities": [
+    { "icon": "✅", "text": "Sarah completed Sprint 24", "time": "2m" },
+    { "icon": "📊", "text": "Marcus uploaded new designs", "time": "15m" },
+    { "icon": "💬", "text": "Emily added 3 comments", "time": "1h" },
+    { "icon": "🚀", "text": "Alex deployed to production", "time": "2h" }
+  ]
+}

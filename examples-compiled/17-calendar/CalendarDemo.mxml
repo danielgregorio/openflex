@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Calendar and DatePicker - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var selectedDate: Date = new Date();
+        @reactive var startDate: Date = new Date();
+        @reactive var endDate: Date = new Date();
+
+        @computed var formattedDate: String {
+            return selectedDate.toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+        }
+
+        @computed var formattedStart: String {
+            return startDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+        }
+
+        @computed var formattedEnd: String {
+            return endDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+        }
+
+        function onDateChange(event): void {
+            selectedDate = event.date;
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./calendar-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Calendar and DatePicker" styleClass="title" />
+                <Label text="Date selection with flexible formatting" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Grid -->
+            <HBox styleClass="grid">
+                <!-- Calendar Section -->
+                <VBox styleClass="card">
+                    <HBox styleClass="card-header">
+                        <Label text="📅" styleClass="card-icon" />
+                        <Label text="Calendar" styleClass="card-title" />
+                    </HBox>
+
+                    <VBox styleClass="calendar-container">
+                        <Calendar selectedDate="{selectedDate}" change="{onDateChange}" />
+                    </VBox>
+
+                    <HBox styleClass="selected-date-display">
+                        <Label text="📌" styleClass="date-pin" />
+                        <Label text="{formattedDate}" styleClass="date-text" />
+                    </HBox>
+                </VBox>
+
+                <!-- DatePicker Section -->
+                <VBox styleClass="card">
+                    <HBox styleClass="card-header">
+                        <Label text="📆" styleClass="card-icon" />
+                        <Label text="DatePicker" styleClass="card-title" />
+                    </HBox>
+
+                    <VBox styleClass="field-group">
+                        <Label text="SINGLE DATE" styleClass="field-label" />
+                        <DateField selectedDate="{selectedDate}" width="100%" />
+                    </VBox>
+
+                    <VBox styleClass="field-group">
+                        <Label text="DATE RANGE" styleClass="field-label" />
+                        <HBox styleClass="date-range-row">
+                            <VBox styleClass="date-field-wrapper">
+                                <Label text="From" styleClass="field-label" />
+                                <DateField selectedDate="{startDate}" width="100%" />
+                            </VBox>
+                            <Label text="→" styleClass="range-arrow" />
+                            <VBox styleClass="date-field-wrapper">
+                                <Label text="To" styleClass="field-label" />
+                                <DateField selectedDate="{endDate}" width="100%" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <VBox styleClass="range-display">
+                        <Label text="Selected Range" styleClass="range-label" />
+                        <Label text="{formattedStart} → {formattedEnd}" styleClass="range-value" />
+                    </VBox>
+                </VBox>
+            </HBox>
+        </VBox>
+    </VBox>
+
+</Application>

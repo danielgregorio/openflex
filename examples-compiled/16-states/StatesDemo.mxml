@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="States and Transitions - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var currentState: String = 'view';
+        @reactive var userName: String = 'John Doe';
+        @reactive var userEmail: String = 'john@example.com';
+        @reactive var userBio: String = 'Software developer passionate about clean code and great user experiences.';
+
+        function goToEdit(): void {
+            currentState = 'edit';
+        }
+
+        function goToView(): void {
+            currentState = 'view';
+        }
+
+        function saveChanges(): void {
+            currentState = 'view';
+        }
+
+        @computed var isViewMode: Boolean {
+            return currentState === 'view';
+        }
+
+        @computed var isEditMode: Boolean {
+            return currentState === 'edit';
+        }
+
+        @computed var stateLabel: String {
+            return currentState === 'view' ? 'VIEW MODE' : 'EDIT MODE';
+        }
+
+        @computed var stateBadgeClass: String {
+            return currentState === 'view' ? 'badge-green' : 'badge-orange';
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./states-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="States and Transitions" styleClass="title" />
+                <Label text="Dynamic UI with view and edit modes" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Profile Card -->
+            <VBox styleClass="card">
+                <!-- Card Header -->
+                <HBox styleClass="card-header">
+                    <HBox styleClass="card-title-row">
+                        <Label text="👤" styleClass="card-icon" />
+                        <Label text="User Profile" styleClass="card-title" />
+                    </HBox>
+                    <Label text="{stateLabel}" styleClass="badge {stateBadgeClass}" />
+                </HBox>
+
+                <!-- View Mode -->
+                <VBox styleClass="view-content" visible="{isViewMode}">
+                    <VBox styleClass="field-group">
+                        <Label text="NAME" styleClass="field-label" />
+                        <Label text="{userName}" styleClass="field-value" />
+                    </VBox>
+
+                    <VBox styleClass="field-group">
+                        <Label text="EMAIL" styleClass="field-label" />
+                        <Label text="{userEmail}" styleClass="field-value" />
+                    </VBox>
+
+                    <VBox styleClass="field-group">
+                        <Label text="BIO" styleClass="field-label" />
+                        <Label text="{userBio}" styleClass="field-value" />
+                    </VBox>
+
+                    <HBox styleClass="btn-row">
+                        <Button label="✏️ Edit Profile" click="{goToEdit}" styleClass="btn btn-primary" />
+                    </HBox>
+                </VBox>
+
+                <!-- Edit Mode -->
+                <VBox styleClass="edit-content" visible="{isEditMode}">
+                    <VBox styleClass="field-group">
+                        <Label text="NAME" styleClass="field-label" />
+                        <TextInput text="{userName}" styleClass="field-input" />
+                    </VBox>
+
+                    <VBox styleClass="field-group">
+                        <Label text="EMAIL" styleClass="field-label" />
+                        <TextInput text="{userEmail}" styleClass="field-input" />
+                    </VBox>
+
+                    <VBox styleClass="field-group">
+                        <Label text="BIO" styleClass="field-label" />
+                        <TextArea text="{userBio}" styleClass="field-textarea" />
+                    </VBox>
+
+                    <HBox styleClass="btn-row">
+                        <Button label="💾 Save" click="{saveChanges}" styleClass="btn btn-success" />
+                        <Button label="Cancel" click="{goToView}" styleClass="btn btn-secondary" />
+                    </HBox>
+                </VBox>
+            </VBox>
+        </VBox>
+    </VBox>
+
+</Application>

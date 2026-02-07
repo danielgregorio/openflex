@@ -1,0 +1,10 @@
+{
+  "temperatureData": [
+    { "hour": "00h", "atual": 18, "ontem": 20 },
+    { "hour": "04h", "atual": 15, "ontem": 17 },
+    { "hour": "08h", "atual": 19, "ontem": 21 },
+    { "hour": "12h", "atual": 28, "ontem": 26 },
+    { "hour": "16h", "atual": 32, "ontem": 29 },
+    { "hour": "20h", "atual": 24, "ontem": 23 }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "leftItems": [
+    { "label": "Apple", "emoji": "🍎" },
+    { "label": "Banana", "emoji": "🍌" },
+    { "label": "Cherry", "emoji": "🍒" },
+    { "label": "Date", "emoji": "🌴" },
+    { "label": "Elderberry", "emoji": "🫐" }
+  ],
+  "rightItems": [
+    { "label": "Fig", "emoji": "🥝" },
+    { "label": "Grape", "emoji": "🍇" },
+    { "label": "Honeydew", "emoji": "🍈" }
+  ]
+}

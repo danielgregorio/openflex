@@ -1,0 +1,8 @@
+{
+  "salesData": [
+    { "quarter": "Q1", "productA": 12500, "productB": 9800, "productC": 7200 },
+    { "quarter": "Q2", "productA": 15800, "productB": 11200, "productC": 8900 },
+    { "quarter": "Q3", "productA": 14200, "productB": 13500, "productC": 10100 },
+    { "quarter": "Q4", "productA": 18900, "productB": 15200, "productC": 12800 }
+  ]
+}

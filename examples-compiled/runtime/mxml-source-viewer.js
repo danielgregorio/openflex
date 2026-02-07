@@ -42,59 +42,70 @@ class MXMLSourceViewer {
 
     /**
      * Aplica syntax highlighting básico ao código MXML
+     * Usa tokenização para evitar conflitos entre regexes
      */
     highlightMXML(code) {
-        // Escape HTML
+        // Escape HTML first
         code = code
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
 
-        // Token system: store spans as placeholders to prevent cascading regex matches
+        // Tokenize everything first, then replace with spans at the end
         const tokens = [];
-        const tok = (cls, content) => {
+        const placeholder = (cls, content) => {
             const id = tokens.length;
-            tokens.push(`<span class="${cls}">${content}</span>`);
-            return `\x00${id}\x00`;
+            tokens.push({ cls, content });
+            return `\uE000${id}\uE001`; // Private Use Area characters
         };
 
-        // Comments (fazer primeiro para não interferir)
-        code = code.replace(/(&lt;!--[\s\S]*?--&gt;)/g, (m, p1) => tok('xml-comment', p1));
+        // 1. Comments first (highest priority)
+        code = code.replace(/&lt;!--[\s\S]*?--&gt;/g, m => placeholder('xml-comment', m));
 
-        // CDATA (fazer antes de tags)
-        code = code.replace(/(&lt;!\[CDATA\[)([\s\S]*?)(\]\]&gt;)/g,
-            (m, p1, p2, p3) => tok('xml-bracket', '&lt;![CDATA[') + tok('xml-cdata', p2) + tok('xml-bracket', ']]&gt;'));
+        // 2. CDATA sections
+        code = code.replace(/&lt;!\[CDATA\[([\s\S]*?)\]\]&gt;/g, (m, content) => {
+            return placeholder('xml-bracket', '&lt;![CDATA[') +
+                   placeholder('xml-cdata', content) +
+                   placeholder('xml-bracket', ']]&gt;');
+        });
 
-        // XML tags com brackets destacados
-        code = code.replace(/(&lt;\/?)([A-Za-z][\w:]*)/g,
-            (m, p1, p2) => tok('xml-bracket', p1) + tok('xml-tag', p2));
+        // 3. String values (before processing tags/attributes)
+        code = code.replace(/"([^"]*)"/g, m => placeholder('xml-string', m));
+        code = code.replace(/'([^']*)'/g, m => placeholder('xml-string', m));
 
-        // Fechar tags >
-        code = code.replace(/(\/?&gt;)/g, (m, p1) => tok('xml-bracket', p1));
+        // 4. Opening/closing tag brackets and names
+        code = code.replace(/(&lt;\/?)([\w:]+)/g, (m, bracket, tag) => {
+            return placeholder('xml-bracket', bracket) + placeholder('xml-tag', tag);
+        });
 
-        // Attributes
-        code = code.replace(/\s([\w:]+)(=)/g,
-            (m, p1, p2) => ' ' + tok('xml-attr', p1) + tok('xml-bracket', p2));
+        // 5. Self-closing /> and closing >
+        code = code.replace(/\/&gt;/g, m => placeholder('xml-bracket', '/&gt;'));
+        code = code.replace(/&gt;/g, m => placeholder('xml-bracket', '&gt;'));
 
-        // Strings
-        code = code.replace(/("([^"]*)")/g, (m, p1) => tok('xml-string', p1));
-        code = code.replace(/('([^']*)')/g, (m, p1) => tok('xml-string', p1));
+        // 6. Attribute names (word followed by =)
+        code = code.replace(/([\w:.-]+)=/g, (m, attr) => {
+            return placeholder('xml-attr', attr) + placeholder('xml-bracket', '=');
+        });
 
-        // Keywords AS4
-        code = code.replace(/\b(var|function|return|if|else|const|let|class|extends|implements|interface|public|private|protected|static|import|from|export|default|async|await|void|Number|String|Boolean|Array|Object)\b/g,
-            (m, p1) => tok('js-keyword', p1));
+        // 7. Binding expressions {expr}
+        code = code.replace(/\{([^}]+)\}/g, (m, expr) => {
+            return placeholder('mxml-binding-bracket', '{') +
+                   placeholder('mxml-binding', expr) +
+                   placeholder('mxml-binding-bracket', '}');
+        });
 
-        // Decorators AS4
-        code = code.replace(/@(reactive|computed|bindable|inject)/g,
-            (m, p1) => tok('as4-decorator', '@' + p1));
+        // 8. AS4 keywords (only in non-placeholder text)
+        code = code.replace(/\b(var|function|return|if|else|const|let|new|this|true|false|null|undefined)\b/g,
+            m => placeholder('js-keyword', m));
 
-        // Binding expressions com destaque especial
-        code = code.replace(/(\{)([^}]+)(\})/g,
-            (m, p1, p2, p3) => tok('mxml-binding-bracket', p1) + tok('mxml-binding', p2) + tok('mxml-binding-bracket', p3));
+        // 9. AS4 decorators
+        code = code.replace(/@(reactive|computed|bindable|inject)\b/g,
+            m => placeholder('as4-decorator', m));
 
-        // Restore all tokens
+        // Now replace all placeholders with actual spans
         for (let i = 0; i < tokens.length; i++) {
-            code = code.replace(`\x00${i}\x00`, tokens[i]);
+            const { cls, content } = tokens[i];
+            code = code.split(`\uE000${i}\uE001`).join(`<span class="${cls}">${content}</span>`);
         }
 
         return code;

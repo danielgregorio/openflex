@@ -11,11 +11,11 @@
     ? window.OpenFlexRuntime
     : require('./runtime/openflex-runtime.js');
 
-  const red = new Signal(102);
+  const red = new Signal(88);
 
-  const green = new Signal(126);
+  const green = new Signal(86);
 
-  const blue = new Signal(234);
+  const blue = new Signal(214);
 
   const hexColor = new Computed(() => {
     const toHex = n => {
@@ -26,7 +26,7 @@
   });
 
   const rgbColor = new Computed(() => {
-    return "rgb(" + Math.round(red.value) + ", " + Math.round(green.value) + ", " + Math.round(blue.value) + ")";
+    return Math.round(red.value) + ", " + Math.round(green.value) + ", " + Math.round(blue.value);
   });
 
   const brightness = new Computed(() => {
@@ -38,13 +38,23 @@
   });
 
   function randomColor() {
-    red.value = Math.random() * 255;
-    green.value = Math.random() * 255;
-    blue.value = Math.random() * 255;
+    red.value = Math.floor(Math.random() * 256);
+    green.value = Math.floor(Math.random() * 256);
+    blue.value = Math.floor(Math.random() * 256);
   }
 
-  function copyToClipboard(text) {
-    navigator.clipboard.writeText(text);
+  function setPreset(r, g, b) {
+    red.value = r;
+    green.value = g;
+    blue.value = b;
+  }
+
+  function copyHex() {
+    navigator.clipboard.writeText(hexColor.value.toUpperCase());
+  }
+
+  function copyRgb() {
+    navigator.clipboard.writeText("rgb(" + rgbColor.value + ")");
   }
 
 
@@ -62,131 +72,54 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../runtime/neo-flex-classic-theme.css');
-
-        .picker-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-        }
-
-        .color-preview {
-            width: 100%;
-            height: 300px;
-            border-radius: 16px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            font-weight: bold;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .slider-container {
-            width: 100%;
-        }
-
-        .color-slider {
-            width: 100%;
-            height: 12px;
-            border-radius: 6px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .slider-red {
-            background: linear-gradient(to right, #000, #ff0000);
-        }
-
-        .slider-green {
-            background: linear-gradient(to right, #000, #00ff00);
-        }
-
-        .slider-blue {
-            background: linear-gradient(to right, #000, #0000ff);
-        }
-
-        .code-box {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 15px 20px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .code-box:hover {
-            background: #34495e;
-        }
-
-        .random-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .random-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='./color-picker-app.css'>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
-          <div id='box_2' class='neo-box'>
-            <div id='vbox_3' class='neo-vbox'>
-              <span id='label_4' class='neo-label'>🎨 Seletor de Cores</span>
-              <div id='box_5' class='neo-box'>
-                <span id='label_6' class='neo-label'></span>
+        <div id='vbox_1' class='neo-vbox picker-container'>
+          <div id='vbox_2' class='neo-vbox picker-card'>
+            <div id='vbox_3' class='neo-vbox color-preview'>
+              <span id='label_4' class='neo-label preview-hex'></span>
+              <span id='label_5' class='neo-label preview-rgb'></span>
+            </div>
+            <div id='vbox_6' class='neo-vbox sliders-section'>
+              <div id='vbox_7' class='neo-vbox slider-row'>
+                <div id='hbox_8' class='neo-hbox slider-header'>
+                  <span id='label_9' class='neo-label slider-label'>Red</span>
+                  <span id='label_10' class='neo-label slider-value'></span>
+                </div>
+                <input type='range' id='input_11' class='color-slider slider-red' min='0' max='255' />
               </div>
-              <div id='vbox_7' class='neo-vbox'>
-                <div id='vbox_8' class='neo-vbox slider-container'>
-                  <div id='hbox_9' class='neo-hbox h-align-space-between'>
-                    <span id='label_10' class='neo-label'>🔴 Vermelho</span>
-                    <span id='label_11' class='neo-label'></span>
-                  </div>
-                  <input type='text' id='input_12' class='neo-textinput color-slider slider-red' placeholder='' />
+              <div id='vbox_12' class='neo-vbox slider-row'>
+                <div id='hbox_13' class='neo-hbox slider-header'>
+                  <span id='label_14' class='neo-label slider-label'>Green</span>
+                  <span id='label_15' class='neo-label slider-value'></span>
                 </div>
-                <div id='vbox_13' class='neo-vbox slider-container'>
-                  <div id='hbox_14' class='neo-hbox h-align-space-between'>
-                    <span id='label_15' class='neo-label'>🟢 Verde</span>
-                    <span id='label_16' class='neo-label'></span>
-                  </div>
-                  <input type='text' id='input_17' class='neo-textinput color-slider slider-green' placeholder='' />
-                </div>
-                <div id='vbox_18' class='neo-vbox slider-container'>
-                  <div id='hbox_19' class='neo-hbox h-align-space-between'>
-                    <span id='label_20' class='neo-label'>🔵 Azul</span>
-                    <span id='label_21' class='neo-label'></span>
-                  </div>
-                  <input type='text' id='input_22' class='neo-textinput color-slider slider-blue' placeholder='' />
-                </div>
+                <input type='range' id='input_16' class='color-slider slider-green' min='0' max='255' />
               </div>
-              <div id='vbox_23' class='neo-vbox'>
-                <span id='label_24' class='neo-label'>Códigos de Cor</span>
-                <div id='box_25' class='neo-box'>
-                  <span id='label_26' class='neo-label'></span>
-                  <span id='label_27' class='neo-label'>📋</span>
+              <div id='vbox_17' class='neo-vbox slider-row'>
+                <div id='hbox_18' class='neo-hbox slider-header'>
+                  <span id='label_19' class='neo-label slider-label'>Blue</span>
+                  <span id='label_20' class='neo-label slider-value'></span>
                 </div>
-                <div id='box_28' class='neo-box'>
-                  <span id='label_29' class='neo-label'></span>
-                  <span id='label_30' class='neo-label'>📋</span>
-                </div>
+                <input type='range' id='input_21' class='color-slider slider-blue' min='0' max='255' />
               </div>
-              <div id='hbox_31' class='neo-hbox h-align-center'>
-                <button id='btn_32' class='neo-button random-btn'>🎲 Cor Aleatória</button>
+            </div>
+            <div id='vbox_22' class='neo-vbox actions-section'>
+              <div id='hbox_23' class='neo-hbox copy-row'>
+                <button id='btn_24' class='neo-button copy-btn'>Copy HEX</button>
+                <button id='btn_25' class='neo-button copy-btn'>Copy RGB</button>
+              </div>
+              <button id='btn_26' class='neo-button random-btn'>Random Color</button>
+            </div>
+            <div id='vbox_27' class='neo-vbox presets-section'>
+              <span id='label_28' class='neo-label presets-label'>Presets</span>
+              <div id='hbox_29' class='neo-hbox presets-row'>
+                <button id='btn_30' class='neo-button preset-btn' style='background: #ff3b30;'></button>
+                <button id='btn_31' class='neo-button preset-btn' style='background: #ff9500;'></button>
+                <button id='btn_32' class='neo-button preset-btn' style='background: #34c759;'></button>
+                <button id='btn_33' class='neo-button preset-btn' style='background: #007aff;'></button>
+                <button id='btn_34' class='neo-button preset-btn' style='background: #5856d6;'></button>
+                <button id='btn_35' class='neo-button preset-btn' style='background: #af52de;'></button>
               </div>
             </div>
           </div>
@@ -199,54 +132,85 @@
     }
 
     attachEventHandlers() {
+      const el_input_11 = this.shadowRoot.getElementById('input_11');
+      if (el_input_11) {
+        el_input_11.value = red.value;
+        el_input_11.addEventListener('input', (e) => red.value = parseInt(e.target.value));
+      }
+      const el_input_16 = this.shadowRoot.getElementById('input_16');
+      if (el_input_16) {
+        el_input_16.value = green.value;
+        el_input_16.addEventListener('input', (e) => green.value = parseInt(e.target.value));
+      }
+      const el_input_21 = this.shadowRoot.getElementById('input_21');
+      if (el_input_21) {
+        el_input_21.value = blue.value;
+        el_input_21.addEventListener('input', (e) => blue.value = parseInt(e.target.value));
+      }
+      const el_btn_24 = this.shadowRoot.getElementById('btn_24');
+      if (el_btn_24) el_btn_24.addEventListener('click', () => copyHex());
+      const el_btn_25 = this.shadowRoot.getElementById('btn_25');
+      if (el_btn_25) el_btn_25.addEventListener('click', () => copyRgb());
+      const el_btn_26 = this.shadowRoot.getElementById('btn_26');
+      if (el_btn_26) el_btn_26.addEventListener('click', () => randomColor());
+      const el_btn_30 = this.shadowRoot.getElementById('btn_30');
+      if (el_btn_30) el_btn_30.addEventListener('click', () => setPreset(255, 59, 48));
+      const el_btn_31 = this.shadowRoot.getElementById('btn_31');
+      if (el_btn_31) el_btn_31.addEventListener('click', () => setPreset(255, 149, 0));
       const el_btn_32 = this.shadowRoot.getElementById('btn_32');
-      if (el_btn_32) el_btn_32.addEventListener('click', () => randomColor());
+      if (el_btn_32) el_btn_32.addEventListener('click', () => setPreset(52, 199, 89));
+      const el_btn_33 = this.shadowRoot.getElementById('btn_33');
+      if (el_btn_33) el_btn_33.addEventListener('click', () => setPreset(0, 122, 255));
+      const el_btn_34 = this.shadowRoot.getElementById('btn_34');
+      if (el_btn_34) el_btn_34.addEventListener('click', () => setPreset(88, 86, 214));
+      const el_btn_35 = this.shadowRoot.getElementById('btn_35');
+      if (el_btn_35) el_btn_35.addEventListener('click', () => setPreset(175, 82, 222));
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('box_5');
+        const el = this.shadowRoot.getElementById('vbox_3');
         if (el) el.style.backgroundColor = hexColor.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_6');
+        const el = this.shadowRoot.getElementById('label_4');
         if (el) el.style.color = textColor.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_6');
+        const el = this.shadowRoot.getElementById('label_4');
         if (el) el.textContent = hexColor.value.toUpperCase();
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_11');
+        const el = this.shadowRoot.getElementById('label_5');
+        if (el) el.style.color = textColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_5');
+        if (el) el.textContent = 'RGB(' + rgbColor.value + ')';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_10');
         if (el) el.textContent = Math.round(red.value);
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_12');
+        const el = this.shadowRoot.getElementById('input_11');
         if (el) el.value = red.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_16');
+        const el = this.shadowRoot.getElementById('label_15');
         if (el) el.textContent = Math.round(green.value);
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_17');
+        const el = this.shadowRoot.getElementById('input_16');
         if (el) el.value = green.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_21');
+        const el = this.shadowRoot.getElementById('label_20');
         if (el) el.textContent = Math.round(blue.value);
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_22');
+        const el = this.shadowRoot.getElementById('input_21');
         if (el) el.value = blue.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_26');
-        if (el) el.textContent = 'HEX: ' + hexColor.value.toUpperCase();
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_29');
-        if (el) el.textContent = 'RGB: ' + rgbColor.value;
       });
     }
   }

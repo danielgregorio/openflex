@@ -1,0 +1,26 @@
+/* PopUp Demo Styles */
+@import url('../runtime/openflex-ios-theme.css');
+
+.app { min-height: 100vh; padding: 30px; background: #000; display: flex; align-items: center; justify-content: center; }
+.wrapper { max-width: 500px; width: 100%; }
+.wrapper * { box-sizing: border-box; }
+
+.header { text-align: center; margin-bottom: 30px; }
+.title { color: #fff; font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+.subtitle { color: #8e8e93; font-size: 16px; }
+
+.card { background: #1c1c1e; border-radius: 20px; padding: 24px; margin-bottom: 20px; }
+.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #3a3a3c; }
+.card-icon { font-size: 20px; }
+.card-title { color: #fff; font-size: 16px; font-weight: 600; }
+
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { padding: 12px 18px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn:active { opacity: 0.8; transform: scale(0.98); }
+.btn-primary { background: #5856d6; color: #fff; }
+.btn-danger { background: #ff3b30; color: #fff; }
+.btn-secondary { background: #3a3a3c; color: #fff; }
+
+.result-box { background: rgba(88, 86, 214, 0.15); border-left: 4px solid #5856d6; border-radius: 0 12px 12px 0; padding: 16px; }
+.result-label { color: #8e8e93; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.result-value { color: #fff; font-size: 15px; font-weight: 500; }

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Area Chart Demo">
+
+    <fx:Script><![CDATA[
+        // Dados de visitantes mensais do site
+        @reactive var visitorData: Array = [
+            {month: "Jan", visitors: 12500, pageViews: 45000},
+            {month: "Fev", visitors: 15800, pageViews: 52000},
+            {month: "Mar", visitors: 18200, pageViews: 61000},
+            {month: "Abr", visitors: 22100, pageViews: 78000},
+            {month: "Mai", visitors: 28500, pageViews: 95000},
+            {month: "Jun", visitors: 35200, pageViews: 118000}
+        ];
+
+        function randomizeData(): void {
+            visitorData = visitorData.map((d, i) => ({
+                ...d,
+                visitors: Math.floor(Math.random() * 15000) + 10000 + (i * 3000),
+                pageViews: Math.floor(Math.random() * 40000) + 40000 + (i * 10000)
+            }));
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./area-chart-demo.css');
+    </fx:Style>
+
+    <Panel title="AreaChart - Grafico de Area">
+        <VBox gap="15" width="100%">
+            <Label text="O AreaChart e similar ao LineChart mas preenche a area abaixo da linha, otimo para mostrar volumes acumulados." />
+
+            <HBox horizontalAlign="right" width="100%">
+                <Button label="Atualizar Dados" click="{randomizeData}" />
+            </HBox>
+
+            <AreaChart dataProvider="{visitorData}" width="100%" height="350">
+                <horizontalAxis>
+                    <CategoryAxis categoryField="month" title="Mes" />
+                </horizontalAxis>
+                <verticalAxis>
+                    <LinearAxis minimum="0" title="Quantidade" />
+                </verticalAxis>
+                <series>
+                    <AreaSeries yField="pageViews" displayName="Page Views" />
+                    <AreaSeries yField="visitors" displayName="Visitantes Unicos" />
+                </series>
+            </AreaChart>
+
+            <Panel title="Codigo Fonte">
+                <VBox gap="5">
+                    <Label text="&lt;AreaChart dataProvider='{visitorData}' width='100%' height='350'&gt;" />
+                    <Label text="    &lt;horizontalAxis&gt;" />
+                    <Label text="        &lt;CategoryAxis categoryField='month' title='Mes' /&gt;" />
+                    <Label text="    &lt;/horizontalAxis&gt;" />
+                    <Label text="    &lt;verticalAxis&gt;" />
+                    <Label text="        &lt;LinearAxis minimum='0' title='Quantidade' /&gt;" />
+                    <Label text="    &lt;/verticalAxis&gt;" />
+                    <Label text="    &lt;series&gt;" />
+                    <Label text="        &lt;AreaSeries yField='pageViews' displayName='Page Views' /&gt;" />
+                    <Label text="        &lt;AreaSeries yField='visitors' displayName='Visitantes Unicos' /&gt;" />
+                    <Label text="    &lt;/series&gt;" />
+                    <Label text="&lt;/AreaChart&gt;" />
+                </VBox>
+            </Panel>
+        </VBox>
+    </Panel>
+</Application>

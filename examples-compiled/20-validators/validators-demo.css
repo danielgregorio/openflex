@@ -1,0 +1,33 @@
+/* Validators Demo Styles */
+@import url('../runtime/openflex-ios-theme.css');
+
+.app { min-height: 100vh; padding: 30px; background: #000; display: flex; align-items: center; justify-content: center; }
+.wrapper { max-width: 450px; width: 100%; }
+.wrapper * { box-sizing: border-box; }
+
+.header { text-align: center; margin-bottom: 30px; }
+.title { color: #fff; font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+.subtitle { color: #8e8e93; font-size: 16px; }
+
+.card { background: #1c1c1e; border-radius: 20px; padding: 24px; }
+.card-title { color: #fff; font-size: 18px; font-weight: 600; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #5856d6; }
+
+.form-field { margin-bottom: 20px; }
+.field-label { color: #8e8e93; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.field-input { width: 100%; padding: 14px 16px; background: #2c2c2e; border: 2px solid transparent; border-radius: 10px; color: #fff; font-size: 16px; outline: none; }
+.field-input:focus { border-color: #5856d6; }
+.field-input.valid { border-color: #34c759; }
+.field-input.invalid { border-color: #ff3b30; }
+
+.field-msg { font-size: 12px; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+.msg-valid { color: #34c759; }
+.msg-invalid { color: #ff3b30; }
+
+.btn-row { display: flex; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #3a3a3c; }
+.btn { flex: 1; padding: 14px 20px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.btn:active { opacity: 0.8; transform: scale(0.98); }
+.btn-primary { background: linear-gradient(135deg, #5856d6, #af52de); color: #fff; }
+.btn-secondary { background: #3a3a3c; color: #fff; }
+
+.result-success { background: rgba(52, 199, 89, 0.15); color: #34c759; padding: 14px; border-radius: 10px; margin-top: 16px; text-align: center; font-weight: 600; }
+.result-error { background: rgba(255, 59, 48, 0.15); color: #ff3b30; padding: 14px; border-radius: 10px; margin-top: 16px; text-align: center; font-weight: 600; }

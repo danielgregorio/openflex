@@ -11,48 +11,75 @@
     ? window.OpenFlexRuntime
     : require('./runtime/openflex-runtime.js');
 
-  const fruits = new Signal([{ label: "Apple", color: "Red" }, { label: "Banana", color: "Yellow" }, { label: "Cherry", color: "Red" }, { label: "Date", color: "Brown" }, { label: "Elderberry", color: "Purple" }]);
+  const fruits = new Signal([]);
 
-  const employees = new Signal([{ name: "Alice", department: "Engineering", salary: 75000 }, { name: "Bob", department: "Marketing", salary: 65000 }, { name: "Carol", department: "Engineering", salary: 80000 }, { name: "Dave", department: "Sales", salary: 70000 }]);
+  const employees = new Signal([]);
 
   const selectedFruit = new Signal(-1);
 
   const selectedEmployee = new Signal(-1);
 
-  const lastAction = new Signal("No action yet");
+  const lastAction = new Signal('Click an item to select');
 
-  function onFruitChange(event) {
-    lastAction.value = "Fruit changed to: " + fruits.value[event.index].label;
+  async function loadExternalData() {
+    try {
+      const response = await fetch('./selection-demo-data.json');
+      const data = await response.json();
+      fruits.value = data.fruits;
+      employees.value = data.employees;
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
   }
 
-  function onFruitClick(event) {
-    lastAction.value = "Clicked fruit: " + event.item.label + " (index " + event.index + ")";
+  function onFruitChange(event) {
+    lastAction.value = 'Selected fruit: ' + fruits.value[event.index].label;
   }
 
   function onEmployeeChange(event) {
-    lastAction.value = "Employee changed to: " + employees.value[event.index].name;
-  }
-
-  function onEmployeeClick(event) {
-    lastAction.value = "Clicked employee: " + event.item.name;
+    lastAction.value = 'Selected employee: ' + employees.value[event.index].name;
   }
 
   function onEmployeeDoubleClick(event) {
-    lastAction.value = "Double-clicked: " + event.item.name + " - Salary: $" + event.item.salary;
+    lastAction.value = 'Double-clicked: ' + event.item.name + ' - Salary: $' + event.item.salary.toLocaleString();
   }
 
-  const selectedFruitName = new Computed(() => {
-    if (selectedFruit.value >= 0 && selectedFruit.value < fruits.value.length) {
-      return fruits.value[selectedFruit.value].label;
+  function selectFruit(index) {
+    selectedFruit.value = index;
+    lastAction.value = 'Selected fruit: ' + fruits.value[index].label;
+  }
+
+  function selectEmployee(index) {
+    selectedEmployee.value = index;
+    lastAction.value = 'Selected employee: ' + employees.value[index].name;
+  }
+
+  function getSelectedClass(currentIndex, selectedIndex) {
+    return (currentIndex === selectedIndex ? 'item-selected' : '');
+  }
+
+  function formatSalary(amount) {
+    return '$' + amount.toLocaleString();
+  }
+
+  function getStatusClass(status) {
+    return (status === 'active' ? 'badge-green' : 'badge-orange');
+  }
+
+  const selectedFruitInfo = new Computed(() => {
+    if (selectedFruit.value >= 0 && fruits.value.length > 0) {
+      let f = fruits.value[selectedFruit.value];
+      return f.emoji + ' ' + f.label + ' (' + f.color + ')';
     }
-    return "(none)";
+    return 'None selected';
   });
 
-  const selectedEmployeeName = new Computed(() => {
-    if (selectedEmployee.value >= 0 && selectedEmployee.value < employees.value.length) {
-      return employees.value[selectedEmployee.value].name;
+  const selectedEmployeeInfo = new Computed(() => {
+    if (selectedEmployee.value >= 0 && employees.value.length > 0) {
+      let e = employees.value[selectedEmployee.value];
+      return e.name + ' - ' + e.role;
     }
-    return "(none)";
+    return 'None selected';
   });
 
 
@@ -65,71 +92,64 @@
 
     connectedCallback() {
       this.render();
-      this.setupReactivity();
+      loadExternalData().then(() => {
+        this.setupReactivity();
+      });
     }
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.demo-layout {
-            display: flex;
-            gap: 20px;
-            padding: 10px;
-        }
-        .demo-column {
-            flex: 1;
-        }
-        .neo-list {
-            min-height: 150px;
-        }
-        .neo-datagrid {
-            min-height: 150px;
-        }
-        .status-bar {
-            background: #f0f0f0;
-            border: 1px solid #999;
-            padding: 8px;
-            margin-top: 10px;
-            font-family: monospace;
-        }
-        .selection-info {
-            color: #0066cc;
-            font-weight: bold;
-        }</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='../runtime/openflex-ios-theme.css'>
+        <link rel='stylesheet' href='./selection-demo.css'>
       <div id='app_0' class='neo-application'>
-        <div id='panel_1' class='neo-panel'>
-          <div class='neo-panel-header'>Selection Demo - List and DataGrid</div>
-          <div class='neo-panel-body'>
-            <div id='vbox_2' class='neo-vbox'>
-              <span id='label_3' class='neo-label'>Click items to select. The selection is tracked reactively.</span>
-              <div id='hbox_4' class='neo-hbox demo-layout'>
-                <div id='vbox_5' class='neo-vbox demo-column'>
-                  <span id='label_6' class='neo-label'>Fruits List</span>
-                  <div id='list_7' class='neo-list'>
-                    <!-- List items will be dynamically generated -->
-                  </div>
-                  <span id='label_8' class='neo-label selection-info'></span>
+        <div id='vbox_1' class='neo-vbox app'>
+          <div id='vbox_2' class='neo-vbox wrapper'>
+            <div id='vbox_3' class='neo-vbox header'>
+              <span id='label_4' class='neo-label title'>Selection Demo</span>
+              <span id='label_5' class='neo-label subtitle'>Click items to select. Double-click employees to see salary.</span>
+            </div>
+            <div id='hbox_6' class='neo-hbox grid'>
+              <div id='vbox_7' class='neo-vbox card'>
+                <div id='vbox_8' class='neo-vbox card-header'>
+                  <span id='label_9' class='neo-label card-title'>Fruits List</span>
+                  <span id='label_10' class='neo-label card-subtitle'>Single selection mode</span>
                 </div>
-                <div id='vbox_9' class='neo-vbox demo-column'>
-                  <span id='label_10' class='neo-label'>Employees DataGrid</span>
-                  <span id='label_11' class='neo-label' style='font-size: 10px'>(Double-click to see salary)</span>
-                  <div id='datagrid_12' class='neo-datagrid'>
-                    <table class='neo-datagrid-table'>
-                      <thead>
-                        <tr>
-                          <th style='width: 120px'>Name</th>
-                          <th style='width: 120px'>Department</th>
-                        </tr>
-                      </thead>
-                      <tbody id='datagrid_12_body'>
-                        <!-- Rows will be dynamically generated -->
-                      </tbody>
-                    </table>
+                <div id='vbox_11' class='neo-vbox list-items'>
+                  <div id='repeater_12' class='neo-repeater'>
+                    <!-- Repeater content will be dynamically generated -->
                   </div>
-                  <span id='label_13' class='neo-label selection-info'></span>
+                </div>
+                <div id='hbox_13' class='neo-hbox selection-info'>
+                  <span id='label_14' class='neo-label selection-label'>Selected:</span>
+                  <span id='label_15' class='neo-label selection-value'></span>
                 </div>
               </div>
-              <span id='label_14' class='neo-label'>Last Action:</span>
-              <span id='label_15' class='neo-label status-bar'></span>
+              <div id='vbox_16' class='neo-vbox card'>
+                <div id='vbox_17' class='neo-vbox card-header'>
+                  <span id='label_18' class='neo-label card-title'>Employees DataGrid</span>
+                  <span id='label_19' class='neo-label card-subtitle'>Double-click for details</span>
+                </div>
+                <div id='vbox_20' class='neo-vbox datagrid'>
+                  <div id='hbox_21' class='neo-hbox datagrid-header'>
+                    <span id='label_22' class='neo-label datagrid-header-cell'>Name</span>
+                    <span id='label_23' class='neo-label datagrid-header-cell'>Role</span>
+                    <span id='label_24' class='neo-label datagrid-header-cell'>Status</span>
+                  </div>
+                  <div id='repeater_25' class='neo-repeater'>
+                    <!-- Repeater content will be dynamically generated -->
+                  </div>
+                </div>
+                <div id='hbox_26' class='neo-hbox selection-info'>
+                  <span id='label_27' class='neo-label selection-label'>Selected:</span>
+                  <span id='label_28' class='neo-label selection-value'></span>
+                </div>
+              </div>
+            </div>
+            <div id='hbox_29' class='neo-hbox status-bar'>
+              <span id='label_30' class='neo-label status-icon'>📋</span>
+              <span id='label_31' class='neo-label status-label'>Last Action:</span>
+              <span id='label_32' class='neo-label status-text'></span>
             </div>
           </div>
         </div>
@@ -144,84 +164,66 @@
     }
 
     setupReactivity() {
-      // List: list_7
+      // Repeater: repeater_12
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('list_7');
+        const el = this.shadowRoot.getElementById('repeater_12');
         if (!el) return;
-      
-        // Limpar conteúdo anterior
+
+        // Limpar conteudo anterior
         el.innerHTML = '';
-      
-        // Get current selection
-        const currentSelectedIndex = selectedFruit.value;
-      
+
         // Renderizar itens do array
         const items = fruits.value || [];
         items.forEach((item, index) => {
-          const itemEl = document.createElement('div');
-          itemEl.className = index === currentSelectedIndex ? 'neo-list-item selected' : 'neo-list-item';
-          itemEl.textContent = item.label || item || '';
-          itemEl.dataset.index = index;
-          // Selection click handler
-          itemEl.addEventListener('click', (e) => {
-            const oldIndex = selectedFruit.value;
-            selectedFruit.value = index;
-            onFruitClick({ item: item, index: index, target: itemEl });
-            if (oldIndex !== index) {
-              onFruitChange({ item: item, index: index, oldIndex: oldIndex });
-            }
-          });
-          el.appendChild(itemEl);
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = `<div class="neo-hbox fruit-item ${index === selectedFruit.value ? 'item-selected' : ''}">
+  <span class="neo-label fruit-emoji">${item.emoji}</span>
+  <div class="neo-vbox fruit-info">
+    <span class="neo-label fruit-name">${item.label}</span>
+    <span class="neo-label fruit-color">${item.color}</span>
+  </div>
+  <span class="neo-label check-icon">✓</span>
+</div>`;
+          if (wrapper.firstElementChild) {
+            wrapper.firstElementChild.addEventListener('click', () => selectFruit(index));
+            el.appendChild(wrapper.firstElementChild);
+          }
         });
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_8');
-        if (el) el.textContent = `Selected: ${selectedFruitName.value}`;
-      });
-      // DataGrid: datagrid_12
-      createEffect(() => {
-        const tbody = this.shadowRoot.getElementById('datagrid_12_body');
-        if (!tbody) return;
-      
-        // Limpar linhas anteriores
-        tbody.innerHTML = '';
-      
-        // Get current selection
-        const currentSelectedIndex = selectedEmployee.value;
-      
-        // Renderizar linhas do array
-        const items = employees.value || [];
-        items.forEach((item, index) => {
-          const row = document.createElement('tr');
-          row.dataset.index = index;
-          row.className = index === currentSelectedIndex ? 'selected' : '';
-          const td_name = document.createElement('td');
-          td_name.textContent = item.name || '';
-          row.appendChild(td_name);
-          const td_department = document.createElement('td');
-          td_department.textContent = item.department || '';
-          row.appendChild(td_department);
-          // Selection click handler
-          row.addEventListener('click', (e) => {
-            const oldIndex = selectedEmployee.value;
-            selectedEmployee.value = index;
-            onEmployeeClick({ item: item, index: index, target: row });
-            if (oldIndex !== index) {
-              onEmployeeChange({ item: item, index: index, oldIndex: oldIndex });
-            }
-          });
-          row.addEventListener('dblclick', (e) => {
-            onEmployeeDoubleClick({ item: item, index: index, target: row });
-          });
-          tbody.appendChild(row);
-        });
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_13');
-        if (el) el.textContent = `Selected: ${selectedEmployeeName.value}`;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_15');
+        if (el) el.textContent = selectedFruitInfo.value;
+      });
+      // Repeater: repeater_25
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('repeater_25');
+        if (!el) return;
+
+        // Limpar conteudo anterior
+        el.innerHTML = '';
+
+        // Renderizar itens do array
+        const items = employees.value || [];
+        items.forEach((item, index) => {
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = `<div class="neo-hbox datagrid-row ${index === selectedEmployee.value ? 'item-selected' : ''}">
+  <span class="neo-label datagrid-cell cell-name">${item.name}</span>
+  <span class="neo-label datagrid-cell">${item.role}</span>
+  <span class="neo-label datagrid-cell badge ${item.status === 'active' ? 'badge-green' : 'badge-orange'}">${item.status === 'active' ? 'Active' : 'Away'}</span>
+</div>`;
+          if (wrapper.firstElementChild) {
+            wrapper.firstElementChild.addEventListener('click', () => selectEmployee(index));
+            wrapper.firstElementChild.addEventListener('dblclick', () => onEmployeeDoubleClick({ item, index }));
+            el.appendChild(wrapper.firstElementChild);
+          }
+        });
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_28');
+        if (el) el.textContent = selectedEmployeeInfo.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_32');
         if (el) el.textContent = lastAction.value;
       });
     }

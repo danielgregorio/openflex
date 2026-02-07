@@ -1,0 +1,15 @@
+{
+  "products": [
+    { "name": "MacBook Pro", "price": 2499.99, "inStock": true, "rating": 4.8, "emoji": "💻" },
+    { "name": "iPhone 15", "price": 999, "inStock": true, "rating": 4.5, "emoji": "📱" },
+    { "name": "AirPods Pro", "price": 249, "inStock": false, "rating": 4.7, "emoji": "🎧" },
+    { "name": "iPad Air", "price": 599, "inStock": true, "rating": 4.6, "emoji": "📱" },
+    { "name": "Apple Watch", "price": 399, "inStock": false, "rating": 4.4, "emoji": "⌚" }
+  ],
+  "employees": [
+    { "name": "Alice Johnson", "department": "Engineering", "salary": 95000, "hireDate": "2021-03-15" },
+    { "name": "Bob Smith", "department": "Marketing", "salary": 72000, "hireDate": "2020-06-01" },
+    { "name": "Carol Williams", "department": "Engineering", "salary": 105000, "hireDate": "2019-09-20" },
+    { "name": "David Brown", "department": "Sales", "salary": 68000, "hireDate": "2022-01-10" }
+  ]
+}

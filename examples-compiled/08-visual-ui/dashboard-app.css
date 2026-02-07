@@ -1,0 +1,149 @@
+/* Dashboard App Styles */
+@import url('../runtime/openflex-ios-theme.css');
+
+.dashboard-container {
+    min-height: 100vh;
+    padding: 30px;
+    background: #000000;
+}
+.dashboard-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+}
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+.header-title {
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+}
+.header-subtitle {
+    color: #8e8e93;
+    font-size: 14px;
+    margin-top: 4px;
+}
+.refresh-btn {
+    background: #2c2c2e;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.refresh-btn:active {
+    background: #3a3a3c;
+}
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.metric-card {
+    background: #1c1c1e;
+    border-radius: 20px;
+    padding: 24px;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+.card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+.icon-blue { background: rgba(0, 122, 255, 0.2); }
+.icon-green { background: rgba(52, 199, 89, 0.2); }
+.icon-orange { background: rgba(255, 149, 0, 0.2); }
+.icon-purple { background: rgba(175, 82, 222, 0.2); }
+.card-change {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(52, 199, 89, 0.15);
+}
+.change-negative {
+    background: rgba(255, 59, 48, 0.15);
+}
+.card-value {
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.card-label {
+    color: #8e8e93;
+    font-size: 14px;
+}
+.chart-section {
+    background: #1c1c1e;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+.section-title {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+.chart-placeholder {
+    height: 200px;
+    background: linear-gradient(180deg, rgba(0, 122, 255, 0.3) 0%, rgba(0, 122, 255, 0.05) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: flex-end;
+    padding: 20px;
+    gap: 8px;
+}
+.chart-bar {
+    flex: 1;
+    background: #007aff;
+    border-radius: 4px 4px 0 0;
+    min-height: 20px;
+}
+.activity-section {
+    background: #1c1c1e;
+    border-radius: 20px;
+    padding: 24px;
+}
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #2c2c2e;
+    gap: 14px;
+}
+.activity-item:last-child {
+    border-bottom: none;
+}
+.activity-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+.activity-text {
+    flex: 1;
+    color: white;
+    font-size: 14px;
+}
+.activity-time {
+    color: #8e8e93;
+    font-size: 13px;
+}

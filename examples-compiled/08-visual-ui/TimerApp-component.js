@@ -11,47 +11,75 @@
     ? window.OpenFlexRuntime
     : require('./runtime/openflex-runtime.js');
 
-  const seconds = new Signal(0);
+  const milliseconds = new Signal(0);
 
   const isRunning = new Signal(false);
 
   const intervalId = new Signal(0);
 
+  const laps = new Signal([]);
+
   const displayTime = new Computed(() => {
-    const hrs = Math.floor(seconds.value / 3600);
-    const mins = Math.floor(seconds.value % 3600 / 60);
-    const secs = seconds.value % 60;
+    const totalSeconds = Math.floor(milliseconds.value / 1000);
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    const ms = Math.floor(milliseconds.value % 1000 / 10);
     const pad = n => String(n).padStart(2, '0');
-    return pad(hrs) + ":" + pad(mins) + ":" + pad(secs);
+    return pad(mins) + ":" + pad(secs) + "." + pad(ms);
   });
 
-  const buttonLabel = new Computed(() => {
-    return (isRunning.value ? "⏸️ Pausar" : "▶️ Iniciar");
+  const hasTime = new Computed(() => {
+    return milliseconds.value > 0;
   });
 
-  function toggleTimer() {
-    if (isRunning.value) {
-      clearInterval(intervalId.value);
-      isRunning.value = false;
-    }
-    else {
+  const canReset = new Computed(() => {
+    return hasTime.value && !isRunning.value;
+  });
+
+  function start() {
+    if (!isRunning.value) {
       intervalId.value = setInterval(() => {
-        seconds.value++;
-      }, 1000);
+        milliseconds.value += 10;
+      }, 10);
       isRunning.value = true;
     }
   }
 
-  function reset() {
+  function stop() {
     if (isRunning.value) {
       clearInterval(intervalId.value);
       isRunning.value = false;
     }
-    seconds.value = 0;
   }
 
-  function addMinute() {
-    seconds.value += 60;
+  function reset() {
+    stop();
+    milliseconds.value = 0;
+    laps.value = [];
+  }
+
+  function lap() {
+    if (isRunning.value && milliseconds.value > 0) {
+      laps.value = [displayTime.value, ...laps.value];
+    }
+  }
+
+  function handleLeftButton() {
+    if (canReset.value) {
+      reset();
+    }
+    else {
+      lap();
+    }
+  }
+
+  function handleRightButton() {
+    if (isRunning.value) {
+      stop();
+    }
+    else {
+      start();
+    }
   }
 
 
@@ -69,72 +97,20 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../runtime/neo-flex-classic-theme.css');
-
-        .timer-display {
-            font-size: 96px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-        }
-
-        .timer-panel {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 40px;
-            font-size: 18px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-            padding: 15px 40px;
-            font-size: 18px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-
-        .btn-add {
-            background: #3498db;
-            color: white;
-            padding: 12px 30px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='./timer-app.css'>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
-          <div id='box_2' class='neo-box'>
-            <div id='vbox_3' class='neo-vbox h-align-center'>
-              <span id='label_4' class='neo-label' style='color: #2c3e50'>⏱️ Cronômetro</span>
-              <span id='label_5' class='neo-label timer-display'></span>
-              <div id='hbox_6' class='neo-hbox h-align-center'>
-                <button id='btn_7' class='neo-button btn-primary'></button>
-                <button id='btn_8' class='neo-button btn-secondary'>🔄 Resetar</button>
+        <div id='vbox_1' class='neo-vbox timer-container'>
+          <div id='vbox_2' class='neo-vbox timer'>
+            <span id='label_3' class='neo-label display'></span>
+            <div id='hbox_4' class='neo-hbox btn-row'>
+              <button id='btn_5' class='neo-button'></button>
+              <button id='btn_6' class='neo-button'></button>
+            </div>
+            <div id='vbox_7' class='neo-vbox lap-list'>
+              <div id='repeater_8' class='neo-repeater'>
+                <!-- Repeater content will be dynamically generated -->
               </div>
-              <button id='btn_9' class='neo-button btn-add'>➕ Adicionar 1 Minuto</button>
-              <span id='label_10' class='neo-label' style='color: #7f8c8d'></span>
             </div>
           </div>
         </div>
@@ -146,26 +122,57 @@
     }
 
     attachEventHandlers() {
-      const el_btn_7 = this.shadowRoot.getElementById('btn_7');
-      if (el_btn_7) el_btn_7.addEventListener('click', () => toggleTimer());
-      const el_btn_8 = this.shadowRoot.getElementById('btn_8');
-      if (el_btn_8) el_btn_8.addEventListener('click', () => reset());
-      const el_btn_9 = this.shadowRoot.getElementById('btn_9');
-      if (el_btn_9) el_btn_9.addEventListener('click', () => addMinute());
+      const el_btn_5 = this.shadowRoot.getElementById('btn_5');
+      if (el_btn_5) el_btn_5.addEventListener('click', () => handleLeftButton());
+      const el_btn_6 = this.shadowRoot.getElementById('btn_6');
+      if (el_btn_6) el_btn_6.addEventListener('click', () => handleRightButton());
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_5');
+        const el = this.shadowRoot.getElementById('label_3');
         if (el) el.textContent = displayTime.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_7');
-        if (el) el.textContent = buttonLabel.value;
+        const el = this.shadowRoot.getElementById('btn_5');
+        if (el) el.className = `timer-btn ${canReset.value ? 'btn-reset' : 'btn-lap'}`;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_10');
-        if (el) el.textContent = seconds.value + ' segundos totais';
+        const el = this.shadowRoot.getElementById('btn_5');
+        if (el) el.textContent = canReset.value ? 'Reset' : 'Lap';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_6');
+        if (el) el.className = `timer-btn ${isRunning.value ? 'btn-stop' : 'btn-start'}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_6');
+        if (el) el.textContent = isRunning.value ? 'Stop' : 'Start';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('vbox_7');
+        if (el) el.style.display = (laps.value.length > 0) ? 'block' : 'none';
+      });
+      // Repeater: repeater_8
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('repeater_8');
+        if (!el) return;
+
+        // Limpar conteudo anterior
+        el.innerHTML = '';
+
+        // Renderizar itens do array
+        const items = laps.value || [];
+        items.forEach((item, index) => {
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = `<div class="neo-hbox lap-item">
+  <span class="neo-label lap-number">${'Lap ' + (laps.value.length - index)}</span>
+  <span class="neo-label">${item}</span>
+</div>`;
+          if (wrapper.firstElementChild) {
+            el.appendChild(wrapper.firstElementChild);
+          }
+        });
       });
     }
   }

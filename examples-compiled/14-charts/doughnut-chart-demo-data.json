@@ -1,0 +1,9 @@
+{
+  "budgetData": [
+    { "name": "Marketing", "value": 35000 },
+    { "name": "Desenvolvimento", "value": 50000 },
+    { "name": "Infraestrutura", "value": 25000 },
+    { "name": "RH", "value": 20000 },
+    { "name": "Operacoes", "value": 30000 }
+  ]
+}

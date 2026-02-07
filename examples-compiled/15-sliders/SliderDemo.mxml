@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Slider Components - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var volume: Number = 75;
+        @reactive var brightness: Number = 50;
+        @reactive var temperature: Number = 22;
+        @reactive var progress: Number = 65;
+        @reactive var rating: Number = 4;
+        @reactive var price: Number = 500;
+
+        @computed var volumeLabel: String { return volume + '%'; }
+        @computed var brightnessLabel: String { return brightness + '%'; }
+        @computed var tempLabel: String { return temperature + '°C'; }
+        @computed var progressLabel: String { return progress + '%'; }
+        @computed var ratingLabel: String { return rating + ' stars'; }
+        @computed var priceLabel: String { return '$' + price; }
+
+        @computed var volumeColor: String {
+            if (volume > 80) return '#ff3b30';
+            if (volume > 50) return '#ff9500';
+            return '#34c759';
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./slider-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Slider Components" styleClass="title" />
+                <Label text="Interactive controls for numeric input" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Media Controls -->
+            <VBox styleClass="card">
+                <HBox styleClass="card-header">
+                    <Label text="🎛️" styleClass="card-icon" />
+                    <Label text="Media Controls" styleClass="card-title" />
+                </HBox>
+
+                <HBox styleClass="slider-row">
+                    <Label text="🔊" styleClass="slider-icon" />
+                    <Label text="Volume" styleClass="slider-label" />
+                    <VBox styleClass="slider-control">
+                        <HSlider value="{volume}" minimum="0" maximum="100" liveDragging="true" />
+                    </VBox>
+                    <Label text="{volumeLabel}" styleClass="slider-value" style="color: {volumeColor};" />
+                </HBox>
+
+                <HBox styleClass="slider-row">
+                    <Label text="☀️" styleClass="slider-icon" />
+                    <Label text="Brightness" styleClass="slider-label" />
+                    <VBox styleClass="slider-control">
+                        <HSlider value="{brightness}" minimum="0" maximum="100" liveDragging="true" />
+                    </VBox>
+                    <Label text="{brightnessLabel}" styleClass="slider-value" />
+                </HBox>
+            </VBox>
+
+            <!-- Settings -->
+            <VBox styleClass="card">
+                <HBox styleClass="card-header">
+                    <Label text="⚙️" styleClass="card-icon" />
+                    <Label text="Settings" styleClass="card-title" />
+                </HBox>
+
+                <HBox styleClass="slider-row">
+                    <Label text="🌡️" styleClass="slider-icon" />
+                    <Label text="Temperature" styleClass="slider-label" />
+                    <VBox styleClass="slider-control">
+                        <HSlider value="{temperature}" minimum="16" maximum="30" step="0.5" liveDragging="true" />
+                    </VBox>
+                    <Label text="{tempLabel}" styleClass="slider-value" style="color: #ff9500;" />
+                </HBox>
+
+                <HBox styleClass="slider-row">
+                    <Label text="📊" styleClass="slider-icon" />
+                    <Label text="Progress" styleClass="slider-label" />
+                    <VBox styleClass="slider-control">
+                        <HSlider value="{progress}" minimum="0" maximum="100" liveDragging="true" />
+                    </VBox>
+                    <Label text="{progressLabel}" styleClass="slider-value" style="color: #34c759;" />
+                </HBox>
+            </VBox>
+
+            <!-- Numeric Steppers -->
+            <VBox styleClass="card">
+                <HBox styleClass="card-header">
+                    <Label text="🔢" styleClass="card-icon" />
+                    <Label text="Numeric Steppers" styleClass="card-title" />
+                </HBox>
+
+                <HBox styleClass="stepper-grid">
+                    <VBox styleClass="stepper-item">
+                        <Label text="⭐" styleClass="stepper-icon" />
+                        <Label text="Rating" styleClass="stepper-label" />
+                        <NumericStepper value="{rating}" minimum="1" maximum="5" step="1" />
+                        <Label text="{ratingLabel}" styleClass="stepper-value" style="color: #ff9500;" />
+                    </VBox>
+
+                    <VBox styleClass="stepper-item">
+                        <Label text="💰" styleClass="stepper-icon" />
+                        <Label text="Price" styleClass="stepper-label" />
+                        <NumericStepper value="{price}" minimum="0" maximum="1000" step="50" />
+                        <Label text="{priceLabel}" styleClass="stepper-value" style="color: #34c759;" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Vertical Sliders -->
+            <VBox styleClass="card">
+                <HBox styleClass="card-header">
+                    <Label text="📐" styleClass="card-icon" />
+                    <Label text="Vertical Sliders" styleClass="card-title" />
+                </HBox>
+
+                <HBox styleClass="vslider-grid">
+                    <VBox styleClass="vslider-item">
+                        <VBox styleClass="vslider-container">
+                            <VSlider value="{volume}" minimum="0" maximum="100" height="120" />
+                        </VBox>
+                        <Label text="VOLUME" styleClass="vslider-label" />
+                        <Label text="{volume}%" styleClass="vslider-value" />
+                    </VBox>
+
+                    <VBox styleClass="vslider-item">
+                        <VBox styleClass="vslider-container">
+                            <VSlider value="{brightness}" minimum="0" maximum="100" height="120" />
+                        </VBox>
+                        <Label text="BRIGHT" styleClass="vslider-label" />
+                        <Label text="{brightness}%" styleClass="vslider-value" />
+                    </VBox>
+
+                    <VBox styleClass="vslider-item">
+                        <VBox styleClass="vslider-container">
+                            <VSlider value="{temperature}" minimum="16" maximum="30" height="120" />
+                        </VBox>
+                        <Label text="TEMP" styleClass="vslider-label" />
+                        <Label text="{temperature}°" styleClass="vslider-value" />
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+    </VBox>
+
+</Application>

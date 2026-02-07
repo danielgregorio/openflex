@@ -13,24 +13,27 @@
 
   const todos = new Signal([]);
 
-  const filter = new Signal("all");
-
   const newTodoText = new Signal("");
 
-  let nextId = 1;
+  const filter = new Signal("all");
+
+  let nextId = 4;
+
+  async function loadExternalData() {
+    try {
+      const response = await fetch('./todo-list-app-data.json');
+      const data = await response.json();
+      todos.value = data.todos;
+      nextId = Math.max(...data.todos.map(t => t.id)) + 1;
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  }
 
   const filteredTodos = new Computed(() => {
-    if (filter.value === "active") {
-      return todos.value.filter(t => !t.completed);
-    }
-    else   if (filter.value === "completed") {
-      return todos.value.filter(t => t.completed);
-    }
+    if (filter.value === "active")   return todos.value.filter(t => !t.completed);
+    if (filter.value === "completed")   return todos.value.filter(t => t.completed);
     return todos.value;
-  });
-
-  const totalCount = new Computed(() => {
-    return todos.value.length;
   });
 
   const activeCount = new Computed(() => {
@@ -39,10 +42,6 @@
 
   const completedCount = new Computed(() => {
     return todos.value.filter(t => t.completed).length;
-  });
-
-  const hasCompleted = new Computed(() => {
-    return completedCount.value > 0;
   });
 
   function addTodo() {
@@ -63,14 +62,8 @@
     todos.value = todos.value.filter(t => !t.completed);
   }
 
-  function setFilter(newFilter) {
-    filter.value = newFilter;
-  }
-
   function handleKeyPress(event) {
-    if (event.key === "Enter") {
-      addTodo();
-    }
+    if (event.key === "Enter")   addTodo();
   }
 
 
@@ -83,103 +76,40 @@
 
     connectedCallback() {
       this.render();
-      this.setupReactivity();
+      loadExternalData().then(() => {
+        this.setupReactivity();
+      });
     }
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../runtime/neo-flex-classic-theme.css');
-
-        .filter-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .filter-btn-active {
-            background: #3498db;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .filter-btn-inactive {
-            background: #ecf0f1;
-            color: #2c3e50;
-        }
-        
-        .todo-item {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #3498db;
-        }
-        
-        .todo-item-completed {
-            background: #ecf0f1;
-            border-left-color: #95a5a6;
-        }
-        
-        .todo-text {
-            font-size: 16px;
-            color: #2c3e50;
-        }
-        
-        .todo-text-completed {
-            color: #95a5a6;
-            text-decoration: line-through;
-        }
-        
-        .input-todo {
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            border: 2px solid #3498db;
-            border-radius: 8px;
-        }
-        
-        .btn-delete {
-            background: #e74c3c;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        
-        .btn-clear {
-            background: #e74c3c;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-        }</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='./todo-list-app.css'>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
-          <div id='panel_2' class='neo-panel'>
-            <div class='neo-panel-header'>✅ Lista de Tarefas Reativa</div>
-            <div class='neo-panel-body'>
-              <div id='vbox_3' class='neo-vbox'>
-                <input type='text' id='input_4' class='neo-textinput input-todo' placeholder='Digite uma nova tarefa...' />
-                <div id='hbox_5' class='neo-hbox h-align-center'>
-                  <button id='btn_6' class='neo-button'></button>
-                  <button id='btn_7' class='neo-button'></button>
-                  <button id='btn_8' class='neo-button'></button>
-                </div>
-                <div id='vbox_9' class='neo-vbox'>
-                  <span id='label_10' class='neo-label' style='color: #95a5a6'>Nenhuma tarefa para exibir</span>
-                  <div id='repeater_11' class='neo-repeater'>
-                    <!-- Repeater content will be dynamically generated -->
-                  </div>
-                </div>
-                <div id='box_12' class='neo-box' style='width: 100%'>
-                </div>
-                <div id='hbox_13' class='neo-hbox h-align-space-between v-align-center'>
-                  <span id='label_14' class='neo-label' style='color: #7f8c8d'></span>
-                  <button id='btn_15' class='neo-button btn-clear'>🗑️ Limpar Completas</button>
-                </div>
-                <span id='label_16' class='neo-label' style='color: #95a5a6'>✨ Construído com OpenFlex Neo + MXML</span>
+        <div id='vbox_1' class='neo-vbox todo-container'>
+          <div id='vbox_2' class='neo-vbox todo-app'>
+            <div id='vbox_3' class='neo-vbox header'>
+              <span id='label_4' class='neo-label header-title'>Reminders</span>
+              <span id='label_5' class='neo-label header-subtitle'></span>
+            </div>
+            <div id='hbox_6' class='neo-hbox input-section'>
+              <input type='text' id='input_7' class='neo-textinput todo-input' placeholder='Add a new task...' />
+              <button id='btn_8' class='neo-button add-btn'>+</button>
+            </div>
+            <div id='hbox_9' class='neo-hbox filter-row'>
+              <button id='btn_10' class='neo-button'>All</button>
+              <button id='btn_11' class='neo-button'>Active</button>
+              <button id='btn_12' class='neo-button'>Done</button>
+            </div>
+            <div id='vbox_13' class='neo-vbox todo-list'>
+              <span id='label_14' class='neo-label empty-state'>No tasks yet</span>
+              <div id='repeater_15' class='neo-repeater'>
+                <!-- Repeater content will be dynamically generated -->
               </div>
+            </div>
+            <div id='hbox_16' class='neo-hbox footer'>
+              <span id='label_17' class='neo-label footer-text'></span>
+              <button id='btn_18' class='neo-button clear-btn'>Clear Done</button>
             </div>
           </div>
         </div>
@@ -191,81 +121,84 @@
     }
 
     attachEventHandlers() {
-      const el_btn_6 = this.shadowRoot.getElementById('btn_6');
-      if (el_btn_6) el_btn_6.addEventListener('click', () => setFilter('all'));
-      const el_btn_7 = this.shadowRoot.getElementById('btn_7');
-      if (el_btn_7) el_btn_7.addEventListener('click', () => setFilter('active'));
       const el_btn_8 = this.shadowRoot.getElementById('btn_8');
-      if (el_btn_8) el_btn_8.addEventListener('click', () => setFilter('completed'));
-      const el_btn_15 = this.shadowRoot.getElementById('btn_15');
-      if (el_btn_15) el_btn_15.addEventListener('click', () => clearCompleted());
+      if (el_btn_8) el_btn_8.addEventListener('click', () => addTodo());
+      const el_btn_10 = this.shadowRoot.getElementById('btn_10');
+      if (el_btn_10) el_btn_10.addEventListener('click', () => filter.value = 'all');
+      const el_btn_11 = this.shadowRoot.getElementById('btn_11');
+      if (el_btn_11) el_btn_11.addEventListener('click', () => filter.value = 'active');
+      const el_btn_12 = this.shadowRoot.getElementById('btn_12');
+      if (el_btn_12) el_btn_12.addEventListener('click', () => filter.value = 'completed');
+      const el_btn_18 = this.shadowRoot.getElementById('btn_18');
+      if (el_btn_18) el_btn_18.addEventListener('click', () => clearCompleted());
+
+      // Input handling
+      const el_input_7 = this.shadowRoot.getElementById('input_7');
+      if (el_input_7) {
+        el_input_7.addEventListener('input', (e) => newTodoText.value = e.target.value);
+        el_input_7.addEventListener('keypress', handleKeyPress);
+      }
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_4');
-        if (el) el.value = newTodoText.value;
-      });
-    
-      // Two-way binding para input_4
-      const el_input_4 = this.shadowRoot.getElementById('input_4');
-      if (el_input_4) {
-        el_input_4.addEventListener('input', (e) => {
-          newTodoText.value = e.target.value;
-        });
-      }
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_6');
-        if (el) el.className = `filter-btn ${filter.value === 'all' ? 'filter.value-btn-active' : 'filter.value-btn-inactive'}`;
+        const el = this.shadowRoot.getElementById('label_5');
+        if (el) el.textContent = activeCount.value + ' remaining';
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_6');
-        if (el) el.textContent = `Todas (${totalCount.value})`;
+        const el = this.shadowRoot.getElementById('btn_10');
+        if (el) el.className = `filter-btn ${filter.value === 'all' ? 'filter-btn-active' : ''}`;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_7');
-        if (el) el.className = `filter-btn ${filter.value === 'active' ? 'filter.value-btn-active' : 'filter.value-btn-inactive'}`;
+        const el = this.shadowRoot.getElementById('btn_11');
+        if (el) el.className = `filter-btn ${filter.value === 'active' ? 'filter-btn-active' : ''}`;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_7');
-        if (el) el.textContent = `Ativas (${activeCount.value})`;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_8');
-        if (el) el.className = `filter-btn ${filter.value === 'completed' ? 'filter.value-btn-active' : 'filter.value-btn-inactive'}`;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_8');
-        if (el) el.textContent = `Completas (${completedCount.value})`;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_10');
-        if (el) el.style.display = (filteredTodos.value.length === 0) ? 'block' : 'none';
-      });
-      // Repeater: repeater_11
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('repeater_11');
-        if (!el) return;
-      
-        // Limpar conteúdo anterior
-        el.innerHTML = '';
-      
-        // Renderizar itens do array
-        const items = filteredTodos.value || [];
-        items.forEach((item, index) => {
-          const itemEl = document.createElement('div');
-          itemEl.className = 'repeater-item';
-          itemEl.textContent = item.text || JSON.stringify(item);
-          el.appendChild(itemEl);
-        });
+        const el = this.shadowRoot.getElementById('btn_12');
+        if (el) el.className = `filter-btn ${filter.value === 'completed' ? 'filter-btn-active' : ''}`;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_14');
-        if (el) el.textContent = '📊 ' + totalCount.value + ' total | 🔵 ' + activeCount.value + ' ativas | ✅ ' + completedCount.value + ' completas';
+        if (el) el.style.display = (filteredTodos.value.length === 0) ? 'block' : 'none';
+      });
+      // Repeater: repeater_15
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('repeater_15');
+        if (!el) return;
+
+        // Limpar conteudo anterior
+        el.innerHTML = '';
+
+        // Renderizar itens do array
+        const items = filteredTodos.value || [];
+        items.forEach((item, index) => {
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = `<div class="neo-hbox todo-item">
+  <button class="neo-button todo-checkbox ${item.completed ? 'todo-checkbox-done' : ''}">${item.completed ? '✓' : ''}</button>
+  <span class="neo-label todo-text ${item.completed ? 'todo-text-done' : ''}">${item.text}</span>
+  <button class="neo-button delete-btn">×</button>
+</div>`;
+          if (wrapper.firstElementChild) {
+            const todoItem = wrapper.firstElementChild;
+            const checkbox = todoItem.querySelector('.todo-checkbox');
+            const deleteBtn = todoItem.querySelector('.delete-btn');
+            if (checkbox) checkbox.addEventListener('click', () => toggleTodo(item.id));
+            if (deleteBtn) deleteBtn.addEventListener('click', () => deleteTodo(item.id));
+            el.appendChild(todoItem);
+          }
+        });
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_15');
-        if (el) el.style.display = hasCompleted.value ? 'block' : 'none';
+        const el = this.shadowRoot.getElementById('hbox_16');
+        if (el) el.style.display = (todos.value.length > 0) ? 'flex' : 'none';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_17');
+        if (el) el.textContent = todos.value.length + ' total, ' + completedCount.value + ' done';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_18');
+        if (el) el.style.display = (completedCount.value > 0) ? 'block' : 'none';
       });
     }
   }

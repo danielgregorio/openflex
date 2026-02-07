@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="CursorManager - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var status: String = 'Ready';
+        @reactive var currentCursor: String = 'default';
+
+        function clearCursor(): void {
+            CursorManager.removeAllCursors();
+            status = 'Cursors cleared';
+            currentCursor = 'default';
+        }
+
+        function showBusy(): void {
+            CursorManager.setBusyCursor();
+            status = 'Busy cursor active';
+            currentCursor = 'wait';
+        }
+
+        function showThinking(): void {
+            CursorManager.setThinkingCursor();
+            status = 'Thinking animation';
+            currentCursor = 'thinking';
+        }
+
+        function showSpinner(): void {
+            CursorManager.setSpinnerCursor();
+            status = 'Spinner animation';
+            currentCursor = 'spinner';
+        }
+
+        function showProgress(): void {
+            CursorManager.setCursor('demo', 'progress', 100);
+            status = 'Progress cursor';
+            currentCursor = 'progress';
+        }
+
+        function showNotAllowed(): void {
+            CursorManager.setCursor('demo', 'not-allowed', 100);
+            status = 'Not-allowed cursor';
+            currentCursor = 'not-allowed';
+        }
+
+        function showCrosshair(): void {
+            CursorManager.setCursor('demo', 'crosshair', 100);
+            status = 'Crosshair cursor';
+            currentCursor = 'crosshair';
+        }
+
+        function showMove(): void {
+            CursorManager.setCursor('demo', 'move', 100);
+            status = 'Move cursor';
+            currentCursor = 'move';
+        }
+
+        function showGrab(): void {
+            CursorManager.setCursor('demo', 'grab', 100);
+            status = 'Grab cursor';
+            currentCursor = 'grab';
+        }
+
+        function showPointer(): void {
+            CursorManager.setCursor('demo', 'pointer', 100);
+            status = 'Pointer cursor';
+            currentCursor = 'pointer';
+        }
+
+        function showText(): void {
+            CursorManager.setCursor('demo', 'text', 100);
+            status = 'Text cursor';
+            currentCursor = 'text';
+        }
+
+        function showHelp(): void {
+            CursorManager.setCursor('demo', 'help', 100);
+            status = 'Help cursor';
+            currentCursor = 'help';
+        }
+
+        function showZoom(): void {
+            CursorManager.setCursor('demo', 'zoom-in', 100);
+            status = 'Zoom-in cursor';
+            currentCursor = 'zoom-in';
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./cursor-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="CursorManager" styleClass="title" />
+                <Label text="Cursor management with animations" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Test Area -->
+            <Label text="Move mouse here to see cursor changes" styleClass="cursor-area" />
+
+            <!-- Status -->
+            <HBox styleClass="status-row">
+                <VBox styleClass="status-box">
+                    <Label text="STATUS" styleClass="status-label" />
+                    <Label text="{status}" styleClass="status-value" />
+                </VBox>
+                <VBox styleClass="status-box">
+                    <Label text="CURSOR" styleClass="status-label" />
+                    <Label text="{currentCursor}" styleClass="status-value cursor-value" />
+                </VBox>
+            </HBox>
+
+            <!-- Clear Button -->
+            <Button label="Clear All Cursors" click="{clearCursor}" styleClass="btn-clear" />
+
+            <!-- Standard Cursors -->
+            <VBox styleClass="card">
+                <Label text="Standard Cursors" styleClass="card-title" />
+                <HBox styleClass="btn-grid">
+                    <Button label="Busy" click="{showBusy}" styleClass="cursor-btn" />
+                    <Button label="Progress" click="{showProgress}" styleClass="cursor-btn" />
+                    <Button label="Not Allowed" click="{showNotAllowed}" styleClass="cursor-btn" />
+                    <Button label="Help" click="{showHelp}" styleClass="cursor-btn" />
+                </HBox>
+                <HBox styleClass="btn-grid" style="margin-top: 10px;">
+                    <Button label="Pointer" click="{showPointer}" styleClass="cursor-btn" />
+                    <Button label="Text" click="{showText}" styleClass="cursor-btn" />
+                    <Button label="Crosshair" click="{showCrosshair}" styleClass="cursor-btn" />
+                    <Button label="Move" click="{showMove}" styleClass="cursor-btn" />
+                </HBox>
+                <HBox styleClass="btn-grid" style="margin-top: 10px;">
+                    <Button label="Grab" click="{showGrab}" styleClass="cursor-btn" />
+                    <Button label="Zoom In" click="{showZoom}" styleClass="cursor-btn" />
+                </HBox>
+            </VBox>
+
+            <!-- Animated Cursors -->
+            <VBox styleClass="card">
+                <Label text="Animated Cursors" styleClass="card-title" />
+                <HBox styleClass="btn-grid">
+                    <Button label="Thinking" click="{showThinking}" styleClass="cursor-btn btn-animated" />
+                    <Button label="Spinner" click="{showSpinner}" styleClass="cursor-btn btn-animated" />
+                </HBox>
+            </VBox>
+        </VBox>
+    </VBox>
+
+</Application>

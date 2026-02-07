@@ -2,63 +2,75 @@
 <Application
     xmlns:fx="http://openflex.dev/core"
     xmlns="http://openflex.dev/neo"
-    title="Quiz Interativo - OpenFlex Neo">
+    title="Quiz - OpenFlex Neo">
 
     <fx:Script><![CDATA[
         @reactive var currentQuestion: Number = 0;
         @reactive var score: Number = 0;
         @reactive var showResult: Boolean = false;
         @reactive var selectedAnswer: Number = -1;
+        @reactive var answered: Boolean = false;
 
         const questions: Array = [
             {
-                question: "Qual é a capital do Brasil?",
-                answers: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"],
+                question: "What is the capital of France?",
+                answers: ["London", "Berlin", "Paris", "Madrid"],
                 correct: 2
             },
             {
-                question: "Quantos planetas existem no Sistema Solar?",
-                answers: ["7", "8", "9", "10"],
+                question: "Which planet is known as the Red Planet?",
+                answers: ["Venus", "Mars", "Jupiter", "Saturn"],
                 correct: 1
             },
             {
-                question: "Quem pintou a Mona Lisa?",
-                answers: ["Van Gogh", "Da Vinci", "Picasso", "Monet"],
-                correct: 1
+                question: "What year did the first iPhone launch?",
+                answers: ["2005", "2006", "2007", "2008"],
+                correct: 2
             },
             {
-                question: "Qual é o maior oceano do mundo?",
-                answers: ["Atlântico", "Índico", "Ártico", "Pacífico"],
+                question: "Who painted the Mona Lisa?",
+                answers: ["Van Gogh", "Picasso", "Da Vinci", "Monet"],
+                correct: 2
+            },
+            {
+                question: "What is the largest ocean on Earth?",
+                answers: ["Atlantic", "Indian", "Arctic", "Pacific"],
                 correct: 3
-            },
-            {
-                question: "Em que ano o homem pisou na Lua pela primeira vez?",
-                answers: ["1965", "1967", "1969", "1971"],
-                correct: 2
             }
         ];
 
         @computed var progress: Number {
-            return (currentQuestion / questions.length) * 100;
+            return ((currentQuestion + 1) / questions.length) * 100;
         }
 
         @computed var currentQ: Object {
             return questions[currentQuestion] || {};
         }
 
+        @computed var scorePercentage: Number {
+            return Math.round((score / questions.length) * 100);
+        }
+
+        @computed var resultEmoji: String {
+            if (scorePercentage >= 80) return "🏆";
+            if (scorePercentage >= 60) return "🎉";
+            if (scorePercentage >= 40) return "👍";
+            return "📚";
+        }
+
         function selectAnswer(index: Number): void {
+            if (answered) return;
             selectedAnswer = index;
+            answered = true;
+            if (index === currentQ.correct) {
+                score++;
+            }
         }
 
         function nextQuestion(): void {
-            if (selectedAnswer === -1) return;
-
-            if (selectedAnswer === currentQ.correct) {
-                score++;
-            }
-
+            if (!answered) return;
             selectedAnswer = -1;
-
+            answered = false;
             if (currentQuestion < questions.length - 1) {
                 currentQuestion++;
             } else {
@@ -71,146 +83,75 @@
             score = 0;
             showResult = false;
             selectedAnswer = -1;
+            answered = false;
         }
 
-        @computed var scorePercentage: Number {
-            return Math.round((score / questions.length) * 100);
-        }
-
-        @computed var resultMessage: String {
-            if (scorePercentage >= 80) return "Excelente! 🎉";
-            if (scorePercentage >= 60) return "Muito bom! 👏";
-            if (scorePercentage >= 40) return "Bom trabalho! 👍";
-            return "Continue praticando! 💪";
+        function getAnswerStyle(index: Number): String {
+            if (!answered) {
+                return selectedAnswer === index ? 'answer-selected' : '';
+            }
+            if (index === currentQ.correct) return 'answer-correct';
+            if (index === selectedAnswer) return 'answer-wrong';
+            return 'answer-disabled';
         }
     ]]></fx:Script>
 
     <fx:Style>
-        @import url('../runtime/neo-flex-classic-theme.css');
-
-        .quiz-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-        }
-
-        .progress-bar {
-            height: 10px;
-            background: #ecf0f1;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s ease;
-        }
-
-        .question-text {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-            text-align: center;
-        }
-
-        .answer-btn {
-            width: 100%;
-            padding: 20px;
-            font-size: 18px;
-            border: 2px solid #ecf0f1;
-            border-radius: 10px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: left;
-        }
-
-        .answer-btn:hover {
-            border-color: #667eea;
-            background: #f8f9fa;
-            transform: translateX(5px);
-        }
-
-        .answer-btn-selected {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .next-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 50px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .score-display {
-            font-size: 72px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        @import url('./quiz-app.css');
     </fx:Style>
 
-    <VBox gap="{20}" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%"
-          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <VBox styleClass="quiz-container">
+        <!-- Quiz Card -->
+        <VBox styleClass="quiz-card" visible="{!showResult}">
+            <!-- Progress -->
+            <VBox styleClass="progress-section">
+                <Label text="{'Question ' + (currentQuestion + 1) + ' of ' + questions.length}"
+                       styleClass="progress-text" />
+                <Box styleClass="progress-bar">
+                    <Box styleClass="progress-fill" width="{progress + '%'}" />
+                </Box>
+            </VBox>
 
-        <Box styleClass="quiz-container" visible="{!showResult}">
-            <VBox gap="{30}">
-                <VBox gap="{10}">
-                    <Label text="{'Questão ' + (currentQuestion + 1) + ' de ' + questions.length}"
-                           fontSize="{14}" color="#7f8c8d" />
-                    <Box styleClass="progress-bar">
-                        <Box styleClass="progress-fill" width="{progress + '%'}" />
-                    </Box>
-                </VBox>
-
+            <!-- Question -->
+            <VBox styleClass="question-section">
                 <Label text="{currentQ.question}" styleClass="question-text" />
-
-                <VBox gap="{15}">
-                    <Button label="{'A) ' + currentQ.answers[0]}"
-                            click="{() => selectAnswer(0)}"
-                            styleClass="{'answer-btn ' + (selectedAnswer === 0 ? 'answer-btn-selected' : '')}" />
-                    <Button label="{'B) ' + currentQ.answers[1]}"
-                            click="{() => selectAnswer(1)}"
-                            styleClass="{'answer-btn ' + (selectedAnswer === 1 ? 'answer-btn-selected' : '')}" />
-                    <Button label="{'C) ' + currentQ.answers[2]}"
-                            click="{() => selectAnswer(2)}"
-                            styleClass="{'answer-btn ' + (selectedAnswer === 2 ? 'answer-btn-selected' : '')}" />
-                    <Button label="{'D) ' + currentQ.answers[3]}"
-                            click="{() => selectAnswer(3)}"
-                            styleClass="{'answer-btn ' + (selectedAnswer === 3 ? 'answer-btn-selected' : '')}" />
-                </VBox>
-
-                <HBox horizontalAlign="center">
-                    <Button label="Próxima →" click="{nextQuestion}" styleClass="next-btn" />
-                </HBox>
             </VBox>
-        </Box>
 
-        <Box styleClass="quiz-container" visible="{showResult}">
-            <VBox gap="{30}" horizontalAlign="center">
-                <Label text="🎯 Resultado Final" fontSize="{32}" fontWeight="bold" />
-
-                <Label text="{scorePercentage + '%'}" styleClass="score-display" />
-
-                <Label text="{resultMessage}" fontSize="{28}" fontWeight="bold" color="#2c3e50" />
-
-                <Label text="{'Você acertou ' + score + ' de ' + questions.length + ' questões'}"
-                       fontSize="{18}" color="#7f8c8d" />
-
-                <Button label="🔄 Jogar Novamente" click="{restart}" styleClass="next-btn" />
+            <!-- Answers -->
+            <VBox styleClass="answers-section">
+                <Button label="{currentQ.answers[0]}"
+                        click="{() => selectAnswer(0)}"
+                        styleClass="answer-btn {getAnswerStyle(0)}" />
+                <Button label="{currentQ.answers[1]}"
+                        click="{() => selectAnswer(1)}"
+                        styleClass="answer-btn {getAnswerStyle(1)}" />
+                <Button label="{currentQ.answers[2]}"
+                        click="{() => selectAnswer(2)}"
+                        styleClass="answer-btn {getAnswerStyle(2)}" />
+                <Button label="{currentQ.answers[3]}"
+                        click="{() => selectAnswer(3)}"
+                        styleClass="answer-btn {getAnswerStyle(3)}" />
             </VBox>
-        </Box>
 
+            <!-- Next Button -->
+            <VBox styleClass="next-section">
+                <Button label="{currentQuestion === questions.length - 1 ? 'See Results' : 'Next Question'}"
+                        click="{nextQuestion}"
+                        styleClass="next-btn {!answered ? 'next-btn-disabled' : ''}" />
+            </VBox>
+        </VBox>
+
+        <!-- Result Card -->
+        <VBox styleClass="quiz-card" visible="{showResult}">
+            <VBox styleClass="result-section">
+                <Label text="{resultEmoji}" styleClass="result-emoji" />
+                <Label text="Quiz Complete!" styleClass="result-title" />
+                <Label text="{scorePercentage + '%'}" styleClass="result-score" />
+                <Label text="{'You got ' + score + ' out of ' + questions.length + ' correct'}"
+                       styleClass="result-detail" />
+                <Button label="Play Again" click="{restart}" styleClass="next-btn" />
+            </VBox>
+        </VBox>
     </VBox>
 
 </Application>

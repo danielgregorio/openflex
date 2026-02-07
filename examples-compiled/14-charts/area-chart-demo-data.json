@@ -1,0 +1,10 @@
+{
+  "visitorData": [
+    { "month": "Jan", "visitors": 12500, "pageViews": 45000 },
+    { "month": "Fev", "visitors": 15800, "pageViews": 52000 },
+    { "month": "Mar", "visitors": 18200, "pageViews": 61000 },
+    { "month": "Abr", "visitors": 22100, "pageViews": 78000 },
+    { "month": "Mai", "visitors": 28500, "pageViews": 95000 },
+    { "month": "Jun", "visitors": 35200, "pageViews": 118000 }
+  ]
+}

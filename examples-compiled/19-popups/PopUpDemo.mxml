@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Popups and Modals - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var showSettings: Boolean = false;
+        @reactive var showConfirm: Boolean = false;
+        @reactive var lastAction: String = 'No action yet';
+
+        function openSettings(): void {
+            showSettings = true;
+        }
+
+        function closeSettings(): void {
+            showSettings = false;
+            lastAction = 'Settings window closed';
+        }
+
+        function saveSettings(): void {
+            showSettings = false;
+            lastAction = 'Settings saved successfully!';
+        }
+
+        function openConfirm(): void {
+            showConfirm = true;
+        }
+
+        function confirmYes(): void {
+            showConfirm = false;
+            lastAction = 'Action confirmed - Item deleted';
+        }
+
+        function confirmNo(): void {
+            showConfirm = false;
+            lastAction = 'Action cancelled';
+        }
+
+        function onAlertClose(button): void {
+            lastAction = 'Alert closed: ' + button;
+        }
+
+        function showSimpleAlert(): void {
+            Alert.show('This is a simple informational message.', 'Information', 1, onAlertClose);
+        }
+
+        function showYesNoAlert(): void {
+            Alert.show('Do you want to proceed with this action?', 'Confirm', 12, onAlertClose);
+        }
+
+        function showOkCancelAlert(): void {
+            Alert.show('Save changes before closing?', 'Save Changes', 3, onAlertClose);
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./popup-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Popups and Modals" styleClass="title" />
+                <Label text="Modal dialogs for user interaction" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Alert.show Examples -->
+            <VBox styleClass="card">
+                <HBox styleClass="card-header">
+                    <Label text="💬" styleClass="card-icon" />
+                    <Label text="Alert.show()" styleClass="card-title" />
+                </HBox>
+                <HBox styleClass="btn-row">
+                    <Button label="Info Alert" click="{showSimpleAlert}" styleClass="btn btn-secondary" />
+                    <Button label="Yes/No Alert" click="{showYesNoAlert}" styleClass="btn btn-secondary" />
+                    <Button label="Save Alert" click="{showOkCancelAlert}" styleClass="btn btn-secondary" />
+                </HBox>
+            </VBox>
+
+            <!-- TitleWindow Example -->
+            <VBox styleClass="card">
+                <HBox styleClass="card-header">
+                    <Label text="⚙️" styleClass="card-icon" />
+                    <Label text="TitleWindow" styleClass="card-title" />
+                </HBox>
+                <Button label="Open Settings Window" click="{openSettings}" styleClass="btn btn-primary" />
+            </VBox>
+
+            <!-- PopUp Example -->
+            <VBox styleClass="card">
+                <HBox styleClass="card-header">
+                    <Label text="🗑️" styleClass="card-icon" />
+                    <Label text="Confirmation PopUp" styleClass="card-title" />
+                </HBox>
+                <Button label="Delete Item..." click="{openConfirm}" styleClass="btn btn-danger" />
+            </VBox>
+
+            <!-- Result Display -->
+            <VBox styleClass="result-box">
+                <Label text="LAST ACTION" styleClass="result-label" />
+                <Label text="{lastAction}" styleClass="result-value" />
+            </VBox>
+        </VBox>
+    </VBox>
+
+    <!-- Settings TitleWindow -->
+    <TitleWindow title="Settings" visible="{showSettings}" showCloseButton="true" close="{closeSettings}" modal="true">
+        <VBox gap="15" width="350" style="padding: 20px;">
+            <VBox gap="4">
+                <Label text="USERNAME" style="color: #8e8e93; font-size: 11px; text-transform: uppercase;" />
+                <TextInput placeholder="Enter username..." width="100%" />
+            </VBox>
+            <VBox gap="4">
+                <Label text="THEME" style="color: #8e8e93; font-size: 11px; text-transform: uppercase;" />
+                <ComboBox dataProvider="{[{label:'Light'}, {label:'Dark'}, {label:'System'}]}" labelField="label" width="100%" />
+            </VBox>
+            <HBox gap="10" verticalAlign="center">
+                <CheckBox />
+                <Label text="Enable notifications" style="color: #fff;" />
+            </HBox>
+            <HBox gap="10" horizontalAlign="right" style="margin-top: 10px; padding-top: 15px; border-top: 1px solid #3a3a3c;">
+                <Button label="Save" click="{saveSettings}" styleClass="btn btn-primary" />
+                <Button label="Cancel" click="{closeSettings}" styleClass="btn btn-secondary" />
+            </HBox>
+        </VBox>
+    </TitleWindow>
+
+    <!-- Confirmation PopUp -->
+    <PopUp visible="{showConfirm}" modal="true">
+        <Panel title="Confirm Delete" width="320">
+            <VBox gap="15" padding="20">
+                <Label text="Are you sure you want to delete this item?" style="color: #fff;" />
+                <Label text="This action cannot be undone." style="color: #ff3b30; font-size: 12px;" />
+                <HBox gap="10" horizontalAlign="right" style="margin-top: 10px;">
+                    <Button label="Yes, Delete" click="{confirmYes}" styleClass="btn btn-danger" />
+                    <Button label="Cancel" click="{confirmNo}" styleClass="btn btn-secondary" />
+                </HBox>
+            </VBox>
+        </Panel>
+    </PopUp>
+
+</Application>

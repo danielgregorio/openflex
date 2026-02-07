@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Line Chart Demo">
+
+    <fx:Script><![CDATA[
+        // Dados de temperatura ao longo do dia
+        @reactive var temperatureData: Array = [
+            {hour: "00h", atual: 18, ontem: 20},
+            {hour: "04h", atual: 15, ontem: 17},
+            {hour: "08h", atual: 19, ontem: 21},
+            {hour: "12h", atual: 28, ontem: 26},
+            {hour: "16h", atual: 32, ontem: 29},
+            {hour: "20h", atual: 24, ontem: 23}
+        ];
+
+        function randomizeData(): void {
+            temperatureData = temperatureData.map(d => ({
+                ...d,
+                atual: Math.floor(Math.random() * 20) + 15,
+                ontem: Math.floor(Math.random() * 18) + 15
+            }));
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./line-chart-demo.css');
+    </fx:Style>
+
+    <Panel title="LineChart - Grafico de Linhas">
+        <VBox gap="15" width="100%">
+            <Label text="O LineChart exibe dados como pontos conectados por linhas, ideal para mostrar tendencias ao longo do tempo." />
+
+            <HBox horizontalAlign="right" width="100%">
+                <Button label="Atualizar Dados" click="{randomizeData}" />
+            </HBox>
+
+            <LineChart dataProvider="{temperatureData}" width="100%" height="350">
+                <horizontalAxis>
+                    <CategoryAxis categoryField="hour" title="Horario" />
+                </horizontalAxis>
+                <verticalAxis>
+                    <LinearAxis minimum="0" maximum="40" title="Temperatura (C)" />
+                </verticalAxis>
+                <series>
+                    <LineSeries yField="atual" displayName="Hoje" />
+                    <LineSeries yField="ontem" displayName="Ontem" />
+                </series>
+            </LineChart>
+
+            <Panel title="Codigo Fonte">
+                <VBox gap="5">
+                    <Label text="&lt;LineChart dataProvider='{temperatureData}' width='100%' height='350'&gt;" />
+                    <Label text="    &lt;horizontalAxis&gt;" />
+                    <Label text="        &lt;CategoryAxis categoryField='hour' title='Horario' /&gt;" />
+                    <Label text="    &lt;/horizontalAxis&gt;" />
+                    <Label text="    &lt;verticalAxis&gt;" />
+                    <Label text="        &lt;LinearAxis minimum='0' maximum='40' title='Temperatura (C)' /&gt;" />
+                    <Label text="    &lt;/verticalAxis&gt;" />
+                    <Label text="    &lt;series&gt;" />
+                    <Label text="        &lt;LineSeries yField='atual' displayName='Hoje' /&gt;" />
+                    <Label text="        &lt;LineSeries yField='ontem' displayName='Ontem' /&gt;" />
+                    <Label text="    &lt;/series&gt;" />
+                    <Label text="&lt;/LineChart&gt;" />
+                </VBox>
+            </Panel>
+        </VBox>
+    </Panel>
+</Application>

@@ -56,11 +56,15 @@
       result = previousValue.value * current;
     }
     else   if (operation.value === "/") {
-      result = previousValue.value / current;
+      (result = current !== 0 ? previousValue.value / current : 0);
+    }
+    else {
+      result = current;
     }
     display.value = String(result);
     previousValue.value = result;
     newNumber.value = true;
+    operation.value = "";
   }
 
   function clear() {
@@ -69,6 +73,16 @@
     previousValue.value = 0;
     operation.value = "";
     newNumber.value = true;
+  }
+
+  function toggleSign() {
+    if (display.value !== "0") {
+      (display.value = display.value.startsWith("-") ? display.value.substring(1) : "-" + display.value);
+    }
+  }
+
+  function percentage() {
+    display.value = String(parseFloat(display.value) / 100);
   }
 
   function pressDecimal() {
@@ -96,104 +110,40 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../runtime/neo-flex-classic-theme.css');
-
-        .calculator {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .display {
-            background: #2c3e50;
-            color: #ecf0f1;
-            font-size: 48px;
-            font-weight: bold;
-            text-align: right;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            word-break: break-all;
-        }
-
-        .btn-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        .calc-btn {
-            padding: 25px;
-            font-size: 24px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #ecf0f1;
-            color: #2c3e50;
-        }
-
-        .calc-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .calc-btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-operator {
-            background: #3498db;
-            color: white;
-        }
-
-        .btn-equals {
-            background: #27ae60;
-            color: white;
-            grid-column: span 2;
-        }
-
-        .btn-clear {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-zero {
-            grid-column: span 2;
-        }</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='./calculator-app.css'>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%'>
-          <div id='panel_2' class='neo-panel calculator'>
-            <div class='neo-panel-header'>🧮 Calculadora</div>
-            <div class='neo-panel-body'>
-              <div id='vbox_3' class='neo-vbox'>
-                <span id='label_4' class='neo-label display'></span>
-                <div id='box_5' class='neo-box'>
-                  <button id='btn_6' class='neo-button calc-btn btn-clear'>C</button>
-                  <button id='btn_7' class='neo-button calc-btn btn-operator'>÷</button>
-                  <button id='btn_8' class='neo-button calc-btn btn-operator'>×</button>
-                  <button id='btn_9' class='neo-button calc-btn btn-operator'>-</button>
-                  <button id='btn_10' class='neo-button calc-btn'>7</button>
-                  <button id='btn_11' class='neo-button calc-btn'>8</button>
-                  <button id='btn_12' class='neo-button calc-btn'>9</button>
-                  <button id='btn_13' class='neo-button calc-btn btn-operator'>+</button>
-                  <button id='btn_14' class='neo-button calc-btn'>4</button>
-                  <button id='btn_15' class='neo-button calc-btn'>5</button>
-                  <button id='btn_16' class='neo-button calc-btn'>6</button>
-                  <button id='btn_17' class='neo-button calc-btn btn-equals'>=</button>
-                  <button id='btn_18' class='neo-button calc-btn'>1</button>
-                  <button id='btn_19' class='neo-button calc-btn'>2</button>
-                  <button id='btn_20' class='neo-button calc-btn'>3</button>
-                  <button id='btn_21' class='neo-button calc-btn btn-zero'>0</button>
-                  <button id='btn_22' class='neo-button calc-btn'>.</button>
-                </div>
-              </div>
+        <div id='vbox_1' class='neo-vbox calc-container'>
+          <div id='vbox_2' class='neo-vbox calculator'>
+            <span id='label_3' class='neo-label display'></span>
+            <div id='hbox_4' class='neo-hbox btn-row'>
+              <button id='btn_5' class='neo-button calc-btn btn-gray'>AC</button>
+              <button id='btn_6' class='neo-button calc-btn btn-gray'>+/-</button>
+              <button id='btn_7' class='neo-button calc-btn btn-gray'>%</button>
+              <button id='btn_8' class='neo-button calc-btn btn-orange'>÷</button>
+            </div>
+            <div id='hbox_9' class='neo-hbox btn-row'>
+              <button id='btn_10' class='neo-button calc-btn'>7</button>
+              <button id='btn_11' class='neo-button calc-btn'>8</button>
+              <button id='btn_12' class='neo-button calc-btn'>9</button>
+              <button id='btn_13' class='neo-button calc-btn btn-orange'>×</button>
+            </div>
+            <div id='hbox_14' class='neo-hbox btn-row'>
+              <button id='btn_15' class='neo-button calc-btn'>4</button>
+              <button id='btn_16' class='neo-button calc-btn'>5</button>
+              <button id='btn_17' class='neo-button calc-btn'>6</button>
+              <button id='btn_18' class='neo-button calc-btn btn-orange'>-</button>
+            </div>
+            <div id='hbox_19' class='neo-hbox btn-row'>
+              <button id='btn_20' class='neo-button calc-btn'>1</button>
+              <button id='btn_21' class='neo-button calc-btn'>2</button>
+              <button id='btn_22' class='neo-button calc-btn'>3</button>
+              <button id='btn_23' class='neo-button calc-btn btn-orange'>+</button>
+            </div>
+            <div id='hbox_24' class='neo-hbox btn-row'>
+              <button id='btn_25' class='neo-button calc-btn btn-zero'>0</button>
+              <button id='btn_26' class='neo-button calc-btn'>.</button>
+              <button id='btn_27' class='neo-button calc-btn btn-orange'>=</button>
             </div>
           </div>
         </div>
@@ -205,14 +155,14 @@
     }
 
     attachEventHandlers() {
+      const el_btn_5 = this.shadowRoot.getElementById('btn_5');
+      if (el_btn_5) el_btn_5.addEventListener('click', () => clear());
       const el_btn_6 = this.shadowRoot.getElementById('btn_6');
-      if (el_btn_6) el_btn_6.addEventListener('click', () => clear());
+      if (el_btn_6) el_btn_6.addEventListener('click', () => toggleSign());
       const el_btn_7 = this.shadowRoot.getElementById('btn_7');
-      if (el_btn_7) el_btn_7.addEventListener('click', () => pressOperator('/'));
+      if (el_btn_7) el_btn_7.addEventListener('click', () => percentage());
       const el_btn_8 = this.shadowRoot.getElementById('btn_8');
-      if (el_btn_8) el_btn_8.addEventListener('click', () => pressOperator('*'));
-      const el_btn_9 = this.shadowRoot.getElementById('btn_9');
-      if (el_btn_9) el_btn_9.addEventListener('click', () => pressOperator('-'));
+      if (el_btn_8) el_btn_8.addEventListener('click', () => pressOperator('/'));
       const el_btn_10 = this.shadowRoot.getElementById('btn_10');
       if (el_btn_10) el_btn_10.addEventListener('click', () => pressNumber('7'));
       const el_btn_11 = this.shadowRoot.getElementById('btn_11');
@@ -220,30 +170,34 @@
       const el_btn_12 = this.shadowRoot.getElementById('btn_12');
       if (el_btn_12) el_btn_12.addEventListener('click', () => pressNumber('9'));
       const el_btn_13 = this.shadowRoot.getElementById('btn_13');
-      if (el_btn_13) el_btn_13.addEventListener('click', () => pressOperator('+'));
-      const el_btn_14 = this.shadowRoot.getElementById('btn_14');
-      if (el_btn_14) el_btn_14.addEventListener('click', () => pressNumber('4'));
+      if (el_btn_13) el_btn_13.addEventListener('click', () => pressOperator('*'));
       const el_btn_15 = this.shadowRoot.getElementById('btn_15');
-      if (el_btn_15) el_btn_15.addEventListener('click', () => pressNumber('5'));
+      if (el_btn_15) el_btn_15.addEventListener('click', () => pressNumber('4'));
       const el_btn_16 = this.shadowRoot.getElementById('btn_16');
-      if (el_btn_16) el_btn_16.addEventListener('click', () => pressNumber('6'));
+      if (el_btn_16) el_btn_16.addEventListener('click', () => pressNumber('5'));
       const el_btn_17 = this.shadowRoot.getElementById('btn_17');
-      if (el_btn_17) el_btn_17.addEventListener('click', () => calculate());
+      if (el_btn_17) el_btn_17.addEventListener('click', () => pressNumber('6'));
       const el_btn_18 = this.shadowRoot.getElementById('btn_18');
-      if (el_btn_18) el_btn_18.addEventListener('click', () => pressNumber('1'));
-      const el_btn_19 = this.shadowRoot.getElementById('btn_19');
-      if (el_btn_19) el_btn_19.addEventListener('click', () => pressNumber('2'));
+      if (el_btn_18) el_btn_18.addEventListener('click', () => pressOperator('-'));
       const el_btn_20 = this.shadowRoot.getElementById('btn_20');
-      if (el_btn_20) el_btn_20.addEventListener('click', () => pressNumber('3'));
+      if (el_btn_20) el_btn_20.addEventListener('click', () => pressNumber('1'));
       const el_btn_21 = this.shadowRoot.getElementById('btn_21');
-      if (el_btn_21) el_btn_21.addEventListener('click', () => pressNumber('0'));
+      if (el_btn_21) el_btn_21.addEventListener('click', () => pressNumber('2'));
       const el_btn_22 = this.shadowRoot.getElementById('btn_22');
-      if (el_btn_22) el_btn_22.addEventListener('click', () => pressDecimal());
+      if (el_btn_22) el_btn_22.addEventListener('click', () => pressNumber('3'));
+      const el_btn_23 = this.shadowRoot.getElementById('btn_23');
+      if (el_btn_23) el_btn_23.addEventListener('click', () => pressOperator('+'));
+      const el_btn_25 = this.shadowRoot.getElementById('btn_25');
+      if (el_btn_25) el_btn_25.addEventListener('click', () => pressNumber('0'));
+      const el_btn_26 = this.shadowRoot.getElementById('btn_26');
+      if (el_btn_26) el_btn_26.addEventListener('click', () => pressDecimal());
+      const el_btn_27 = this.shadowRoot.getElementById('btn_27');
+      if (el_btn_27) el_btn_27.addEventListener('click', () => calculate());
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_4');
+        const el = this.shadowRoot.getElementById('label_3');
         if (el) el.textContent = display.value;
       });
     }

@@ -5,157 +5,221 @@
     title="Dashboard - OpenFlex Neo">
 
     <fx:Script><![CDATA[
-        @reactive var users: Number = 1247;
-        @reactive var revenue: Number = 45678;
-        @reactive var orders: Number = 823;
-        @reactive var growth: Number = 12.5;
-        @reactive var conversion: Number = 3.2;
+        @reactive var revenue: Number = 48250;
+        @reactive var users: Number = 2847;
+        @reactive var orders: Number = 384;
+        @reactive var conversion: Number = 3.24;
 
-        @computed var usersFormatted: String {
-            return users.toLocaleString('pt-BR');
-        }
+        @reactive var revenueChange: Number = 12.5;
+        @reactive var usersChange: Number = 8.2;
+        @reactive var ordersChange: Number = -2.4;
+        @reactive var conversionChange: Number = 0.8;
 
         @computed var revenueFormatted: String {
-            return "R$ " + revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            return "$" + revenue.toLocaleString();
+        }
+
+        @computed var usersFormatted: String {
+            return users.toLocaleString();
         }
 
         @computed var ordersFormatted: String {
-            return orders.toLocaleString('pt-BR');
-        }
-
-        @computed var growthFormatted: String {
-            return (growth >= 0 ? '+' : '') + growth.toFixed(1) + '%';
-        }
-
-        @computed var growthColor: String {
-            return growth >= 0 ? '#10b981' : '#ef4444';
+            return orders.toLocaleString();
         }
 
         @computed var conversionFormatted: String {
-            return conversion.toFixed(1) + '%';
+            return conversion.toFixed(2) + "%";
         }
 
-        function simulateUpdate(): void {
-            users += Math.floor(Math.random() * 50 - 10);
-            revenue += Math.floor(Math.random() * 5000 - 1000);
-            orders += Math.floor(Math.random() * 20 - 5);
-            growth = (Math.random() * 30) - 10;
-            conversion = 2.5 + (Math.random() * 2);
+        @computed var revenueChangeText: String {
+            return formatChange(revenueChange);
+        }
+
+        @computed var usersChangeText: String {
+            return formatChange(usersChange);
+        }
+
+        @computed var ordersChangeText: String {
+            return formatChange(ordersChange);
+        }
+
+        @computed var conversionChangeText: String {
+            return formatChange(conversionChange);
+        }
+
+        @computed var revenueChangeColor: String {
+            return getChangeColor(revenueChange);
+        }
+
+        @computed var usersChangeColor: String {
+            return getChangeColor(usersChange);
+        }
+
+        @computed var ordersChangeColor: String {
+            return getChangeColor(ordersChange);
+        }
+
+        @computed var conversionChangeColor: String {
+            return getChangeColor(conversionChange);
+        }
+
+        @computed var revenueChangeClass: String {
+            return revenueChange >= 0 ? 'card-change' : 'card-change change-negative';
+        }
+
+        @computed var usersChangeClass: String {
+            return usersChange >= 0 ? 'card-change' : 'card-change change-negative';
+        }
+
+        @computed var ordersChangeClass: String {
+            return ordersChange >= 0 ? 'card-change' : 'card-change change-negative';
+        }
+
+        @computed var conversionChangeClass: String {
+            return conversionChange >= 0 ? 'card-change' : 'card-change change-negative';
+        }
+
+        function formatChange(value: Number): String {
+            const prefix = value >= 0 ? "+" : "";
+            return prefix + value.toFixed(1) + "%";
+        }
+
+        function getChangeColor(value: Number): String {
+            return value >= 0 ? "#34c759" : "#ff3b30";
+        }
+
+        function refreshData(): void {
+            revenue = Math.floor(40000 + Math.random() * 20000);
+            users = Math.floor(2000 + Math.random() * 2000);
+            orders = Math.floor(300 + Math.random() * 200);
+            conversion = 2 + Math.random() * 3;
+
+            revenueChange = -5 + Math.random() * 20;
+            usersChange = -5 + Math.random() * 20;
+            ordersChange = -5 + Math.random() * 10;
+            conversionChange = -2 + Math.random() * 4;
         }
     ]]></fx:Script>
 
     <fx:Style>
-        @import url('../runtime/neo-flex-classic-theme.css');
-
-        @import url('dashboard-styles.css');
+        @import url('./dashboard-app.css');
     </fx:Style>
 
-    <VBox gap="0" width="100%" height="100%" styleClass="app-container">
-        <VBox gap="40" width="100%" style="max-width: 1600px; margin: 0 auto;">
-
+    <VBox styleClass="dashboard-container">
+        <VBox styleClass="dashboard-wrapper">
             <!-- Header -->
-            <HBox horizontalAlign="space-between" verticalAlign="center" width="100%">
-                <VBox gap="8">
-                    <Label text="📊 Dashboard Executivo" styleClass="dashboard-title" />
-                    <Label text="Visão geral das métricas principais" styleClass="dashboard-subtitle" />
+            <HBox styleClass="dashboard-header">
+                <VBox>
+                    <Label text="Dashboard" styleClass="header-title" />
+                    <Label text="Overview of your business metrics" styleClass="header-subtitle" />
                 </VBox>
-                <Button label="🔄 Atualizar Dados" click="{simulateUpdate}" styleClass="update-btn" />
+                <Button label="Refresh" click="{refreshData}" styleClass="refresh-btn" />
             </HBox>
 
-            <!-- KPI Cards Grid -->
-            <HBox gap="24" width="100%">
-                <!-- Card 1: Usuários -->
-                <Panel styleClass="stat-panel">
-                    <VBox gap="0">
-                        <Label text="👥" styleClass="stat-icon" />
-                        <Label text="Usuários Ativos" styleClass="stat-label" />
-                        <Label text="{usersFormatted}" styleClass="stat-value" />
-                        <Label text="+15% vs mês anterior" styleClass="stat-change positive" />
-                    </VBox>
-                </Panel>
-
-                <!-- Card 2: Receita -->
-                <Panel styleClass="stat-panel">
-                    <VBox gap="0">
-                        <Label text="💰" styleClass="stat-icon" />
-                        <Label text="Receita Total" styleClass="stat-label" />
-                        <Label text="{revenueFormatted}" styleClass="stat-value" />
-                        <Label text="{growthFormatted}" styleClass="stat-change positive" color="{growthColor}" />
-                    </VBox>
-                </Panel>
-
-                <!-- Card 3: Pedidos -->
-                <Panel styleClass="stat-panel">
-                    <VBox gap="0">
-                        <Label text="🛒" styleClass="stat-icon" />
-                        <Label text="Pedidos" styleClass="stat-label" />
-                        <Label text="{ordersFormatted}" styleClass="stat-value" />
-                        <Label text="+8% vs mês anterior" styleClass="stat-change positive" />
-                    </VBox>
-                </Panel>
-
-                <!-- Card 4: Conversão -->
-                <Panel styleClass="stat-panel">
-                    <VBox gap="0">
-                        <Label text="📈" styleClass="stat-icon" />
-                        <Label text="Taxa de Conversão" styleClass="stat-label" />
-                        <Label text="{conversionFormatted}" styleClass="stat-value" />
-                        <Label text="+0.5% vs mês anterior" styleClass="stat-change positive" />
-                    </VBox>
-                </Panel>
-            </HBox>
-
-            <!-- Bottom Section: Chart + Goals -->
-            <HBox gap="24" width="100%">
-                <!-- Chart Panel -->
-                <Panel styleClass="chart-panel">
-                    <VBox gap="0" width="100%">
-                        <Label text="📊 Vendas dos Últimos 12 Meses" styleClass="section-title" />
-                        <Box styleClass="chart-placeholder">
-                            <Label text="Gráfico interativo seria renderizado aqui" />
+            <!-- Metric Cards -->
+            <HBox styleClass="cards-grid">
+                <!-- Revenue Card -->
+                <VBox styleClass="metric-card">
+                    <HBox styleClass="card-header">
+                        <Box styleClass="card-icon icon-blue">
+                            <Label text="💰" />
                         </Box>
-                    </VBox>
-                </Panel>
+                        <Label text="{revenueChangeText}"
+                               styleClass="{revenueChangeClass}"
+                               color="{revenueChangeColor}" />
+                    </HBox>
+                    <Label text="{revenueFormatted}" styleClass="card-value" />
+                    <Label text="Total Revenue" styleClass="card-label" />
+                </VBox>
 
-                <!-- Goals Panel -->
-                <Panel styleClass="goals-panel">
-                    <VBox gap="0" width="100%">
-                        <Label text="🎯 Metas do Mês" styleClass="section-title" />
+                <!-- Users Card -->
+                <VBox styleClass="metric-card">
+                    <HBox styleClass="card-header">
+                        <Box styleClass="card-icon icon-green">
+                            <Label text="👥" />
+                        </Box>
+                        <Label text="{usersChangeText}"
+                               styleClass="{usersChangeClass}"
+                               color="{usersChangeColor}" />
+                    </HBox>
+                    <Label text="{usersFormatted}" styleClass="card-value" />
+                    <Label text="Active Users" styleClass="card-label" />
+                </VBox>
 
-                        <!-- Goal 1: Vendas -->
-                        <VBox gap="0" styleClass="goal-item">
-                            <Label text="Vendas" styleClass="goal-name" />
-                            <Label text="92%" styleClass="goal-percentage warning" />
-                            <Box styleClass="goal-bar-container">
-                                <Box styleClass="goal-bar warning" style="width: 92%"></Box>
-                            </Box>
-                            <Label text="R$ 46.000 de R$ 50.000" styleClass="goal-details" />
-                        </VBox>
+                <!-- Orders Card -->
+                <VBox styleClass="metric-card">
+                    <HBox styleClass="card-header">
+                        <Box styleClass="card-icon icon-orange">
+                            <Label text="📦" />
+                        </Box>
+                        <Label text="{ordersChangeText}"
+                               styleClass="{ordersChangeClass}"
+                               color="{ordersChangeColor}" />
+                    </HBox>
+                    <Label text="{ordersFormatted}" styleClass="card-value" />
+                    <Label text="Total Orders" styleClass="card-label" />
+                </VBox>
 
-                        <!-- Goal 2: Usuários -->
-                        <VBox gap="0" styleClass="goal-item">
-                            <Label text="Novos Usuários" styleClass="goal-name" />
-                            <Label text="104%" styleClass="goal-percentage success" />
-                            <Box styleClass="goal-bar-container">
-                                <Box styleClass="goal-bar success" style="width: 100%"></Box>
-                            </Box>
-                            <Label text="1.300 de 1.250 usuários" styleClass="goal-details" />
-                        </VBox>
-
-                        <!-- Goal 3: Conversão -->
-                        <VBox gap="0" styleClass="goal-item">
-                            <Label text="Conversão" styleClass="goal-name" />
-                            <Label text="89%" styleClass="goal-percentage warning" />
-                            <Box styleClass="goal-bar-container">
-                                <Box styleClass="goal-bar warning" style="width: 89%"></Box>
-                            </Box>
-                            <Label text="3.2% de 3.6% meta" styleClass="goal-details" />
-                        </VBox>
-
-                    </VBox>
-                </Panel>
+                <!-- Conversion Card -->
+                <VBox styleClass="metric-card">
+                    <HBox styleClass="card-header">
+                        <Box styleClass="card-icon icon-purple">
+                            <Label text="📈" />
+                        </Box>
+                        <Label text="{conversionChangeText}"
+                               styleClass="{conversionChangeClass}"
+                               color="{conversionChangeColor}" />
+                    </HBox>
+                    <Label text="{conversionFormatted}" styleClass="card-value" />
+                    <Label text="Conversion Rate" styleClass="card-label" />
+                </VBox>
             </HBox>
 
+            <!-- Chart Section -->
+            <VBox styleClass="chart-section">
+                <Label text="Revenue Overview" styleClass="section-title" />
+                <HBox styleClass="chart-placeholder">
+                    <Box styleClass="chart-bar" height="40%" />
+                    <Box styleClass="chart-bar" height="60%" />
+                    <Box styleClass="chart-bar" height="45%" />
+                    <Box styleClass="chart-bar" height="80%" />
+                    <Box styleClass="chart-bar" height="65%" />
+                    <Box styleClass="chart-bar" height="90%" />
+                    <Box styleClass="chart-bar" height="75%" />
+                    <Box styleClass="chart-bar" height="85%" />
+                    <Box styleClass="chart-bar" height="70%" />
+                    <Box styleClass="chart-bar" height="95%" />
+                    <Box styleClass="chart-bar" height="88%" />
+                    <Box styleClass="chart-bar" height="100%" />
+                </HBox>
+            </VBox>
+
+            <!-- Recent Activity -->
+            <VBox styleClass="activity-section">
+                <Label text="Recent Activity" styleClass="section-title" />
+                <VBox>
+                    <HBox styleClass="activity-item">
+                        <Box styleClass="activity-dot" backgroundColor="#34c759" />
+                        <Label text="New order #1234 received" styleClass="activity-text" />
+                        <Label text="2m ago" styleClass="activity-time" />
+                    </HBox>
+                    <HBox styleClass="activity-item">
+                        <Box styleClass="activity-dot" backgroundColor="#007aff" />
+                        <Label text="User john@email.com signed up" styleClass="activity-text" />
+                        <Label text="15m ago" styleClass="activity-time" />
+                    </HBox>
+                    <HBox styleClass="activity-item">
+                        <Box styleClass="activity-dot" backgroundColor="#ff9500" />
+                        <Label text="Payment of $299 processed" styleClass="activity-text" />
+                        <Label text="1h ago" styleClass="activity-time" />
+                    </HBox>
+                    <HBox styleClass="activity-item">
+                        <Box styleClass="activity-dot" backgroundColor="#af52de" />
+                        <Label text="New review submitted (5 stars)" styleClass="activity-text" />
+                        <Label text="2h ago" styleClass="activity-time" />
+                    </HBox>
+                </VBox>
+            </VBox>
         </VBox>
     </VBox>
 

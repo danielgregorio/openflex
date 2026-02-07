@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Pie Chart Demo">
+
+    <fx:Script><![CDATA[
+        // Dados de market share por navegador
+        @reactive var browserShare: Array = [
+            {name: "Chrome", value: 65},
+            {name: "Safari", value: 18},
+            {name: "Firefox", value: 8},
+            {name: "Edge", value: 5},
+            {name: "Outros", value: 4}
+        ];
+
+        function randomizeData(): void {
+            const values = [
+                Math.floor(Math.random() * 30) + 50,
+                Math.floor(Math.random() * 15) + 10,
+                Math.floor(Math.random() * 10) + 5,
+                Math.floor(Math.random() * 8) + 3,
+                Math.floor(Math.random() * 5) + 2
+            ];
+            const total = values.reduce((a, b) => a + b, 0);
+            browserShare = browserShare.map((d, i) => ({
+                ...d,
+                value: Math.round(values[i] / total * 100)
+            }));
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./pie-chart-demo.css');
+    </fx:Style>
+
+    <Panel title="PieChart - Grafico de Pizza">
+        <VBox gap="15" width="100%">
+            <Label text="O PieChart exibe dados como fatias de um circulo, ideal para mostrar proporcoes e partes de um todo." />
+
+            <HBox horizontalAlign="right" width="100%">
+                <Button label="Atualizar Dados" click="{randomizeData}" />
+            </HBox>
+
+            <HBox horizontalAlign="center" width="100%">
+                <PieChart dataProvider="{browserShare}" width="500" height="350">
+                    <series>
+                        <PieSeries field="value" nameField="name" displayName="Market Share" />
+                    </series>
+                </PieChart>
+            </HBox>
+
+            <Panel title="Codigo Fonte">
+                <VBox gap="5">
+                    <Label text="&lt;PieChart dataProvider='{browserShare}' width='500' height='350'&gt;" />
+                    <Label text="    &lt;series&gt;" />
+                    <Label text="        &lt;PieSeries field='value' nameField='name' displayName='Market Share' /&gt;" />
+                    <Label text="    &lt;/series&gt;" />
+                    <Label text="&lt;/PieChart&gt;" />
+                </VBox>
+            </Panel>
+
+            <Panel title="Dados">
+                <VBox gap="5">
+                    <Label text="@reactive var browserShare: Array = [" />
+                    <Label text="    {name: 'Chrome', value: 65}," />
+                    <Label text="    {name: 'Safari', value: 18}," />
+                    <Label text="    {name: 'Firefox', value: 8}," />
+                    <Label text="    {name: 'Edge', value: 5}," />
+                    <Label text="    {name: 'Outros', value: 4}" />
+                    <Label text="];" />
+                </VBox>
+            </Panel>
+        </VBox>
+    </Panel>
+</Application>

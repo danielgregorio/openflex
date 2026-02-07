@@ -2,253 +2,119 @@
 <Application
     xmlns:fx="http://openflex.dev/core"
     xmlns="http://openflex.dev/neo"
-    title="Todo List Reativa - OpenFlex Neo">
+    title="Reminders - OpenFlex Neo">
 
     <fx:Script><![CDATA[
-        // Estado reativo
-        @reactive var todos: Array = [];
-        @reactive var filter: String = "all";
+        @reactive var todos: Array = [
+            { id: 1, text: "Buy groceries", completed: false },
+            { id: 2, text: "Call mom", completed: true },
+            { id: 3, text: "Finish project", completed: false }
+        ];
         @reactive var newTodoText: String = "";
+        @reactive var filter: String = "all";
 
-        var nextId: Number = 1;
-        
-        // Valores computados
+        var nextId: Number = 4;
+
         @computed var filteredTodos: Array {
-            if (filter === "active") {
-                return todos.filter(t => !t.completed);
-            } else if (filter === "completed") {
-                return todos.filter(t => t.completed);
-            }
-            return todos;  // "all"
+            if (filter === "active") return todos.filter(t => !t.completed);
+            if (filter === "completed") return todos.filter(t => t.completed);
+            return todos;
         }
-        
-        @computed var totalCount: Number {
-            return todos.length;
-        }
-        
+
         @computed var activeCount: Number {
             return todos.filter(t => !t.completed).length;
         }
-        
+
         @computed var completedCount: Number {
             return todos.filter(t => t.completed).length;
         }
-        
-        @computed var hasCompleted: Boolean {
-            return completedCount > 0;
-        }
-        
-        // Ações
+
         function addTodo(): void {
             if (newTodoText.trim() === "") return;
-            
             todos = [...todos, {
                 id: nextId++,
                 text: newTodoText.trim(),
                 completed: false
             }];
-            
-            newTodoText = "";  // Limpar input
+            newTodoText = "";
         }
-        
+
         function toggleTodo(id: Number): void {
             todos = todos.map(todo =>
                 todo.id === id ? {...todo, completed: !todo.completed} : todo
             );
         }
-        
+
         function deleteTodo(id: Number): void {
             todos = todos.filter(t => t.id !== id);
         }
-        
+
         function clearCompleted(): void {
             todos = todos.filter(t => !t.completed);
         }
-        
-        function setFilter(newFilter: String): void {
-            filter = newFilter;
-        }
-        
+
         function handleKeyPress(event): void {
-            if (event.key === "Enter") {
-                addTodo();
-            }
+            if (event.key === "Enter") addTodo();
         }
     ]]></fx:Script>
 
     <fx:Style>
-        @import url('../runtime/neo-flex-classic-theme.css');
-
-        .filter-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .filter-btn-active {
-            background: #3498db;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .filter-btn-inactive {
-            background: #ecf0f1;
-            color: #2c3e50;
-        }
-        
-        .todo-item {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #3498db;
-        }
-        
-        .todo-item-completed {
-            background: #ecf0f1;
-            border-left-color: #95a5a6;
-        }
-        
-        .todo-text {
-            font-size: 16px;
-            color: #2c3e50;
-        }
-        
-        .todo-text-completed {
-            color: #95a5a6;
-            text-decoration: line-through;
-        }
-        
-        .input-todo {
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            border: 2px solid #3498db;
-            border-radius: 8px;
-        }
-        
-        .btn-delete {
-            background: #e74c3c;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        
-        .btn-clear {
-            background: #e74c3c;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-        }
+        @import url('./todo-list-app.css');
     </fx:Style>
 
-    <!-- Layout Principal -->
-    <VBox gap="{20}" horizontalAlign="center" verticalAlign="middle"
-          width="100%" height="100%"
-          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-
-        <Panel title="✅ Lista de Tarefas Reativa" width="{700}" padding="{30}">
-            <VBox gap="{20}">
-                
-                <!-- Input para nova tarefa -->
-                <TextInput 
-                    text="{newTodoText}"
-                    placeholder="Digite uma nova tarefa..."
-                    keyPress="{handleKeyPress}"
-                    styleClass="input-todo" />
-                
-                <!-- Filtros -->
-                <HBox gap="{10}" horizontalAlign="center">
-                    <Button 
-                        label="Todas ({totalCount})"
-                        click="{() => setFilter('all')}"
-                        styleClass="filter-btn {filter === 'all' ? 'filter-btn-active' : 'filter-btn-inactive'}" />
-                    
-                    <Button 
-                        label="Ativas ({activeCount})"
-                        click="{() => setFilter('active')}"
-                        styleClass="filter-btn {filter === 'active' ? 'filter-btn-active' : 'filter-btn-inactive'}" />
-                    
-                    <Button 
-                        label="Completas ({completedCount})"
-                        click="{() => setFilter('completed')}"
-                        styleClass="filter-btn {filter === 'completed' ? 'filter-btn-active' : 'filter-btn-inactive'}" />
-                </HBox>
-                
-                <!-- Lista de tarefas -->
-                <VBox gap="{10}" maxHeight="{400}" overflow="auto">
-                    
-                    <!-- Mensagem vazia -->
-                    <Label 
-                        text="Nenhuma tarefa para exibir"
-                        color="#95a5a6"
-                        fontStyle="italic"
-                        textAlign="center"
-                        padding="{20}"
-                        visible="{filteredTodos.length === 0}" />
-                    
-                    <!-- Tarefas -->
-                    <Repeater dataProvider="{filteredTodos}">
-                        <HBox 
-                            gap="{15}"
-                            styleClass="todo-item {item.completed ? 'todo-item-completed' : ''}"
-                            verticalAlign="center">
-                            
-                            <!-- Checkbox -->
-                            <CheckBox 
-                                checked="{item.completed}"
-                                change="{() => toggleTodo(item.id)}"
-                                width="{20}"
-                                height="{20}" />
-                            
-                            <!-- Texto -->
-                            <Label 
-                                text="{item.text}"
-                                styleClass="todo-text {item.completed ? 'todo-text-completed' : ''}"
-                                flex="{1}" />
-                            
-                            <!-- Botão deletar -->
-                            <Button 
-                                label="❌"
-                                click="{() => deleteTodo(item.id)}"
-                                styleClass="btn-delete" />
-                        </HBox>
-                    </Repeater>
-                </VBox>
-                
-                <!-- Separador -->
-                <Box height="{2}" width="100%" backgroundColor="#ecf0f1" />
-                
-                <!-- Estatísticas e ações -->
-                <HBox horizontalAlign="space-between" verticalAlign="center">
-                    
-                    <!-- Stats -->
-                    <Label 
-                        text="{'📊 ' + totalCount + ' total | 🔵 ' + activeCount + ' ativas | ✅ ' + completedCount + ' completas'}"
-                        fontSize="{14}"
-                        color="#7f8c8d" />
-                    
-                    <!-- Botão limpar -->
-                    <Button 
-                        label="🗑️ Limpar Completas"
-                        click="{clearCompleted}"
-                        styleClass="btn-clear"
-                        visible="{hasCompleted}" />
-                </HBox>
-                
-                <!-- Footer -->
-                <Label 
-                    text="✨ Construído com OpenFlex Neo + MXML"
-                    fontSize="{12}"
-                    color="#95a5a6"
-                    textAlign="center" />
-                
+    <VBox styleClass="todo-container">
+        <VBox styleClass="todo-app">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Reminders" styleClass="header-title" />
+                <Label text="{activeCount + ' remaining'}" styleClass="header-subtitle" />
             </VBox>
-        </Panel>
-        
+
+            <!-- Input -->
+            <HBox styleClass="input-section">
+                <TextInput placeholder="Add a new task..."
+                           value="{newTodoText}"
+                           keyPress="{handleKeyPress}"
+                           styleClass="todo-input" />
+                <Button label="+" click="{addTodo}" styleClass="add-btn" />
+            </HBox>
+
+            <!-- Filters -->
+            <HBox styleClass="filter-row">
+                <Button label="All" click="{() => filter = 'all'}"
+                        styleClass="filter-btn {filter === 'all' ? 'filter-btn-active' : ''}" />
+                <Button label="Active" click="{() => filter = 'active'}"
+                        styleClass="filter-btn {filter === 'active' ? 'filter-btn-active' : ''}" />
+                <Button label="Done" click="{() => filter = 'completed'}"
+                        styleClass="filter-btn {filter === 'completed' ? 'filter-btn-active' : ''}" />
+            </HBox>
+
+            <!-- Todo List -->
+            <VBox styleClass="todo-list">
+                <Label text="No tasks yet" styleClass="empty-state"
+                       visible="{filteredTodos.length === 0}" />
+
+                <Repeater dataProvider="{filteredTodos}">
+                    <HBox styleClass="todo-item">
+                        <Button label="{item.completed ? '✓' : ''}"
+                                click="{() => toggleTodo(item.id)}"
+                                styleClass="todo-checkbox {item.completed ? 'todo-checkbox-done' : ''}" />
+                        <Label text="{item.text}"
+                               styleClass="todo-text {item.completed ? 'todo-text-done' : ''}" />
+                        <Button label="×" click="{() => deleteTodo(item.id)}"
+                                styleClass="delete-btn" />
+                    </HBox>
+                </Repeater>
+            </VBox>
+
+            <!-- Footer -->
+            <HBox styleClass="footer" visible="{todos.length > 0}">
+                <Label text="{todos.length + ' total, ' + completedCount + ' done'}"
+                       styleClass="footer-text" />
+                <Button label="Clear Done" click="{clearCompleted}"
+                        styleClass="clear-btn" visible="{completedCount > 0}" />
+            </HBox>
+        </VBox>
     </VBox>
 
 </Application>

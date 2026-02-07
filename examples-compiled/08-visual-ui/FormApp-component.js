@@ -11,66 +11,136 @@
     ? window.OpenFlexRuntime
     : require('./runtime/openflex-runtime.js');
 
-  const name = new Signal("");
+  const fullName = new Signal("");
 
   const email = new Signal("");
 
-  const message = new Signal("");
+  const password = new Signal("");
 
-  const subscribe = new Signal(false);
+  const confirmPassword = new Signal("");
+
+  const agreeTerms = new Signal(false);
 
   const submitted = new Signal(false);
 
+  const nameTouched = new Signal(false);
+
+  const emailTouched = new Signal(false);
+
+  const passwordTouched = new Signal(false);
+
+  const confirmTouched = new Signal(false);
+
   const isNameValid = new Computed(() => {
-    return name.value.trim().length >= 3;
+    return fullName.value.trim().length >= 2;
   });
 
   const isEmailValid = new Computed(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.value);
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email.value);
   });
 
-  const isMessageValid = new Computed(() => {
-    return message.value.trim().length >= 10;
+  const isPasswordValid = new Computed(() => {
+    return password.value.length >= 8;
+  });
+
+  const doPasswordsMatch = new Computed(() => {
+    return password.value === confirmPassword.value && confirmPassword.value.length > 0;
   });
 
   const isFormValid = new Computed(() => {
-    return isNameValid.value && isEmailValid.value && isMessageValid.value;
+    return isNameValid.value && isEmailValid.value && isPasswordValid.value && doPasswordsMatch.value && agreeTerms.value;
   });
 
-  const nameError = new Computed(() => {
-    if (name.value.length === 0)   return "";
-    return (isNameValid.value ? "" : "Nome deve ter pelo menos 3 caracteres");
+  const showNameError = new Computed(() => {
+    return nameTouched.value && !isNameValid.value;
   });
 
-  const emailError = new Computed(() => {
-    if (email.value.length === 0)   return "";
-    return (isEmailValid.value ? "" : "Email inválido");
+  const showEmailError = new Computed(() => {
+    return emailTouched.value && !isEmailValid.value;
   });
 
-  const messageError = new Computed(() => {
-    if (message.value.length === 0)   return "";
-    return (isMessageValid.value ? "" : "Mensagem deve ter pelo menos 10 caracteres");
+  const showConfirmError = new Computed(() => {
+    return confirmTouched.value && !doPasswordsMatch.value;
+  });
+
+  const nameInputClass = new Computed(() => {
+    if (!nameTouched.value)   return 'form-input';
+    return (isNameValid.value ? 'form-input input-valid' : 'form-input input-invalid');
+  });
+
+  const emailInputClass = new Computed(() => {
+    if (!emailTouched.value)   return 'form-input';
+    return (isEmailValid.value ? 'form-input input-valid' : 'form-input input-invalid');
+  });
+
+  const passwordInputClass = new Computed(() => {
+    if (!passwordTouched.value)   return 'form-input';
+    return (isPasswordValid.value ? 'form-input input-valid' : 'form-input input-invalid');
+  });
+
+  const confirmInputClass = new Computed(() => {
+    if (!confirmTouched.value)   return 'form-input';
+    return (doPasswordsMatch.value ? 'form-input input-valid' : 'form-input input-invalid');
+  });
+
+  const passwordStrength = new Computed(() => {
+    if (password.value.length === 0)   return "none";
+    if (password.value.length < 6)   return "weak";
+    if (password.value.length < 10)   return "medium";
+    return "strong";
+  });
+
+  const strengthLabel = new Computed(() => {
+    if (passwordStrength.value === "weak")   return "Weak";
+    if (passwordStrength.value === "medium")   return "Medium";
+    if (passwordStrength.value === "strong")   return "Strong";
+    return "";
+  });
+
+  const strengthColor = new Computed(() => {
+    if (passwordStrength.value === "weak")   return "#ff3b30";
+    if (passwordStrength.value === "medium")   return "#ff9500";
+    if (passwordStrength.value === "strong")   return "#34c759";
+    return "#3a3a3c";
+  });
+
+  const showStrength = new Computed(() => {
+    return password.value.length > 0;
+  });
+
+  const bar1Color = new Computed(() => {
+    return (password.value.length >= 1 ? strengthColor.value : "#3a3a3c");
+  });
+
+  const bar2Color = new Computed(() => {
+    return (password.value.length >= 6 ? strengthColor.value : "#3a3a3c");
+  });
+
+  const bar3Color = new Computed(() => {
+    return (password.value.length >= 10 ? strengthColor.value : "#3a3a3c");
   });
 
   function submitForm() {
     if (!isFormValid.value)   return;
-    console.log("Enviando formulário:", email.value, message.value, subscribe.value);
     submitted.value = true;
-    setTimeout(() => {
-      submitted.value = false;
-      name.value = "";
-      email.value = "";
-      message.value = "";
-      subscribe.value = false;
-    }, 3000);
   }
 
-  function resetForm() {
-    name.value = "";
+  function goBack() {
+    submitted.value = false;
+    fullName.value = "";
     email.value = "";
-    message.value = "";
-    subscribe.value = false;
+    password.value = "";
+    confirmPassword.value = "";
+    agreeTerms.value = false;
+    nameTouched.value = false;
+    emailTouched.value = false;
+    passwordTouched.value = false;
+    confirmTouched.value = false;
+  }
+
+  function toggleTerms() {
+    agreeTerms.value = !agreeTerms.value;
   }
 
 
@@ -88,149 +158,57 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../runtime/neo-flex-classic-theme.css');
-
-        .form-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            font-size: 14px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 8px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            font-size: 16px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .form-input-error {
-            border-color: #e74c3c;
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 12px 16px;
-            font-size: 16px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            min-height: 120px;
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        .error-message {
-            font-size: 12px;
-            color: #e74c3c;
-            margin-top: 5px;
-        }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .reset-btn {
-            background: transparent;
-            color: #7f8c8d;
-            padding: 12px 30px;
-            font-size: 16px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .success-message {
-            background: #27ae60;
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-        }</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='./form-app.css'>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
-          <div id='box_2' class='neo-box'>
-            <div id='vbox_3' class='neo-vbox'>
-              <span id='label_4' class='neo-label'>📝 Formulário de Contato</span>
-              <div id='vbox_5' class='neo-vbox form-group'>
-                <span id='label_6' class='neo-label form-label'>Nome</span>
-                <input type='text' id='input_7' class='neo-textinput' placeholder='Digite seu nome completo' />
-                <span id='label_8' class='neo-label error-message'></span>
+        <div id='vbox_1' class='neo-vbox form-container'>
+          <div id='vbox_2' class='neo-vbox form-card'>
+            <div id='vbox_3' class='neo-vbox form-header'>
+              <span id='label_4' class='neo-label form-title'>Create Account</span>
+              <span id='label_5' class='neo-label form-subtitle'>Sign up to get started</span>
+            </div>
+            <div id='vbox_6' class='neo-vbox form-body'>
+              <div id='vbox_7' class='neo-vbox input-group'>
+                <span id='label_8' class='neo-label input-label'>Full Name</span>
+                <input type='text' id='input_9' class='neo-textinput' placeholder='John Doe' />
+                <span id='label_10' class='neo-label error-text'>Name must be at least 2 characters</span>
               </div>
-              <div id='vbox_9' class='neo-vbox form-group'>
-                <span id='label_10' class='neo-label form-label'>Email</span>
-                <input type='text' id='input_11' class='neo-textinput' placeholder='seu@email.com' />
-                <span id='label_12' class='neo-label error-message'></span>
+              <div id='vbox_11' class='neo-vbox input-group'>
+                <span id='label_12' class='neo-label input-label'>Email Address</span>
+                <input type='text' id='input_13' class='neo-textinput' placeholder='john@example.com' />
+                <span id='label_14' class='neo-label error-text'>Please enter a valid email address</span>
               </div>
-              <div id='vbox_13' class='neo-vbox form-group'>
-                <span id='label_14' class='neo-label form-label'>Mensagem</span>
-                <input type='text' id='input_15' class='neo-textinput' placeholder='Digite sua mensagem aqui...' />
-                <span id='label_16' class='neo-label error-message'></span>
+              <div id='vbox_15' class='neo-vbox input-group'>
+                <span id='label_16' class='neo-label input-label'>Password</span>
+                <input type='text' id='input_17' class='neo-textinput' placeholder='At least 8 characters' />
+                <div id='hbox_18' class='neo-hbox password-strength'>
+                  <div id='box_19' class='neo-box'>
+                  </div>
+                  <div id='box_20' class='neo-box'>
+                  </div>
+                  <div id='box_21' class='neo-box'>
+                  </div>
+                  <span id='label_22' class='neo-label strength-label'></span>
+                </div>
               </div>
-              <div id='hbox_17' class='neo-hbox checkbox-container'>
-                <input type='checkbox' id='checkbox_18' class='neo-checkbox' />
-                <span id='label_19' class='neo-label'>Quero receber novidades por email</span>
+              <div id='vbox_23' class='neo-vbox input-group'>
+                <span id='label_24' class='neo-label input-label'>Confirm Password</span>
+                <input type='text' id='input_25' class='neo-textinput' placeholder='Repeat your password' />
+                <span id='label_26' class='neo-label error-text'>Passwords do not match</span>
               </div>
-              <div id='vbox_20' class='neo-vbox'>
-                <button id='btn_21' class='neo-button submit-btn'>📨 Enviar Mensagem</button>
-                <button id='btn_22' class='neo-button reset-btn'>🔄 Limpar Formulário</button>
+              <div id='hbox_27' class='neo-hbox checkbox-row'>
+                <button id='btn_28' class='neo-button'></button>
+                <span id='label_29' class='neo-label checkbox-label'>I agree to the Terms and Privacy Policy</span>
               </div>
-              <span id='label_23' class='neo-label' style='color: #7f8c8d'></span>
+              <button id='btn_30' class='neo-button submit-btn'>Create Account</button>
             </div>
           </div>
-          <div id='box_24' class='neo-box'>
-            <div id='vbox_25' class='neo-vbox h-align-center'>
-              <span id='label_26' class='neo-label'>✅ Mensagem Enviada!</span>
-              <span id='label_27' class='neo-label'>Obrigado pelo contato! Responderemos em breve.</span>
-              <span id='label_28' class='neo-label' style='color: #7f8c8d'>Este formulário será resetado automaticamente...</span>
+          <div id='vbox_31' class='neo-vbox form-card'>
+            <div id='vbox_32' class='neo-vbox success-content'>
+              <span id='label_33' class='neo-label success-icon'>🎉</span>
+              <span id='label_34' class='neo-label success-title'>Welcome Aboard!</span>
+              <span id='label_35' class='neo-label success-text'></span>
+              <button id='btn_36' class='neo-button back-btn'>Back to Form</button>
             </div>
           </div>
         </div>
@@ -242,80 +220,106 @@
     }
 
     attachEventHandlers() {
-      const el_btn_21 = this.shadowRoot.getElementById('btn_21');
-      if (el_btn_21) el_btn_21.addEventListener('click', () => submitForm());
-      const el_btn_22 = this.shadowRoot.getElementById('btn_22');
-      if (el_btn_22) el_btn_22.addEventListener('click', () => resetForm());
+      const el_btn_28 = this.shadowRoot.getElementById('btn_28');
+      if (el_btn_28) el_btn_28.addEventListener('click', () => toggleTerms());
+      const el_btn_30 = this.shadowRoot.getElementById('btn_30');
+      if (el_btn_30) el_btn_30.addEventListener('click', () => submitForm());
+      const el_btn_36 = this.shadowRoot.getElementById('btn_36');
+      if (el_btn_36) el_btn_36.addEventListener('click', () => goBack());
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('box_2');
+        const el = this.shadowRoot.getElementById('vbox_2');
         if (el) el.style.display = (!submitted.value) ? 'block' : 'none';
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_7');
-        if (el) el.value = name.value;
+        const el = this.shadowRoot.getElementById('input_9');
+        if (el) el.blur = () => nameTouched.value = true;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_7');
-        if (el) el.className = 'form-input ' + (nameError.value ? 'form-input-error' : '');
+        const el = this.shadowRoot.getElementById('input_9');
+        if (el) el.className = nameInputClass.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_8');
-        if (el) el.style.display = (nameError.value.length > 0) ? 'block' : 'none';
+        const el = this.shadowRoot.getElementById('label_10');
+        if (el) el.style.display = showNameError.value ? 'block' : 'none';
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_8');
-        if (el) el.textContent = nameError.value;
+        const el = this.shadowRoot.getElementById('input_13');
+        if (el) el.blur = () => emailTouched.value = true;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_11');
-        if (el) el.value = email.value;
+        const el = this.shadowRoot.getElementById('input_13');
+        if (el) el.className = emailInputClass.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_11');
-        if (el) el.className = 'form-input ' + (emailError.value ? 'form-input-error' : '');
+        const el = this.shadowRoot.getElementById('label_14');
+        if (el) el.style.display = showEmailError.value ? 'block' : 'none';
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_12');
-        if (el) el.style.display = (emailError.value.length > 0) ? 'block' : 'none';
+        const el = this.shadowRoot.getElementById('input_17');
+        if (el) el.blur = () => passwordTouched.value = true;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_12');
-        if (el) el.textContent = emailError.value;
+        const el = this.shadowRoot.getElementById('input_17');
+        if (el) el.className = passwordInputClass.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_15');
-        if (el) el.value = message.value;
+        const el = this.shadowRoot.getElementById('hbox_18');
+        if (el) el.style.display = showStrength.value ? 'block' : 'none';
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_15');
-        if (el) el.className = 'form-textarea ' + (messageError.value ? 'form-input-error' : '');
+        const el = this.shadowRoot.getElementById('box_19');
+        if (el) el.style.backgroundColor = bar1Color.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_16');
-        if (el) el.style.display = (messageError.value.length > 0) ? 'block' : 'none';
+        const el = this.shadowRoot.getElementById('box_20');
+        if (el) el.style.backgroundColor = bar2Color.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_16');
-        if (el) el.textContent = messageError.value;
+        const el = this.shadowRoot.getElementById('box_21');
+        if (el) el.style.backgroundColor = bar3Color.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('checkbox_18');
-        if (el) el.checked = subscribe.value;
+        const el = this.shadowRoot.getElementById('label_22');
+        if (el) el.style.color = strengthColor.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_21');
+        const el = this.shadowRoot.getElementById('label_22');
+        if (el) el.textContent = strengthLabel.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('input_25');
+        if (el) el.blur = () => confirmTouched.value = true;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('input_25');
+        if (el) el.className = confirmInputClass.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_26');
+        if (el) el.style.display = showConfirmError.value ? 'block' : 'none';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_28');
+        if (el) el.className = `checkbox-custom ${agreeTerms.value ? 'checkbox-checked' : ''}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_28');
+        if (el) el.textContent = agreeTerms.value ? '✓' : '';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_30');
         if (el) el.disabled = !isFormValid.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_23');
-        if (el) el.textContent = 'Campos preenchidos: ' + (isNameValid.value ? '✅' : '❌') + ' Nome | ' + (isEmailValid.value ? '✅' : '❌') + ' Email | ' + (isMessageValid.value ? '✅' : '❌') + ' Mensagem';
+        const el = this.shadowRoot.getElementById('vbox_31');
+        if (el) el.style.display = submitted.value ? 'block' : 'none';
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('box_24');
-        if (el) el.style.display = submitted.value ? 'block' : 'none';
+        const el = this.shadowRoot.getElementById('label_35');
+        if (el) el.textContent = 'Your account has been created successfully. Welcome, ' + fullName.value + '!';
       });
     }
   }

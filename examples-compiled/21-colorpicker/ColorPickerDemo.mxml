@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="ColorPicker - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var primaryColor: String = '#5856d6';
+        @reactive var secondaryColor: String = '#ff9500';
+        @reactive var bgColor: String = '#1c1c1e';
+        @reactive var textColor: String = '#ffffff';
+
+        @computed var previewStyle: String {
+            return 'background: ' + bgColor + '; color: ' + textColor + '; padding: 24px; border-radius: 12px;';
+        }
+
+        function setColor(color): void {
+            primaryColor = color;
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./colorpicker-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="ColorPicker" styleClass="title" />
+                <Label text="Interactive color selection with live preview" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Grid -->
+            <HBox styleClass="grid">
+                <!-- Color Pickers -->
+                <VBox styleClass="card">
+                    <HBox styleClass="card-header">
+                        <Label text="🎨" styleClass="card-icon" />
+                        <Label text="Theme Colors" styleClass="card-title" />
+                    </HBox>
+
+                    <HBox styleClass="color-row">
+                        <Label text="Primary Color" styleClass="color-label" />
+                        <ColorPicker selectedColor="{primaryColor}" />
+                        <Label text="{primaryColor}" styleClass="color-value" />
+                    </HBox>
+
+                    <HBox styleClass="color-row">
+                        <Label text="Secondary Color" styleClass="color-label" />
+                        <ColorPicker selectedColor="{secondaryColor}" />
+                        <Label text="{secondaryColor}" styleClass="color-value" />
+                    </HBox>
+
+                    <HBox styleClass="color-row">
+                        <Label text="Background" styleClass="color-label" />
+                        <ColorPicker selectedColor="{bgColor}" />
+                        <Label text="{bgColor}" styleClass="color-value" />
+                    </HBox>
+
+                    <HBox styleClass="color-row">
+                        <Label text="Text Color" styleClass="color-label" />
+                        <ColorPicker selectedColor="{textColor}" />
+                        <Label text="{textColor}" styleClass="color-value" />
+                    </HBox>
+                </VBox>
+
+                <!-- Preview -->
+                <VBox styleClass="card">
+                    <HBox styleClass="card-header">
+                        <Label text="👁️" styleClass="card-icon" />
+                        <Label text="Live Preview" styleClass="card-title" />
+                    </HBox>
+
+                    <VBox styleClass="preview-box" style="{previewStyle}">
+                        <Label text="Preview Title" styleClass="preview-title" />
+                        <Label text="This uses your selected colors" styleClass="preview-text" />
+                    </VBox>
+
+                    <HBox styleClass="color-boxes">
+                        <VBox styleClass="color-box" style="background: {primaryColor};">
+                            <Label text="PRIMARY" styleClass="color-box-label" style="color: #fff;" />
+                        </VBox>
+                        <VBox styleClass="color-box" style="background: {secondaryColor};">
+                            <Label text="SECONDARY" styleClass="color-box-label" style="color: #fff;" />
+                        </VBox>
+                    </HBox>
+
+                    <Label text="Quick Swatches" styleClass="swatches-title" />
+                    <HBox styleClass="swatch-row">
+                        <Box styleClass="swatch" style="background: #ff3b30;" click="{() => setColor('#ff3b30')}" />
+                        <Box styleClass="swatch" style="background: #ff9500;" click="{() => setColor('#ff9500')}" />
+                        <Box styleClass="swatch" style="background: #34c759;" click="{() => setColor('#34c759')}" />
+                        <Box styleClass="swatch" style="background: #007aff;" click="{() => setColor('#007aff')}" />
+                        <Box styleClass="swatch" style="background: #5856d6;" click="{() => setColor('#5856d6')}" />
+                        <Box styleClass="swatch" style="background: #af52de;" click="{() => setColor('#af52de')}" />
+                    </HBox>
+                </VBox>
+            </HBox>
+        </VBox>
+    </VBox>
+
+</Application>

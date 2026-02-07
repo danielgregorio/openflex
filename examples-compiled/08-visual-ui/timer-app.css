@@ -1,0 +1,88 @@
+/* Timer App Styles */
+@import url('../runtime/openflex-ios-theme.css');
+
+.timer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+.timer {
+    background: #000000;
+    padding: 30px;
+    border-radius: 30px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+    width: 340px;
+}
+.display {
+    color: white;
+    font-size: 72px;
+    font-weight: 200;
+    text-align: center;
+    padding: 30px 10px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    letter-spacing: 2px;
+}
+.btn-row {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 20px 0;
+}
+.timer-btn {
+    width: 80px;
+    height: 80px;
+    font-size: 16px;
+    font-weight: 500;
+    border: 2px solid;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+.timer-btn:active {
+    opacity: 0.7;
+}
+.btn-start {
+    color: #34c759;
+    border-color: #34c759;
+    background: rgba(52, 199, 89, 0.15);
+}
+.btn-stop {
+    color: #ff3b30;
+    border-color: #ff3b30;
+    background: rgba(255, 59, 48, 0.15);
+}
+.btn-reset {
+    color: white;
+    border-color: #8e8e93;
+    background: rgba(142, 142, 147, 0.15);
+}
+.btn-lap {
+    color: #8e8e93;
+    border-color: #3a3a3c;
+    background: transparent;
+}
+.lap-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 20px;
+    border-top: 1px solid #333;
+    padding-top: 15px;
+}
+.lap-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #222;
+    color: white;
+    font-size: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', monospace;
+}
+.lap-number {
+    color: #8e8e93;
+}

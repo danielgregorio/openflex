@@ -1,0 +1,9 @@
+{
+  "browserShare": [
+    { "name": "Chrome", "value": 65 },
+    { "name": "Safari", "value": 18 },
+    { "name": "Firefox", "value": 8 },
+    { "name": "Edge", "value": 5 },
+    { "name": "Outros", "value": 4 }
+  ]
+}

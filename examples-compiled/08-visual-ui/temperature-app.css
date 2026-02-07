@@ -1,0 +1,103 @@
+/* Temperature App Styles */
+@import url('../runtime/openflex-ios-theme.css');
+
+.temp-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+.temp-card {
+    background: #1c1c1e;
+    border-radius: 30px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+    width: 340px;
+    overflow: hidden;
+}
+.weather-display {
+    padding: 40px 30px;
+    text-align: center;
+    transition: background 0.5s ease;
+}
+.weather-emoji {
+    font-size: 80px;
+    margin-bottom: 15px;
+}
+.weather-status {
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+.temp-main {
+    color: white;
+    font-size: 72px;
+    font-weight: 200;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+.temp-unit {
+    font-size: 36px;
+    opacity: 0.7;
+}
+.slider-section {
+    padding: 25px 30px;
+    background: #2c2c2e;
+}
+.slider-label {
+    display: flex;
+    justify-content: space-between;
+    color: #8e8e93;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+.temp-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #00b4db, #48b1bf, #56ab2f, #f7971e, #f12711, #c31432);
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+}
+.conversions {
+    display: flex;
+    padding: 20px;
+    gap: 10px;
+    background: #1c1c1e;
+}
+.conversion-card {
+    flex: 1;
+    background: #2c2c2e;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+}
+.conversion-value {
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+.conversion-label {
+    color: #8e8e93;
+    font-size: 13px;
+}
+.quick-temps {
+    display: flex;
+    padding: 0 20px 20px;
+    gap: 8px;
+}
+.quick-btn {
+    flex: 1;
+    background: #3a3a3c;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+}
+.quick-btn:active {
+    background: #4a4a4c;
+}

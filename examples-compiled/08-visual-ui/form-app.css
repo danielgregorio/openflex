@@ -1,0 +1,163 @@
+/* Form App Styles */
+@import url('../runtime/openflex-ios-theme.css');
+
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+.form-card {
+    background: #1c1c1e;
+    border-radius: 25px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+    width: 380px;
+    max-width: 100%;
+    overflow: hidden;
+}
+.form-card * {
+    box-sizing: border-box;
+}
+.form-header {
+    padding: 30px 25px 20px;
+    text-align: center;
+}
+.form-title {
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.form-subtitle {
+    color: #8e8e93;
+    font-size: 15px;
+}
+.form-body {
+    padding: 10px 25px 25px;
+}
+.input-group {
+    margin-bottom: 18px;
+}
+.input-label {
+    color: #8e8e93;
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: block;
+}
+.form-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #2c2c2e;
+    border: 2px solid #3a3a3c;
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: white;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+.form-input:focus {
+    border-color: #007aff;
+    outline: none;
+}
+.input-valid {
+    border-color: #34c759;
+}
+.input-invalid {
+    border-color: #ff3b30;
+}
+.error-text {
+    color: #ff3b30;
+    font-size: 12px;
+    margin-top: 6px;
+}
+.password-strength {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    align-items: center;
+}
+.strength-bar {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+}
+.strength-label {
+    font-size: 12px;
+    min-width: 50px;
+    text-align: right;
+}
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+.checkbox-custom {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #3a3a3c;
+    border-radius: 6px;
+    background: #2c2c2e;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+}
+.checkbox-checked {
+    background: #007aff;
+    border-color: #007aff;
+}
+.checkbox-label {
+    color: #8e8e93;
+    font-size: 14px;
+}
+.submit-btn {
+    width: 100%;
+    background: #007aff;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    color: white;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.submit-btn:active:not(:disabled) {
+    opacity: 0.8;
+}
+.success-content {
+    padding: 50px 30px;
+    text-align: center;
+}
+.success-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+.success-title {
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.success-text {
+    color: #8e8e93;
+    font-size: 15px;
+    margin-bottom: 30px;
+}
+.back-btn {
+    background: #2c2c2e;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 30px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}

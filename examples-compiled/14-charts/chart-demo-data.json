@@ -1,0 +1,31 @@
+{
+  "salesData": [
+    { "month": "Jan", "sales": 4500, "lastYear": 3800 },
+    { "month": "Feb", "sales": 5200, "lastYear": 4200 },
+    { "month": "Mar", "sales": 4800, "lastYear": 4500 },
+    { "month": "Apr", "sales": 6100, "lastYear": 5000 },
+    { "month": "May", "sales": 5800, "lastYear": 5200 },
+    { "month": "Jun", "sales": 7200, "lastYear": 5800 }
+  ],
+  "marketShare": [
+    { "name": "Product A", "value": 35 },
+    { "name": "Product B", "value": 28 },
+    { "name": "Product C", "value": 22 },
+    { "name": "Others", "value": 15 }
+  ],
+  "performanceData": [
+    { "team": "Sales", "score": 92 },
+    { "team": "Marketing", "score": 78 },
+    { "team": "Support", "score": 85 },
+    { "team": "Engineering", "score": 95 },
+    { "team": "HR", "score": 70 }
+  ],
+  "trendData": [
+    { "month": "Jan", "visitors": 12000 },
+    { "month": "Feb", "visitors": 15000 },
+    { "month": "Mar", "visitors": 18000 },
+    { "month": "Apr", "visitors": 22000 },
+    { "month": "May", "visitors": 28000 },
+    { "month": "Jun", "visitors": 35000 }
+  ]
+}

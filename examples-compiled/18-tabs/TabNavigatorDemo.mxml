@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="TabNavigator and ViewStack - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var selectedTab: Number = 0;
+        @reactive var viewStackIndex: Number = 0;
+        @reactive var notifications: Number = 5;
+        @reactive var messages: Number = 12;
+
+        function onTabChange(event): void {
+            selectedTab = event.index;
+        }
+
+        function prevView(): void {
+            viewStackIndex = Math.max(0, viewStackIndex - 1);
+        }
+
+        function nextView(): void {
+            viewStackIndex = Math.min(2, viewStackIndex + 1);
+        }
+
+        function goToView(index): void {
+            viewStackIndex = index;
+        }
+
+        @computed var viewLabel: String {
+            return 'View ' + (viewStackIndex + 1) + ' of 3';
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./tabnavigator-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="TabNavigator and ViewStack" styleClass="title" />
+                <Label text="Navigation containers for switchable views" styleClass="subtitle" />
+            </VBox>
+
+            <!-- TabNavigator -->
+            <VBox styleClass="card">
+                <HBox styleClass="card-header">
+                    <HBox styleClass="card-title-row">
+                        <Label text="📑" styleClass="card-icon" />
+                        <Label text="TabNavigator" styleClass="card-title" />
+                    </HBox>
+                </HBox>
+
+                <TabNavigator selectedIndex="{selectedTab}" change="{onTabChange}" width="100%">
+                    <Tab label="Dashboard">
+                        <VBox styleClass="tab-content">
+                            <Label text="Dashboard Overview" styleClass="content-title" />
+                            <Label text="Welcome to your dashboard. Here you can see an overview of your account activity and key metrics." styleClass="content-text" />
+                            <HBox styleClass="stats-row">
+                                <VBox styleClass="stat-box">
+                                    <Label text="{notifications}" styleClass="stat-value" />
+                                    <Label text="Notifications" styleClass="stat-label" />
+                                </VBox>
+                                <VBox styleClass="stat-box">
+                                    <Label text="{messages}" styleClass="stat-value" />
+                                    <Label text="Messages" styleClass="stat-label" />
+                                </VBox>
+                                <VBox styleClass="stat-box">
+                                    <Label text="98%" styleClass="stat-value" style="color: #34c759;" />
+                                    <Label text="Uptime" styleClass="stat-label" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </Tab>
+                    <Tab label="Profile">
+                        <VBox styleClass="tab-content">
+                            <Label text="User Profile" styleClass="content-title" />
+                            <Label text="Manage your personal information and account settings." styleClass="content-text" />
+                            <VBox style="margin-top: 16px;">
+                                <HBox styleClass="profile-row">
+                                    <Label text="Name" styleClass="profile-label" />
+                                    <Label text="John Doe" styleClass="profile-value" />
+                                </HBox>
+                                <HBox styleClass="profile-row">
+                                    <Label text="Email" styleClass="profile-label" />
+                                    <Label text="john@example.com" styleClass="profile-value" />
+                                </HBox>
+                                <HBox styleClass="profile-row">
+                                    <Label text="Role" styleClass="profile-label" />
+                                    <Label text="Administrator" styleClass="profile-value" />
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </Tab>
+                    <Tab label="Settings">
+                        <VBox styleClass="tab-content">
+                            <Label text="Application Settings" styleClass="content-title" />
+                            <Label text="Configure your application preferences." styleClass="content-text" />
+                            <VBox style="margin-top: 16px;">
+                                <HBox styleClass="settings-row">
+                                    <CheckBox selected="true" />
+                                    <Label text="Enable notifications" style="color: #fff;" />
+                                </HBox>
+                                <HBox styleClass="settings-row">
+                                    <CheckBox selected="true" />
+                                    <Label text="Dark mode" style="color: #fff;" />
+                                </HBox>
+                                <HBox styleClass="settings-row">
+                                    <CheckBox />
+                                    <Label text="Auto-save drafts" style="color: #fff;" />
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </Tab>
+                </TabNavigator>
+            </VBox>
+
+            <!-- ViewStack -->
+            <VBox styleClass="card">
+                <HBox styleClass="card-header">
+                    <HBox styleClass="card-title-row">
+                        <Label text="📚" styleClass="card-icon" />
+                        <Label text="ViewStack (Manual Control)" styleClass="card-title" />
+                    </HBox>
+                    <Label text="{viewLabel}" styleClass="view-indicator" />
+                </HBox>
+
+                <VBox styleClass="tab-content">
+                    <HBox styleClass="view-controls">
+                        <Button label="◀ Previous" click="{prevView}" styleClass="view-btn" />
+                        <Button label="View 1" click="{() => goToView(0)}" styleClass="view-btn" />
+                        <Button label="View 2" click="{() => goToView(1)}" styleClass="view-btn" />
+                        <Button label="View 3" click="{() => goToView(2)}" styleClass="view-btn" />
+                        <Button label="Next ▶" click="{nextView}" styleClass="view-btn" />
+                    </HBox>
+
+                    <ViewStack selectedIndex="{viewStackIndex}">
+                        <VBox styleClass="viewstack-view view-welcome">
+                            <Label text="Welcome View" styleClass="content-title" />
+                            <Label text="This is the first view in the stack. Use the buttons above to navigate." styleClass="content-text" />
+                        </VBox>
+                        <VBox styleClass="viewstack-view view-analytics">
+                            <Label text="Analytics View" styleClass="content-title" />
+                            <Label text="This is the second view showing analytics and reports." styleClass="content-text" />
+                        </VBox>
+                        <VBox styleClass="viewstack-view view-complete">
+                            <Label text="Complete View" styleClass="content-title" />
+                            <Label text="This is the final view. You have reached the end!" styleClass="content-text" />
+                        </VBox>
+                    </ViewStack>
+                </VBox>
+            </VBox>
+        </VBox>
+    </VBox>
+
+</Application>

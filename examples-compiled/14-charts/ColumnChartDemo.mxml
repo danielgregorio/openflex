@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Column Chart Demo">
+
+    <fx:Script><![CDATA[
+        // Dados de vendas trimestrais por produto
+        @reactive var salesData: Array = [
+            {quarter: "Q1", productA: 12500, productB: 9800, productC: 7200},
+            {quarter: "Q2", productA: 15800, productB: 11200, productC: 8900},
+            {quarter: "Q3", productA: 14200, productB: 13500, productC: 10100},
+            {quarter: "Q4", productA: 18900, productB: 15200, productC: 12800}
+        ];
+
+        function randomizeData(): void {
+            salesData = salesData.map(d => ({
+                ...d,
+                productA: Math.floor(Math.random() * 10000) + 10000,
+                productB: Math.floor(Math.random() * 8000) + 8000,
+                productC: Math.floor(Math.random() * 6000) + 6000
+            }));
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./column-chart-demo.css');
+    </fx:Style>
+
+    <Panel title="ColumnChart - Grafico de Colunas Verticais">
+        <VBox gap="15" width="100%">
+            <Label text="O ColumnChart exibe dados em colunas verticais, ideal para comparar valores entre categorias." />
+
+            <HBox horizontalAlign="right" width="100%">
+                <Button label="Atualizar Dados" click="{randomizeData}" />
+            </HBox>
+
+            <ColumnChart dataProvider="{salesData}" width="100%" height="350">
+                <horizontalAxis>
+                    <CategoryAxis categoryField="quarter" title="Trimestre" />
+                </horizontalAxis>
+                <verticalAxis>
+                    <LinearAxis minimum="0" title="Vendas (R$)" />
+                </verticalAxis>
+                <series>
+                    <ColumnSeries yField="productA" displayName="Produto A" />
+                    <ColumnSeries yField="productB" displayName="Produto B" />
+                    <ColumnSeries yField="productC" displayName="Produto C" />
+                </series>
+            </ColumnChart>
+
+            <Panel title="Codigo Fonte">
+                <VBox gap="5">
+                    <Label text="&lt;ColumnChart dataProvider='{salesData}' width='100%' height='350'&gt;" />
+                    <Label text="    &lt;horizontalAxis&gt;" />
+                    <Label text="        &lt;CategoryAxis categoryField='quarter' title='Trimestre' /&gt;" />
+                    <Label text="    &lt;/horizontalAxis&gt;" />
+                    <Label text="    &lt;verticalAxis&gt;" />
+                    <Label text="        &lt;LinearAxis minimum='0' title='Vendas (R$)' /&gt;" />
+                    <Label text="    &lt;/verticalAxis&gt;" />
+                    <Label text="    &lt;series&gt;" />
+                    <Label text="        &lt;ColumnSeries yField='productA' displayName='Produto A' /&gt;" />
+                    <Label text="        &lt;ColumnSeries yField='productB' displayName='Produto B' /&gt;" />
+                    <Label text="        &lt;ColumnSeries yField='productC' displayName='Produto C' /&gt;" />
+                    <Label text="    &lt;/series&gt;" />
+                    <Label text="&lt;/ColumnChart&gt;" />
+                </VBox>
+            </Panel>
+        </VBox>
+    </Panel>
+</Application>

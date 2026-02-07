@@ -1,0 +1,131 @@
+{
+  "fileSystem": [
+    {
+      "name": "Documents",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "Work",
+          "icon": "📁",
+          "children": [
+            { "name": "Report.docx", "icon": "📄", "size": "2.5 MB" },
+            { "name": "Presentation.pptx", "icon": "📊", "size": "5.1 MB" },
+            { "name": "Budget.xlsx", "icon": "📈", "size": "1.2 MB" }
+          ]
+        },
+        {
+          "name": "Personal",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "Photos",
+              "icon": "📁",
+              "children": [
+                { "name": "vacation.jpg", "icon": "🖼️", "size": "3.2 MB" },
+                { "name": "family.jpg", "icon": "🖼️", "size": "2.8 MB" }
+              ]
+            },
+            { "name": "Notes.txt", "icon": "📝", "size": "12 KB" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Downloads",
+      "icon": "📥",
+      "children": [
+        { "name": "installer.exe", "icon": "⚙️", "size": "45 MB" },
+        { "name": "music.mp3", "icon": "🎵", "size": "8.5 MB" },
+        { "name": "video.mp4", "icon": "🎬", "size": "250 MB" }
+      ]
+    },
+    {
+      "name": "Projects",
+      "icon": "💻",
+      "children": [
+        {
+          "name": "OpenFlex",
+          "icon": "🚀",
+          "children": [
+            {
+              "name": "src",
+              "icon": "📁",
+              "children": [
+                { "name": "compiler.py", "icon": "🐍", "size": "45 KB" },
+                { "name": "runtime.js", "icon": "📜", "size": "12 KB" }
+              ]
+            },
+            { "name": "README.md", "icon": "📖", "size": "5 KB" },
+            { "name": "package.json", "icon": "📦", "size": "1 KB" }
+          ]
+        }
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "label": "Electronics",
+      "icon": "🔌",
+      "children": [
+        {
+          "label": "Computers",
+          "icon": "💻",
+          "children": [
+            { "label": "Laptops", "icon": "💻" },
+            { "label": "Desktops", "icon": "🖥️" },
+            { "label": "Tablets", "icon": "📱" }
+          ]
+        },
+        {
+          "label": "Phones",
+          "icon": "📱",
+          "children": [
+            { "label": "Smartphones", "icon": "📱" },
+            { "label": "Accessories", "icon": "🎧" }
+          ]
+        },
+        {
+          "label": "Audio",
+          "icon": "🎵",
+          "children": [
+            { "label": "Headphones", "icon": "🎧" },
+            { "label": "Speakers", "icon": "🔊" }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Clothing",
+      "icon": "👔",
+      "children": [
+        {
+          "label": "Men",
+          "icon": "👔",
+          "children": [
+            { "label": "Shirts", "icon": "👕" },
+            { "label": "Pants", "icon": "👖" },
+            { "label": "Shoes", "icon": "👟" }
+          ]
+        },
+        {
+          "label": "Women",
+          "icon": "👗",
+          "children": [
+            { "label": "Dresses", "icon": "👗" },
+            { "label": "Tops", "icon": "👚" },
+            { "label": "Shoes", "icon": "👠" }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Home & Garden",
+      "icon": "🏠",
+      "children": [
+        { "label": "Furniture", "icon": "🪑" },
+        { "label": "Decor", "icon": "🖼️" },
+        { "label": "Kitchen", "icon": "🍳" }
+      ]
+    }
+  ]
+}

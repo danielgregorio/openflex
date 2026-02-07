@@ -11,46 +11,68 @@
     ? window.OpenFlexRuntime
     : require('./runtime/openflex-runtime.js');
 
-  const employees = new Signal([{ name: 'João Silva', department: 'Engenharia', salary: 8500, status: 'Ativo' }, { name: 'Maria Santos', department: 'Marketing', salary: 7200, status: 'Ativo' }, { name: 'Pedro Costa', department: 'Vendas', salary: 6800, status: 'Férias' }, { name: 'Ana Oliveira', department: 'Engenharia', salary: 9200, status: 'Ativo' }, { name: 'Carlos Souza', department: 'RH', salary: 5900, status: 'Ativo' }]);
+  const employees = new Signal([]);
 
-  const categories = new Signal([{ label: 'Todos os Departamentos', value: 'all' }, { label: 'Engenharia', value: 'eng' }, { label: 'Marketing', value: 'mkt' }, { label: 'Vendas', value: 'sales' }, { label: 'RH', value: 'hr' }]);
+  const activities = new Signal([]);
 
-  const activities = new Signal([{ label: '✅ João concluiu projeto Alpha' }, { label: '📝 Maria criou relatório mensal' }, { label: '🎯 Pedro bateu meta de vendas' }, { label: '💼 Ana iniciou sprint 24' }, { label: '👥 Carlos agendou treinamento' }]);
+  const selectedEmployee = new Signal(-1);
 
-  const selectedCategory = new Signal(0);
+  const filter = new Signal('all');
 
-  const statusMessage = new Signal('Selecione um departamento para filtrar');
-
-  function addEmployee() {
-    const newEmp = { name: 'Novo Funcionário', department: 'Engenharia', salary: 7000, status: 'Ativo' };
-    employees.value = [...employees.value, newEmp];
-    statusMessage.value = 'Funcionário adicionado! Total: ' + employees.value.length;
-  }
-
-  function removeLastEmployee() {
-    if (employees.value.length > 0) {
-      employees.value = employees.value.slice(0, -1);
-      statusMessage.value = 'Funcionário removido! Total: ' + employees.value.length;
+  async function loadExternalData() {
+    try {
+      const response = await fetch('./data-components-demo-data.json');
+      const data = await response.json();
+      employees.value = data.employees;
+      activities.value = data.activities;
+    } catch (error) {
+      console.error('Error loading data:', error);
     }
   }
 
-  function addActivity() {
-    const messages = ['🎉 Nova conquista desbloqueada!', '📊 Dashboard atualizado', '🔔 Notificação recebida', '⚡ Sistema otimizado', '🎨 Interface melhorada'];
-    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-    activities.value = [{ label: randomMsg }, ...activities.value];
+  const filteredEmployees = new Computed(() => {
+    if (filter.value === 'all')   return employees.value;
+    return employees.value.filter(e => e.status === filter.value);
+  });
+
+  const totalSalary = new Computed(() => {
+    return employees.value.reduce((sum, e) => sum + e.salary, 0);
+  });
+
+  const avgSalary = new Computed(() => {
+    return Math.round(totalSalary.value / employees.value.length) || 0;
+  });
+
+  const activeCount = new Computed(() => {
+    return employees.value.filter(e => e.status === 'active').length;
+  });
+
+  function addEmployee() {
+    const names = ['Chris', 'Taylor', 'Morgan', 'Casey', 'Jamie'];
+    const roles = ['Engineer', 'Designer', 'Manager', 'Marketing'];
+    const name = names[Math.floor(Math.random() * names.length)] + ' ' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + '.';
+    employees.value = [...employees.value, { id: employees.value.length + 1, name: name, role: roles[Math.floor(Math.random() * roles.length)], salary: 70000 + Math.floor(Math.random() * 40000), status: 'active' }];
   }
 
-  const totalEmployees = new Computed(() => {
-    return employees.value.length;
-  });
+  function removeEmployee(id) {
+    employees.value = employees.value.filter(e => e.id !== id);
+  }
 
-  const totalSalaries = new Computed(() => {
-    return employees.value.reduce((sum, emp) => sum + emp.salary, 0);
-  });
+  function toggleStatus(id) {
+    employees.value = employees.value.map((e => e.id === id ? { ...e, status: (e.status === 'active' ? 'away' : 'active') } : e));
+  }
 
-  const averageSalary = new Computed(() => {
-    return (totalEmployees.value > 0 ? totalSalaries.value / totalEmployees.value : 0);
-  });
+  function selectEmployee(index) {
+    (selectedEmployee.value = selectedEmployee.value === index ? -1 : index);
+  }
+
+  function getStatusClass(status) {
+    return (status === 'active' ? 'badge-green' : 'badge-orange');
+  }
+
+  function formatSalary(amount) {
+    return '$' + amount.toLocaleString();
+  }
 
 
   // Application Component
@@ -62,149 +84,72 @@
 
     connectedCallback() {
       this.render();
-      this.setupReactivity();
+      loadExternalData().then(() => {
+        this.setupReactivity();
+      });
     }
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../../runtime/neo-flex-classic-theme.css');
-
-        .demo-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .section-header {
-            font-size: 13px;
-            font-weight: bold;
-            color: #34495e;
-            padding: 8px 0 4px 0;
-        }
-
-        .info-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .info-label {
-            font-size: 10px;
-            opacity: 0.9;
-            text-transform: uppercase;
-        }
-
-        .info-value {
-            font-size: 20px;
-            font-weight: bold;
-            margin-top: 4px;
-        }
-
-        .status-bar {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 3px;
-            padding: 8px 12px;
-            font-size: 11px;
-            color: #495057;
-        }</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='../runtime/openflex-ios-theme.css'>
+        <link rel='stylesheet' href='./data-components-demo.css'>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox' style='width: 100%; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto;'>
-          <div id='vbox_2' class='neo-vbox' style='gap: 8px'>
-            <span id='label_3' class='neo-label demo-title'>📊 Data Components Showcase</span>
-            <span id='label_4' class='neo-label'>DataGrid, ComboBox e List - Os componentes Flex mais versáteis</span>
-          </div>
-          <span id='label_5' class='neo-label status-bar'></span>
-          <div id='panel_6' class='neo-panel'>
-            <div class='neo-panel-header'>DataGrid - Tabela de Funcionários</div>
-            <div class='neo-panel-body'>
-              <div id='vbox_7' class='neo-vbox' style='width: 100%; gap: 12px'>
-                <div id='hbox_8' class='neo-hbox' style='gap: 8px'>
-                  <button id='btn_9' class='neo-button'>➕ Adicionar Funcionário</button>
-                  <button id='btn_10' class='neo-button'>➖ Remover Último</button>
-                  <span id='label_11' class='neo-label'>ComboBox de Filtro:</span>
-                  <select id='combobox_12' class='neo-combobox'>
-                    <option>-- Select --</option>
-                  </select>
+        <div id='vbox_1' class='neo-vbox app'>
+          <div id='vbox_2' class='neo-vbox wrapper'>
+            <div id='vbox_3' class='neo-vbox header'>
+              <span id='label_4' class='neo-label title'>Data Components</span>
+              <span id='label_5' class='neo-label subtitle'>DataGrid, List and dynamic data binding</span>
+            </div>
+            <div id='hbox_6' class='neo-hbox stats'>
+              <div id='vbox_7' class='neo-vbox stat'>
+                <span id='label_8' class='neo-label stat-value'></span>
+                <span id='label_9' class='neo-label stat-label'>Employees</span>
+              </div>
+              <div id='vbox_10' class='neo-vbox stat'>
+                <span id='label_11' class='neo-label stat-value' style='color: #34c759'></span>
+                <span id='label_12' class='neo-label stat-label'>Active</span>
+              </div>
+              <div id='vbox_13' class='neo-vbox stat'>
+                <span id='label_14' class='neo-label stat-value'></span>
+                <span id='label_15' class='neo-label stat-label'>Avg Salary</span>
+              </div>
+              <div id='vbox_16' class='neo-vbox stat'>
+                <span id='label_17' class='neo-label stat-value' style='color: #5856d6'></span>
+                <span id='label_18' class='neo-label stat-label'>Total Payroll</span>
+              </div>
+            </div>
+            <div id='hbox_19' class='neo-hbox grid'>
+              <div id='vbox_20' class='neo-vbox card'>
+                <span id='label_21' class='neo-label card-title'>Employee Directory</span>
+                <div id='hbox_22' class='neo-hbox controls'>
+                  <button id='btn_23' class='neo-button btn btn-primary'>+ Add Employee</button>
                 </div>
-                <div id='datagrid_13' class='neo-datagrid' style='width: 100%'>
-                  <table class='neo-datagrid-table'>
-                    <thead>
-                      <tr>
-                        <th style='width: 200px'>Nome</th>
-                        <th style='width: 150px'>Departamento</th>
-                        <th style='width: 120px'>Salário (R$)</th>
-                        <th style='width: 100px'>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody id='datagrid_13_body'>
-                      <!-- Rows will be dynamically generated -->
-                    </tbody>
-                  </table>
+                <div id='hbox_24' class='neo-hbox filter-tabs'>
+                  <button id='btn_25' class='neo-button'>All</button>
+                  <button id='btn_26' class='neo-button'>Active</button>
+                  <button id='btn_27' class='neo-button'>Away</button>
                 </div>
-                <div id='hbox_14' class='neo-hbox' style='width: 100%; gap: 12px'>
-                  <div id='vbox_15' class='neo-vbox info-card' style='gap: 4px; flex: 1;'>
-                    <span id='label_16' class='neo-label info-label'>Total de Funcionários</span>
-                    <span id='label_17' class='neo-label info-value'></span>
+                <div id='vbox_28' class='neo-vbox datagrid'>
+                  <div id='hbox_29' class='neo-hbox datagrid-header'>
+                    <span id='label_30' class='neo-label cell'>Name</span>
+                    <span id='label_31' class='neo-label cell cell-sm'>Role</span>
+                    <span id='label_32' class='neo-label cell cell-sm'>Salary</span>
+                    <span id='label_33' class='neo-label cell cell-sm'>Status</span>
+                    <span id='label_34' class='neo-label' style='width: 70px;'></span>
                   </div>
-                  <div id='vbox_18' class='neo-vbox info-card' style='gap: 4px; flex: 1;'>
-                    <span id='label_19' class='neo-label info-label'>Folha Salarial Total</span>
-                    <span id='label_20' class='neo-label info-value'></span>
-                  </div>
-                  <div id='vbox_21' class='neo-vbox info-card' style='gap: 4px; flex: 1;'>
-                    <span id='label_22' class='neo-label info-label'>Salário Médio</span>
-                    <span id='label_23' class='neo-label info-value'></span>
+                  <div id='repeater_35' class='neo-repeater'>
+                    <!-- Repeater content will be dynamically generated -->
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <div id='hbox_24' class='neo-hbox' style='width: 100%; gap: 20px'>
-            <div id='panel_25' class='neo-panel' style='flex: 1;'>
-              <div class='neo-panel-header'>List - Atividades Recentes</div>
-              <div class='neo-panel-body'>
-                <div id='vbox_26' class='neo-vbox' style='width: 100%; gap: 8px'>
-                  <span id='label_27' class='neo-label section-header'>Feed de atividades em tempo real</span>
-                  <button id='btn_28' class='neo-button'>➕ Adicionar Atividade</button>
-                  <div id='list_29' class='neo-list'>
-                    <!-- List items will be dynamically generated -->
+              <div id='vbox_36' class='neo-vbox card'>
+                <span id='label_37' class='neo-label card-title'>Recent Activity</span>
+                <div id='vbox_38' class='neo-vbox activity-list'>
+                  <div id='repeater_39' class='neo-repeater'>
+                    <!-- Repeater content will be dynamically generated -->
                   </div>
-                  <span id='label_30' class='neo-label' style='font-size: 10px; color: #999;'>Clique nos itens para selecioná-los</span>
                 </div>
-              </div>
-            </div>
-            <div id='panel_31' class='neo-panel' style='flex: 1;'>
-              <div class='neo-panel-header'>ComboBox - Seleção de Categoria</div>
-              <div class='neo-panel-body'>
-                <div id='vbox_32' class='neo-vbox' style='width: 100%; gap: 12px'>
-                  <span id='label_33' class='neo-label section-header'>Dropdown interativo com dados dinâmicos</span>
-                  <div id='vbox_34' class='neo-vbox' style='gap: 4px'>
-                    <span id='label_35' class='neo-label'>Filtrar por Departamento:</span>
-                    <select id='combobox_36' class='neo-combobox' style='width: 100%;'>
-                      <option>-- Select --</option>
-                    </select>
-                  </div>
-                  <div id='vbox_37' class='neo-vbox' style='gap: 4px'>
-                    <span id='label_38' class='neo-label'>Status de Funcionário:</span>
-                    <select id='combobox_39' class='neo-combobox' style='width: 100%;'>
-                      <option>-- Select --</option>
-                    </select>
-                  </div>
-                  <span id='label_40' class='neo-label' style='font-size: 10px; color: #666; line-height: 1.4; margin-top: 8px;'>💡 Dica: ComboBox pode ser populado via dataProvider ou com opções estáticas</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div id='panel_41' class='neo-panel'>
-            <div class='neo-panel-header'>✨ Recursos dos Componentes</div>
-            <div class='neo-panel-body'>
-              <div id='vbox_42' class='neo-vbox' style='gap: 8px'>
-                <span id='label_43' class='neo-label'>✅ DataGrid: Colunas customizáveis, larguras ajustáveis, binding reativo de arrays</span>
-                <span id='label_44' class='neo-label'>✅ ComboBox: Dropdown estilizado, binding de dataProvider, labelField configurável</span>
-                <span id='label_45' class='neo-label'>✅ List: Scroll automático, hover interativo, seleção de itens</span>
-                <span id='label_46' class='neo-label'>✅ Todos os componentes: Atualização reativa instantânea quando dados mudam</span>
               </div>
             </div>
           </div>
@@ -217,112 +162,96 @@
     }
 
     attachEventHandlers() {
-      const el_btn_9 = this.shadowRoot.getElementById('btn_9');
-      if (el_btn_9) el_btn_9.addEventListener('click', () => addEmployee());
-      const el_btn_10 = this.shadowRoot.getElementById('btn_10');
-      if (el_btn_10) el_btn_10.addEventListener('click', () => removeLastEmployee());
-      const el_btn_28 = this.shadowRoot.getElementById('btn_28');
-      if (el_btn_28) el_btn_28.addEventListener('click', () => addActivity());
+      const el_btn_23 = this.shadowRoot.getElementById('btn_23');
+      if (el_btn_23) el_btn_23.addEventListener('click', () => addEmployee());
+      const el_btn_25 = this.shadowRoot.getElementById('btn_25');
+      if (el_btn_25) el_btn_25.addEventListener('click', () => filter.value = 'all');
+      const el_btn_26 = this.shadowRoot.getElementById('btn_26');
+      if (el_btn_26) el_btn_26.addEventListener('click', () => filter.value = 'active');
+      const el_btn_27 = this.shadowRoot.getElementById('btn_27');
+      if (el_btn_27) el_btn_27.addEventListener('click', () => filter.value = 'away');
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_5');
-        if (el) el.textContent = statusMessage.value;
+        const el = this.shadowRoot.getElementById('label_8');
+        if (el) el.textContent = employees.value.length;
       });
-      // ComboBox: combobox_12
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('combobox_12');
-        if (!el) return;
-      
-        // Limpar opções anteriores (exceto primeira)
-        while (el.options.length > 1) el.remove(1);
-      
-        // Renderizar opções do array
-        const items = categories.value || [];
-        items.forEach((item, index) => {
-          const option = document.createElement('option');
-          option.value = index;
-          option.textContent = item.label || item || '';
-          el.appendChild(option);
-        });
+        const el = this.shadowRoot.getElementById('label_11');
+        if (el) el.textContent = activeCount.value;
       });
-      // DataGrid: datagrid_13
       createEffect(() => {
-        const tbody = this.shadowRoot.getElementById('datagrid_13_body');
-        if (!tbody) return;
-      
-        // Limpar linhas anteriores
-        tbody.innerHTML = '';
-      
-        // Renderizar linhas do array
-        const items = employees.value || [];
-        items.forEach((item, index) => {
-          const row = document.createElement('tr');
-          const td_name = document.createElement('td');
-          td_name.textContent = item.name || '';
-          row.appendChild(td_name);
-          const td_department = document.createElement('td');
-          td_department.textContent = item.department || '';
-          row.appendChild(td_department);
-          const td_salary = document.createElement('td');
-          td_salary.textContent = item.salary || '';
-          row.appendChild(td_salary);
-          const td_status = document.createElement('td');
-          td_status.textContent = item.status || '';
-          row.appendChild(td_status);
-          tbody.appendChild(row);
-        });
+        const el = this.shadowRoot.getElementById('label_14');
+        if (el) el.textContent = formatSalary(avgSalary.value);
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_17');
-        if (el) el.textContent = totalEmployees.value;
+        if (el) el.textContent = formatSalary(totalSalary.value);
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_20');
-        if (el) el.textContent = totalSalaries.value;
+        const el = this.shadowRoot.getElementById('btn_25');
+        if (el) el.className = `filter-tab ${filter.value === 'all' ? 'filter-tab-active' : ''}`;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_23');
-        if (el) el.textContent = averageSalary.value;
+        const el = this.shadowRoot.getElementById('btn_26');
+        if (el) el.className = `filter-tab ${filter.value === 'active' ? 'filter-tab-active' : ''}`;
       });
-      // List: list_29
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('list_29');
+        const el = this.shadowRoot.getElementById('btn_27');
+        if (el) el.className = `filter-tab ${filter.value === 'away' ? 'filter-tab-active' : ''}`;
+      });
+      // Repeater: repeater_35
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('repeater_35');
         if (!el) return;
-      
-        // Limpar conteúdo anterior
+
+        // Limpar conteudo anterior
         el.innerHTML = '';
-      
+
+        // Renderizar itens do array
+        const items = filteredEmployees.value || [];
+        items.forEach((item, index) => {
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = `<div class="neo-hbox datagrid-row ${selectedEmployee.value === index ? 'datagrid-row-selected' : ''}">
+  <span class="neo-label cell cell-name">${item.name}</span>
+  <span class="neo-label cell cell-sm">${item.role}</span>
+  <span class="neo-label cell cell-sm">${formatSalary(item.salary)}</span>
+  <span class="neo-label cell cell-sm badge ${getStatusClass(item.status)}">${item.status === 'active' ? 'Active' : 'Away'}</span>
+  <div class="neo-hbox actions">
+    <button class="neo-button action-btn">⟳</button>
+    <button class="neo-button action-btn action-btn-delete">×</button>
+  </div>
+</div>`;
+          if (wrapper.firstElementChild) {
+            el.appendChild(wrapper.firstElementChild);
+          }
+        });
+      });
+      // Repeater: repeater_39
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('repeater_39');
+        if (!el) return;
+
+        // Limpar conteudo anterior
+        el.innerHTML = '';
+
         // Renderizar itens do array
         const items = activities.value || [];
         items.forEach((item, index) => {
-          const itemEl = document.createElement('div');
-          itemEl.className = 'neo-list-item';
-          itemEl.textContent = item.label || item || '';
-          itemEl.dataset.index = index;
-          el.appendChild(itemEl);
-        });
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('combobox_36');
-        if (el) el.selectedIndex = selectedCategory.value;
-      });
-      // ComboBox: combobox_36
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('combobox_36');
-        if (!el) return;
-      
-        // Limpar opções anteriores (exceto primeira)
-        while (el.options.length > 1) el.remove(1);
-      
-        // Renderizar opções do array
-        const items = categories.value || [];
-        items.forEach((item, index) => {
-          const option = document.createElement('option');
-          option.value = index;
-          option.textContent = item.label || item || '';
-          el.appendChild(option);
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = `<div class="neo-hbox activity-item">
+  <div class="neo-box activity-icon">
+    <span class="neo-label">${item.icon}</span>
+  </div>
+  <div class="neo-vbox activity-content">
+    <span class="neo-label activity-text">${item.text}</span>
+    <span class="neo-label activity-time">${item.time + ' ago'}</span>
+  </div>
+</div>`;
+          if (wrapper.firstElementChild) {
+            el.appendChild(wrapper.firstElementChild);
+          }
         });
       });
     }

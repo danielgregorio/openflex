@@ -1,0 +1,68 @@
+/* Calculator App Styles */
+@import url('../runtime/openflex-ios-theme.css');
+
+.calc-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+.calculator {
+    background: #1c1c1e;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+    width: 320px;
+}
+.display {
+    background: #1c1c1e;
+    color: white;
+    font-size: 56px;
+    font-weight: 300;
+    text-align: right;
+    padding: 10px 15px;
+    min-height: 80px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    word-break: break-all;
+    margin-bottom: 10px;
+}
+.btn-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.calc-btn {
+    width: 65px;
+    height: 65px;
+    font-size: 28px;
+    font-weight: 500;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.1s;
+    background: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.calc-btn:active {
+    opacity: 0.7;
+}
+.btn-gray {
+    background: #a5a5a5;
+    color: black;
+}
+.btn-orange {
+    background: #ff9f0a;
+    color: white;
+}
+.btn-zero {
+    width: 142px;
+    border-radius: 35px;
+    justify-content: flex-start;
+    padding-left: 26px;
+}

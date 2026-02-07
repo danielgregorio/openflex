@@ -2,141 +2,102 @@
 <Application
     xmlns:fx="http://openflex.dev/core"
     xmlns="http://openflex.dev/neo"
-    title="Conversor de Temperatura - OpenFlex Neo">
+    title="Weather - OpenFlex Neo">
 
     <fx:Script><![CDATA[
-        @reactive var celsius: Number = 0;
+        @reactive var celsius: Number = 22;
 
         @computed var fahrenheit: Number {
-            return (celsius * 9/5) + 32;
+            return Math.round((celsius * 9/5) + 32);
         }
 
         @computed var kelvin: Number {
-            return celsius + 273.15;
+            return Math.round((celsius + 273.15) * 10) / 10;
         }
 
-        @computed var temperatureColor: String {
-            if (celsius < 0) return "#3498db";      // Azul (frio)
-            if (celsius < 20) return "#2ecc71";     // Verde (ameno)
-            if (celsius < 35) return "#f39c12";     // Laranja (quente)
-            return "#e74c3c";                       // Vermelho (muito quente)
-        }
-
-        @computed var temperatureEmoji: String {
+        @computed var weatherEmoji: String {
             if (celsius < 0) return "❄️";
             if (celsius < 10) return "🥶";
-            if (celsius < 20) return "😌";
-            if (celsius < 30) return "😊";
-            if (celsius < 35) return "🥵";
+            if (celsius < 18) return "🌤️";
+            if (celsius < 25) return "☀️";
+            if (celsius < 32) return "🌡️";
             return "🔥";
         }
 
-        @computed var description: String {
-            if (celsius < 0) return "Congelante!";
-            if (celsius < 10) return "Muito frio";
-            if (celsius < 20) return "Fresco";
-            if (celsius < 25) return "Agradável";
-            if (celsius < 30) return "Quente";
-            if (celsius < 35) return "Muito quente";
-            return "Escaldante!";
+        @computed var weatherText: String {
+            if (celsius < 0) return "Freezing";
+            if (celsius < 10) return "Cold";
+            if (celsius < 18) return "Cool";
+            if (celsius < 25) return "Pleasant";
+            if (celsius < 32) return "Warm";
+            return "Hot";
         }
 
-        function setCelsius(value: Number): void {
+        @computed var gradientColor: String {
+            if (celsius < 0) return "#00b4db";
+            if (celsius < 10) return "#48b1bf";
+            if (celsius < 18) return "#56ab2f";
+            if (celsius < 25) return "#f7971e";
+            if (celsius < 32) return "#f12711";
+            return "#c31432";
+        }
+
+        function setTemperature(value: Number): void {
             celsius = value;
         }
     ]]></fx:Script>
 
     <fx:Style>
-        @import url('../runtime/neo-flex-classic-theme.css');
-
-        .temp-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            min-width: 200px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .temp-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .temp-value {
-            font-size: 48px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .temp-unit {
-            font-size: 18px;
-            color: #7f8c8d;
-            font-weight: normal;
-        }
-
-        .slider {
-            width: 100%;
-            height: 8px;
-            border-radius: 5px;
-            background: linear-gradient(to right, #3498db, #2ecc71, #f39c12, #e74c3c);
-            outline: none;
-            cursor: pointer;
-        }
-
-        .emoji-display {
-            font-size: 120px;
-            margin: 20px 0;
-        }
-
-        .description {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+        @import url('./temperature-app.css');
     </fx:Style>
 
-    <VBox gap="{20}" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%"
-          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-
-        <Panel title="🌡️ Conversor de Temperatura" width="{800}" padding="{40}">
-            <VBox gap="{40}" horizontalAlign="center">
-
-                <VBox gap="{20}" horizontalAlign="center">
-                    <Label text="{temperatureEmoji}" styleClass="emoji-display" />
-                    <Label text="{description}" styleClass="description" color="{temperatureColor}" />
-                </VBox>
-
-                <VBox gap="{15}" width="100%">
-                    <Label text="Ajuste a temperatura (°C)" fontSize="{16}" fontWeight="bold" />
-                    <TextInput type="range" min="-50" max="50" value="{celsius}"
-                               styleClass="slider" />
-                </VBox>
-
-                <HBox gap="{20}" horizontalAlign="center">
-                    <Box styleClass="temp-card">
-                        <Label text="Celsius" fontSize="{14}" color="#7f8c8d" />
-                        <Label text="{Math.round(celsius * 10) / 10}" styleClass="temp-value" color="{temperatureColor}" />
-                        <Label text="°C" styleClass="temp-unit" />
-                    </Box>
-
-                    <Box styleClass="temp-card">
-                        <Label text="Fahrenheit" fontSize="{14}" color="#7f8c8d" />
-                        <Label text="{Math.round(fahrenheit * 10) / 10}" styleClass="temp-value" color="{temperatureColor}" />
-                        <Label text="°F" styleClass="temp-unit" />
-                    </Box>
-
-                    <Box styleClass="temp-card">
-                        <Label text="Kelvin" fontSize="{14}" color="#7f8c8d" />
-                        <Label text="{Math.round(kelvin * 10) / 10}" styleClass="temp-value" color="{temperatureColor}" />
-                        <Label text="K" styleClass="temp-unit" />
-                    </Box>
-                </HBox>
-
+    <VBox styleClass="temp-container">
+        <VBox styleClass="temp-card">
+            <!-- Weather Display -->
+            <VBox styleClass="weather-display" backgroundColor="{gradientColor}">
+                <Label text="{weatherEmoji}" styleClass="weather-emoji" />
+                <Label text="{weatherText}" styleClass="weather-status" />
+                <Label styleClass="temp-main">
+                    <Label text="{celsius}" />
+                    <Label text="°C" styleClass="temp-unit" />
+                </Label>
             </VBox>
-        </Panel>
 
+            <!-- Slider -->
+            <VBox styleClass="slider-section">
+                <HBox styleClass="slider-label">
+                    <Label text="-20°C" />
+                    <Label text="Adjust Temperature" />
+                    <Label text="50°C" />
+                </HBox>
+                <TextInput type="range" min="-20" max="50" value="{celsius}"
+                           styleClass="temp-slider" />
+            </VBox>
+
+            <!-- Conversions -->
+            <HBox styleClass="conversions">
+                <VBox styleClass="conversion-card">
+                    <Label text="{celsius + '°'}" styleClass="conversion-value" />
+                    <Label text="Celsius" styleClass="conversion-label" />
+                </VBox>
+                <VBox styleClass="conversion-card">
+                    <Label text="{fahrenheit + '°'}" styleClass="conversion-value" />
+                    <Label text="Fahrenheit" styleClass="conversion-label" />
+                </VBox>
+                <VBox styleClass="conversion-card">
+                    <Label text="{kelvin}" styleClass="conversion-value" />
+                    <Label text="Kelvin" styleClass="conversion-label" />
+                </VBox>
+            </HBox>
+
+            <!-- Quick Temperature Buttons -->
+            <HBox styleClass="quick-temps">
+                <Button label="-10°" click="{() => setTemperature(-10)}" styleClass="quick-btn" />
+                <Button label="0°" click="{() => setTemperature(0)}" styleClass="quick-btn" />
+                <Button label="20°" click="{() => setTemperature(20)}" styleClass="quick-btn" />
+                <Button label="37°" click="{() => setTemperature(37)}" styleClass="quick-btn" />
+            </HBox>
+        </VBox>
     </VBox>
 
 </Application>

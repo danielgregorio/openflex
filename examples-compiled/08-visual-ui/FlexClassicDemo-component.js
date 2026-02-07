@@ -17,35 +17,62 @@
 
   const email = new Signal("");
 
-  const subscribe = new Signal(true);
+  const role = new Signal("developer");
 
-  const items = new Signal([{ id: 1, name: "Item Alpha", status: "Active" }, { id: 2, name: "Item Beta", status: "Pending" }, { id: 3, name: "Item Gamma", status: "Complete" }]);
+  const notifications = new Signal(true);
+
+  const darkMode = new Signal(true);
+
+  const volume = new Signal(75);
+
+  const items = new Signal([{ id: 1, name: "Dashboard", icon: "📊", status: "active" }, { id: 2, name: "Analytics", icon: "📈", status: "active" }, { id: 3, name: "Reports", icon: "📋", status: "pending" }, { id: 4, name: "Settings", icon: "⚙️", status: "active" }]);
+
+  const activeTab = new Signal(0);
 
   const fullName = new Computed(() => {
-    if (firstName.value.length === 0 && lastName.value.length === 0) {
-      return "N/A";
-    }
+    if (firstName.value.length === 0 && lastName.value.length === 0)   return "Guest User";
     return firstName.value + " " + lastName.value;
+  });
+
+  const initials = new Computed(() => {
+    const f = (firstName.value.length > 0 ? firstName.value.charAt(0) : "G");
+    const l = (lastName.value.length > 0 ? lastName.value.charAt(0) : "U");
+    return f + l;
   });
 
   const isFormValid = new Computed(() => {
     return firstName.value.length > 0 && lastName.value.length > 0 && email.value.length > 0;
   });
 
-  function submitForm() {
-    alert("Form submitted!\nName: " + fullName.value + "\nEmail: " + email.value);
-  }
-
-  function clearForm() {
-    firstName.value = "";
-    lastName.value = "";
-    email.value = "";
-    subscribe.value = true;
-  }
+  const activeCount = new Computed(() => {
+    return items.value.filter(i => i.status === "active").length;
+  });
 
   function addItem() {
+    const icons = ["🎯", "💡", "🔔", "📁", "🎨", "🔧"];
+    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
     const newId = items.value.length + 1;
-    items.value = [...items.value, { id: newId, name: "Item " + String.fromCharCode(64 + newId), status: "New" }];
+    items.value = [...items.value, { id: newId, name: "Module " + newId, icon: randomIcon, status: "pending" }];
+  }
+
+  function toggleStatus(id) {
+    items.value = items.value.map((item => item.id === id ? { ...item, status: (item.status === "active" ? "pending" : "active") } : item));
+  }
+
+  function deleteItem(id) {
+    items.value = items.value.filter(i => i.id !== id);
+  }
+
+  function setTab(index) {
+    activeTab.value = index;
+  }
+
+  function toggleNotifications() {
+    notifications.value = !notifications.value;
+  }
+
+  function toggleDarkMode() {
+    darkMode.value = !darkMode.value;
   }
 
 
@@ -63,82 +90,402 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../../runtime/neo-flex-classic-theme.css');
-
-        /* Estilos customizados podem ir aqui */
-        .title-text {
-            font-size: 14px;
-            font-weight: bold;
-            color: #2c3e50;
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <style>.app-container {
+            min-height: 100vh;
+            padding: 30px;
+            background: #000000;
         }
-
-        .info-text {
-            font-size: 11px;
-            color: #666666;
+        .app-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .app-wrapper * {
+            box-sizing: border-box;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header-title {
+            color: white;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .header-subtitle {
+            color: #8e8e93;
+            font-size: 16px;
+        }
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 24px;
+            overflow: hidden;
+        }
+        .card-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-icon {
+            font-size: 20px;
+        }
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: #2c2c2e;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5856d6, #af52de);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .profile-name {
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+        }
+        .profile-role {
+            color: #8e8e93;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            color: #8e8e93;
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .form-input {
+            width: 100%;
+            background: #2c2c2e;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: white;
+            font-size: 16px;
+        }
+        .form-input:focus {
+            outline: 2px solid #5856d6;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #2c2c2e;
+        }
+        .toggle-label {
+            color: white;
+            font-size: 16px;
+        }
+        .toggle-desc {
+            color: #8e8e93;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+        .toggle-switch {
+            width: 51px;
+            height: 31px;
+            background: #3a3a3c;
+            border-radius: 16px;
+            padding: 2px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: none;
+        }
+        .toggle-switch-on {
+            background: #34c759;
+        }
+        .toggle-knob {
+            width: 27px;
+            height: 27px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .toggle-knob-on {
+            transform: translateX(20px);
+        }
+        .slider-section {
+            padding: 14px 0;
+        }
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .slider-label {
+            color: white;
+            font-size: 16px;
+        }
+        .slider-value {
+            color: #5856d6;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .slider-track {
+            width: 100%;
+            height: 6px;
+            background: #3a3a3c;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .list-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            background: #2c2c2e;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            gap: 14px;
+        }
+        .list-icon {
+            width: 40px;
+            height: 40px;
+            background: #3a3a3c;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .list-content {
+            flex: 1;
+        }
+        .list-name {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .list-status {
+            font-size: 13px;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        .status-active {
+            background: rgba(52, 199, 89, 0.15);
+            color: #34c759;
+        }
+        .status-pending {
+            background: rgba(255, 149, 0, 0.15);
+            color: #ff9500;
+        }
+        .list-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            background: #3a3a3c;
+            border: none;
+            border-radius: 8px;
+            color: #8e8e93;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-btn:hover {
+            background: #4a4a4c;
+        }
+        .action-btn-delete {
+            color: #ff3b30;
+        }
+        .add-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #5856d6, #af52de);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .add-btn:active {
+            opacity: 0.8;
+        }
+        .tabs {
+            display: flex;
+            background: #2c2c2e;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            color: #8e8e93;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .tab-active {
+            background: #5856d6;
+            color: white;
+        }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #2c2c2e;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .stat-label {
+            color: #8e8e93;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #8e8e93;
+            font-size: 13px;
+        }
+        .footer-brand {
+            color: #5856d6;
+            font-weight: 600;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox' style='width: 100%; height: 100%'>
-          <div id='panel_2' class='neo-panel'>
-            <div class='neo-panel-header'>📋 Flex Classic Application Demo</div>
-            <div class='neo-panel-body'>
-              <div id='vbox_3' class='neo-vbox'>
-                <span id='label_4' class='neo-label title-text'>Bem-vindo ao OpenFlex Neo com visual clássico do Adobe Flex 3/4!</span>
-                <span id='label_5' class='neo-label info-text'>Este exemplo demonstra o tema Flex Classic: gradientes cinza, botões 3D e painéis chanfrados.</span>
-              </div>
+        <div id='vbox_1' class='neo-vbox app-container'>
+          <div id='vbox_2' class='neo-vbox app-wrapper'>
+            <div id='vbox_3' class='neo-vbox header'>
+              <span id='label_4' class='neo-label header-title'>OpenFlex Design System</span>
+              <span id='label_5' class='neo-label header-subtitle'>Modern iOS-style components for web applications</span>
             </div>
-          </div>
-          <div id='hbox_6' class='neo-hbox'>
-            <div id='panel_7' class='neo-panel'>
-              <div class='neo-panel-header'>User Registration</div>
-              <div class='neo-panel-body'>
-                <div id='vbox_8' class='neo-vbox'>
-                  <span id='label_9' class='neo-label'>First Name:</span>
-                  <input type='text' id='input_10' class='neo-textinput' placeholder='Enter first name' />
-                  <span id='label_11' class='neo-label'>Last Name:</span>
-                  <input type='text' id='input_12' class='neo-textinput' placeholder='Enter last name' />
-                  <span id='label_13' class='neo-label'>Email Address:</span>
-                  <input type='text' id='input_14' class='neo-textinput' placeholder='user@example.com' />
-                  <div id='hbox_15' class='neo-hbox'>
-                    <input type='checkbox' id='checkbox_16' class='neo-checkbox' />
-                    <span id='label_17' class='neo-label'>Subscribe to newsletter</span>
+            <div id='hbox_6' class='neo-hbox grid-2col'>
+              <div id='vbox_7' class='neo-vbox card'>
+                <span id='label_8' class='neo-label card-title'>👤 Profile Settings</span>
+                <div id='hbox_9' class='neo-hbox profile-section'>
+                  <div id='box_10' class='neo-box'>
+                    <span id='label_11' class='neo-label'></span>
                   </div>
-                  <div id='box_18' class='neo-box'>
-                  </div>
-                  <div id='hbox_19' class='neo-hbox'>
-                    <span id='label_20' class='neo-label title-text'>Full Name:</span>
-                    <span id='label_21' class='neo-label'></span>
-                  </div>
-                  <div id='hbox_22' class='neo-hbox'>
-                    <button id='btn_23' class='neo-button'>Submit</button>
-                    <button id='btn_24' class='neo-button'>Clear</button>
+                  <div id='vbox_12' class='neo-vbox profile-info'>
+                    <span id='label_13' class='neo-label profile-name'></span>
+                    <span id='label_14' class='neo-label profile-role'></span>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div id='panel_25' class='neo-panel'>
-              <div class='neo-panel-header'>Data List</div>
-              <div class='neo-panel-body'>
-                <div id='vbox_26' class='neo-vbox'>
-                  <span id='label_27' class='neo-label title-text'>Items in Collection:</span>
-                  <div id='vbox_28' class='neo-vbox'>
-                    <div id='repeater_29' class='neo-repeater'>
-                      <!-- Repeater content will be dynamically generated -->
-                    </div>
+                <div id='hbox_15' class='neo-hbox form-row'>
+                  <div id='vbox_16' class='neo-vbox form-group'>
+                    <span id='label_17' class='neo-label form-label'>First Name</span>
+                    <input type='text' id='input_18' class='neo-textinput form-input' placeholder='John' />
                   </div>
-                  <button id='btn_30' class='neo-button'>Add New Item</button>
-                  <span id='label_31' class='neo-label info-text'></span>
+                  <div id='vbox_19' class='neo-vbox form-group'>
+                    <span id='label_20' class='neo-label form-label'>Last Name</span>
+                    <input type='text' id='input_21' class='neo-textinput form-input' placeholder='Doe' />
+                  </div>
+                </div>
+                <div id='vbox_22' class='neo-vbox form-group'>
+                  <span id='label_23' class='neo-label form-label'>Email</span>
+                  <input type='text' id='input_24' class='neo-textinput form-input' placeholder='john@example.com' />
+                </div>
+                <div id='hbox_25' class='neo-hbox toggle-row'>
+                  <div id='vbox_26' class='neo-vbox'>
+                    <span id='label_27' class='neo-label toggle-label'>Notifications</span>
+                    <span id='label_28' class='neo-label toggle-desc'>Receive push notifications</span>
+                  </div>
+                  <button id='btn_29' class='neo-button'>Button</button>
+                </div>
+                <div id='hbox_30' class='neo-hbox toggle-row'>
+                  <div id='vbox_31' class='neo-vbox'>
+                    <span id='label_32' class='neo-label toggle-label'>Dark Mode</span>
+                    <span id='label_33' class='neo-label toggle-desc'>Use dark appearance</span>
+                  </div>
+                  <button id='btn_34' class='neo-button'>Button</button>
+                </div>
+                <div id='vbox_35' class='neo-vbox slider-section'>
+                  <div id='hbox_36' class='neo-hbox slider-header'>
+                    <span id='label_37' class='neo-label slider-label'>Volume</span>
+                    <span id='label_38' class='neo-label slider-value'></span>
+                  </div>
+                  <input type='text' id='input_39' class='neo-textinput slider-track' placeholder='' />
                 </div>
               </div>
-            </div>
-          </div>
-          <div id='panel_32' class='neo-panel'>
-            <div class='neo-panel-header'>About</div>
-            <div class='neo-panel-body'>
-              <div id='vbox_33' class='neo-vbox'>
-                <span id='label_34' class='neo-label title-text'>🎨 OpenFlex Neo - Flex Classic Theme</span>
-                <span id='label_35' class='neo-label info-text'>Inspirado no design icônico do Adobe Flex 3 e Flex 4</span>
-                <span id='label_36' class='neo-label info-text'>Gradientes sutis • Botões 3D • Painéis chanfrados • Visual nostálgico</span>
+              <div id='vbox_40' class='neo-vbox card'>
+                <span id='label_41' class='neo-label card-title'>📦 Modules</span>
+                <div id='hbox_42' class='neo-hbox tabs'>
+                  <button id='btn_43' class='neo-button'>All</button>
+                  <button id='btn_44' class='neo-button'>Active</button>
+                  <button id='btn_45' class='neo-button'>Pending</button>
+                </div>
+                <div id='hbox_46' class='neo-hbox stats-row'>
+                  <div id='vbox_47' class='neo-vbox stat-card'>
+                    <span id='label_48' class='neo-label stat-value'></span>
+                    <span id='label_49' class='neo-label stat-label'>Total</span>
+                  </div>
+                  <div id='vbox_50' class='neo-vbox stat-card'>
+                    <span id='label_51' class='neo-label stat-value' style='color: #34c759'></span>
+                    <span id='label_52' class='neo-label stat-label'>Active</span>
+                  </div>
+                  <div id='vbox_53' class='neo-vbox stat-card'>
+                    <span id='label_54' class='neo-label stat-value' style='color: #ff9500'></span>
+                    <span id='label_55' class='neo-label stat-label'>Pending</span>
+                  </div>
+                </div>
+                <div id='vbox_56' class='neo-vbox list-container'>
+                  <div id='repeater_57' class='neo-repeater'>
+                    <!-- Repeater content will be dynamically generated -->
+                  </div>
+                </div>
+                <button id='btn_58' class='neo-button add-btn'>+ Add Module</button>
               </div>
+            </div>
+            <div id='vbox_59' class='neo-vbox footer'>
+              <span id='label_60' class='neo-label'>Built with OpenFlex Neo • iOS-Style Design System</span>
             </div>
           </div>
         </div>
@@ -150,42 +497,72 @@
     }
 
     attachEventHandlers() {
-      const el_btn_23 = this.shadowRoot.getElementById('btn_23');
-      if (el_btn_23) el_btn_23.addEventListener('click', () => submitForm());
-      const el_btn_24 = this.shadowRoot.getElementById('btn_24');
-      if (el_btn_24) el_btn_24.addEventListener('click', () => clearForm());
-      const el_btn_30 = this.shadowRoot.getElementById('btn_30');
-      if (el_btn_30) el_btn_30.addEventListener('click', () => addItem());
+      const el_btn_29 = this.shadowRoot.getElementById('btn_29');
+      if (el_btn_29) el_btn_29.addEventListener('click', () => toggleNotifications());
+      const el_btn_34 = this.shadowRoot.getElementById('btn_34');
+      if (el_btn_34) el_btn_34.addEventListener('click', () => toggleDarkMode());
+      const el_btn_43 = this.shadowRoot.getElementById('btn_43');
+      if (el_btn_43) el_btn_43.addEventListener('click', () => setTab(0));
+      const el_btn_44 = this.shadowRoot.getElementById('btn_44');
+      if (el_btn_44) el_btn_44.addEventListener('click', () => setTab(1));
+      const el_btn_45 = this.shadowRoot.getElementById('btn_45');
+      if (el_btn_45) el_btn_45.addEventListener('click', () => setTab(2));
+      const el_btn_58 = this.shadowRoot.getElementById('btn_58');
+      if (el_btn_58) el_btn_58.addEventListener('click', () => addItem());
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_10');
-        if (el) el.value = firstName.value;
+        const el = this.shadowRoot.getElementById('label_11');
+        if (el) el.textContent = initials.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_12');
-        if (el) el.value = lastName.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_14');
-        if (el) el.value = email.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('checkbox_16');
-        if (el) el.checked = subscribe.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_21');
+        const el = this.shadowRoot.getElementById('label_13');
         if (el) el.textContent = fullName.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_23');
-        if (el) el.disabled = !isFormValid.value;
+        const el = this.shadowRoot.getElementById('label_14');
+        if (el) el.textContent = role.value === 'developer' ? 'Developer' : (role.value === 'designer' ? 'Designer' : 'Manager');
       });
-      // Repeater: repeater_29
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('repeater_29');
+        const el = this.shadowRoot.getElementById('btn_29');
+        if (el) el.className = `toggle-switch ${notifications.value ? 'toggle-switch-on' : ''}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_34');
+        if (el) el.className = `toggle-switch ${darkMode.value ? 'toggle-switch-on' : ''}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_38');
+        if (el) el.textContent = volume.value + '%';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_43');
+        if (el) el.className = `tab ${activeTab.value === 0 ? 'tab-active' : ''}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_44');
+        if (el) el.className = `tab ${activeTab.value === 1 ? 'tab-active' : ''}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('btn_45');
+        if (el) el.className = `tab ${activeTab.value === 2 ? 'tab-active' : ''}`;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_48');
+        if (el) el.textContent = items.value.length;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_51');
+        if (el) el.textContent = activeCount.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_54');
+        if (el) el.textContent = items.value.length - activeCount.value;
+      });
+      // Repeater: repeater_57
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('repeater_57');
         if (!el) return;
       
         // Limpar conteúdo anterior
@@ -194,15 +571,12 @@
         // Renderizar itens do array
         const itemsArray = items.value || [];
         itemsArray.forEach((item, index) => {
-          const itemEl = document.createElement('div');
-          itemEl.className = 'repeater-item';
-          itemEl.textContent = item.text || JSON.stringify(item);
-          el.appendChild(itemEl);
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = `<div class=\"neo-hbox list-item\">\n  <div class=\"neo-box list-icon\">\n    <span class=\"neo-label\">${item.icon}</span>\n  </div>\n  <div class=\"neo-vbox list-content\">\n    <span class=\"neo-label list-name\">${item.name}</span>\n  </div>\n  <span class=\"neo-label list-status ${item.status === 'active' ? 'status-active' : 'status-pending'}\">${item.status === 'active' ? 'Active' : 'Pending'}</span>\n  <div class=\"neo-hbox list-actions\">\n    <button class=\"neo-button action-btn\">⟳</button>\n    <button class=\"neo-button action-btn action-btn-delete\">×</button>\n  </div>\n</div>`;
+          if (wrapper.firstElementChild) {
+            el.appendChild(wrapper.firstElementChild);
+          }
         });
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_31');
-        if (el) el.textContent = 'Total Items: ' + items.value.length;
       });
     }
   }

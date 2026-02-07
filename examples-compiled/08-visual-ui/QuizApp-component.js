@@ -19,27 +19,55 @@
 
   const selectedAnswer = new Signal(-1);
 
-  const questions = [{ question: "Qual é a capital do Brasil?", answers: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"], correct: 2 }, { question: "Quantos planetas existem no Sistema Solar?", answers: ["7", "8", "9", "10"], correct: 1 }, { question: "Quem pintou a Mona Lisa?", answers: ["Van Gogh", "Da Vinci", "Picasso", "Monet"], correct: 1 }, { question: "Qual é o maior oceano do mundo?", answers: ["Atlântico", "Índico", "Ártico", "Pacífico"], correct: 3 }, { question: "Em que ano o homem pisou na Lua pela primeira vez?", answers: ["1965", "1967", "1969", "1971"], correct: 2 }];
+  const answered = new Signal(false);
+
+  const questions = new Signal([]);
+
+  async function loadExternalData() {
+    try {
+      const response = await fetch('./quiz-app-data.json');
+      const data = await response.json();
+      questions.value = data.questions;
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  }
 
   const progress = new Computed(() => {
-    return currentQuestion.value / questions.length * 100;
+    if (questions.value.length === 0) return 0;
+    return (currentQuestion.value + 1) / questions.value.length * 100;
   });
 
   const currentQ = new Computed(() => {
-    return questions[currentQuestion.value] || {};
+    return questions.value[currentQuestion.value] || { question: '', answers: ['', '', '', ''], correct: 0 };
+  });
+
+  const scorePercentage = new Computed(() => {
+    if (questions.value.length === 0) return 0;
+    return Math.round(score.value / questions.value.length * 100);
+  });
+
+  const resultEmoji = new Computed(() => {
+    if (scorePercentage.value >= 80)   return "🏆";
+    if (scorePercentage.value >= 60)   return "🎉";
+    if (scorePercentage.value >= 40)   return "👍";
+    return "📚";
   });
 
   function selectAnswer(index) {
+    if (answered.value)   return;
     selectedAnswer.value = index;
+    answered.value = true;
+    if (index === currentQ.value.correct) {
+      score.value++;
+    }
   }
 
   function nextQuestion() {
-    if (selectedAnswer.value === -1)   return;
-    if (selectedAnswer.value === currentQ.value.correct) {
-      score.value++;
-    }
+    if (!answered.value)   return;
     selectedAnswer.value = -1;
-    if (currentQuestion.value < questions.length - 1) {
+    answered.value = false;
+    if (currentQuestion.value < questions.value.length - 1) {
       currentQuestion.value++;
     }
     else {
@@ -52,18 +80,17 @@
     score.value = 0;
     showResult.value = false;
     selectedAnswer.value = -1;
+    answered.value = false;
   }
 
-  const scorePercentage = new Computed(() => {
-    return Math.round(score.value / questions.length * 100);
-  });
-
-  const resultMessage = new Computed(() => {
-    if (scorePercentage.value >= 80)   return "Excelente! 🎉";
-    if (scorePercentage.value >= 60)   return "Muito bom! 👏";
-    if (scorePercentage.value >= 40)   return "Bom trabalho! 👍";
-    return "Continue praticando! 💪";
-  });
+  function getAnswerStyle(index) {
+    if (!answered.value) {
+      return (selectedAnswer.value === index ? 'answer-selected' : '');
+    }
+    if (index === currentQ.value.correct)   return 'answer-correct';
+    if (index === selectedAnswer.value)   return 'answer-wrong';
+    return 'answer-disabled';
+  }
 
 
   // Application Component
@@ -75,113 +102,45 @@
 
     connectedCallback() {
       this.render();
-      this.setupReactivity();
+      loadExternalData().then(() => {
+        this.setupReactivity();
+      });
     }
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../runtime/neo-flex-classic-theme.css');
-
-        .quiz-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-        }
-
-        .progress-bar {
-            height: 10px;
-            background: #ecf0f1;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s ease;
-        }
-
-        .question-text {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-            text-align: center;
-        }
-
-        .answer-btn {
-            width: 100%;
-            padding: 20px;
-            font-size: 18px;
-            border: 2px solid #ecf0f1;
-            border-radius: 10px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: left;
-        }
-
-        .answer-btn:hover {
-            border-color: #667eea;
-            background: #f8f9fa;
-            transform: translateX(5px);
-        }
-
-        .answer-btn-selected {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .next-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 50px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .score-display {
-            font-size: 72px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='./quiz-app.css'>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
-          <div id='box_2' class='neo-box'>
-            <div id='vbox_3' class='neo-vbox'>
-              <div id='vbox_4' class='neo-vbox'>
-                <span id='label_5' class='neo-label' style='color: #7f8c8d'></span>
+        <div id='vbox_1' class='neo-vbox quiz-container'>
+          <div id='vbox_2' class='neo-vbox quiz-card'>
+            <div id='vbox_3' class='neo-vbox progress-section'>
+              <span id='label_4' class='neo-label progress-text'></span>
+              <div id='box_5' class='neo-box'>
                 <div id='box_6' class='neo-box'>
-                  <div id='box_7' class='neo-box'>
-                  </div>
                 </div>
               </div>
+            </div>
+            <div id='vbox_7' class='neo-vbox question-section'>
               <span id='label_8' class='neo-label question-text'></span>
-              <div id='vbox_9' class='neo-vbox'>
-                <button id='btn_10' class='neo-button'></button>
-                <button id='btn_11' class='neo-button'></button>
-                <button id='btn_12' class='neo-button'></button>
-                <button id='btn_13' class='neo-button'></button>
-              </div>
-              <div id='hbox_14' class='neo-hbox h-align-center'>
-                <button id='btn_15' class='neo-button next-btn'>Próxima →</button>
-              </div>
+            </div>
+            <div id='vbox_9' class='neo-vbox answers-section'>
+              <button id='btn_10' class='neo-button'></button>
+              <button id='btn_11' class='neo-button'></button>
+              <button id='btn_12' class='neo-button'></button>
+              <button id='btn_13' class='neo-button'></button>
+            </div>
+            <div id='vbox_14' class='neo-vbox next-section'>
+              <button id='btn_15' class='neo-button'></button>
             </div>
           </div>
-          <div id='box_16' class='neo-box'>
-            <div id='vbox_17' class='neo-vbox h-align-center'>
-              <span id='label_18' class='neo-label'>🎯 Resultado Final</span>
-              <span id='label_19' class='neo-label score-display'></span>
-              <span id='label_20' class='neo-label' style='color: #2c3e50'></span>
-              <span id='label_21' class='neo-label' style='color: #7f8c8d'></span>
-              <button id='btn_22' class='neo-button next-btn'>🔄 Jogar Novamente</button>
+          <div id='vbox_16' class='neo-vbox quiz-card'>
+            <div id='vbox_17' class='neo-vbox result-section'>
+              <span id='label_18' class='neo-label result-emoji'></span>
+              <span id='label_19' class='neo-label result-title'>Quiz Complete!</span>
+              <span id='label_20' class='neo-label result-score'></span>
+              <span id='label_21' class='neo-label result-detail'></span>
+              <button id='btn_22' class='neo-button next-btn'>Play Again</button>
             </div>
           </div>
         </div>
@@ -209,15 +168,15 @@
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('box_2');
+        const el = this.shadowRoot.getElementById('vbox_2');
         if (el) el.style.display = (!showResult.value) ? 'block' : 'none';
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_5');
-        if (el) el.textContent = 'Questão ' + (currentQuestion.value + 1) + ' de ' + questions.length;
+        const el = this.shadowRoot.getElementById('label_4');
+        if (el) el.textContent = 'Question ' + (currentQuestion.value + 1) + ' of ' + questions.value.length;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('box_7');
+        const el = this.shadowRoot.getElementById('box_6');
         if (el) el.style.width = progress.value + '%';
       });
       createEffect(() => {
@@ -226,51 +185,43 @@
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('btn_10');
-        if (el) el.className = 'answer-btn ' + (selectedAnswer.value === 0 ? 'answer-btn-selected' : '');
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_10');
-        if (el) el.textContent = 'A) ' + currentQ.value.answers[0];
+        if (el) el.textContent = currentQ.value.answers[0];
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('btn_11');
-        if (el) el.className = 'answer-btn ' + (selectedAnswer.value === 1 ? 'answer-btn-selected' : '');
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_11');
-        if (el) el.textContent = 'B) ' + currentQ.value.answers[1];
+        if (el) el.textContent = currentQ.value.answers[1];
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('btn_12');
-        if (el) el.className = 'answer-btn ' + (selectedAnswer.value === 2 ? 'answer-btn-selected' : '');
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_12');
-        if (el) el.textContent = 'C) ' + currentQ.value.answers[2];
+        if (el) el.textContent = currentQ.value.answers[2];
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('btn_13');
-        if (el) el.className = 'answer-btn ' + (selectedAnswer.value === 3 ? 'answer-btn-selected' : '');
+        if (el) el.textContent = currentQ.value.answers[3];
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('btn_13');
-        if (el) el.textContent = 'D) ' + currentQ.value.answers[3];
+        const el = this.shadowRoot.getElementById('btn_15');
+        if (el) el.className = `next-btn ${!answered.value ? 'next-btn-disabled' : ''}`;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('box_16');
+        const el = this.shadowRoot.getElementById('btn_15');
+        if (el) el.textContent = currentQuestion.value === questions.value.length - 1 ? 'See Results' : 'Next Question';
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('vbox_16');
         if (el) el.style.display = showResult.value ? 'block' : 'none';
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_19');
-        if (el) el.textContent = scorePercentage.value + '%';
+        const el = this.shadowRoot.getElementById('label_18');
+        if (el) el.textContent = resultEmoji.value;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_20');
-        if (el) el.textContent = resultMessage.value;
+        if (el) el.textContent = scorePercentage.value + '%';
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_21');
-        if (el) el.textContent = 'Você acertou ' + score.value + ' de ' + questions.length + ' questões';
+        if (el) el.textContent = 'You got ' + score.value + ' out of ' + questions.value.length + ' correct';
       });
     }
   }

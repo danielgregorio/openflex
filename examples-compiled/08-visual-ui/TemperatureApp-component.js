@@ -11,43 +11,44 @@
     ? window.OpenFlexRuntime
     : require('./runtime/openflex-runtime.js');
 
-  const celsius = new Signal(0);
+  const celsius = new Signal(22);
 
   const fahrenheit = new Computed(() => {
-    return celsius.value * 9 / 5 + 32;
+    return Math.round(celsius.value * 9 / 5 + 32);
   });
 
   const kelvin = new Computed(() => {
-    return celsius.value + 273.15;
+    return Math.round((celsius.value + 273.15) * 10) / 10;
   });
 
-  const temperatureColor = new Computed(() => {
-    if (celsius.value < 0)   return "#3498db";
-    if (celsius.value < 20)   return "#2ecc71";
-    if (celsius.value < 35)   return "#f39c12";
-    return "#e74c3c";
-  });
-
-  const temperatureEmoji = new Computed(() => {
+  const weatherEmoji = new Computed(() => {
     if (celsius.value < 0)   return "❄️";
     if (celsius.value < 10)   return "🥶";
-    if (celsius.value < 20)   return "😌";
-    if (celsius.value < 30)   return "😊";
-    if (celsius.value < 35)   return "🥵";
+    if (celsius.value < 18)   return "🌤️";
+    if (celsius.value < 25)   return "☀️";
+    if (celsius.value < 32)   return "🌡️";
     return "🔥";
   });
 
-  const description = new Computed(() => {
-    if (celsius.value < 0)   return "Congelante!";
-    if (celsius.value < 10)   return "Muito frio";
-    if (celsius.value < 20)   return "Fresco";
-    if (celsius.value < 25)   return "Agradável";
-    if (celsius.value < 30)   return "Quente";
-    if (celsius.value < 35)   return "Muito quente";
-    return "Escaldante!";
+  const weatherText = new Computed(() => {
+    if (celsius.value < 0)   return "Freezing";
+    if (celsius.value < 10)   return "Cold";
+    if (celsius.value < 18)   return "Cool";
+    if (celsius.value < 25)   return "Pleasant";
+    if (celsius.value < 32)   return "Warm";
+    return "Hot";
   });
 
-  function setCelsius(value) {
+  const gradientColor = new Computed(() => {
+    if (celsius.value < 0)   return "#00b4db";
+    if (celsius.value < 10)   return "#48b1bf";
+    if (celsius.value < 18)   return "#56ab2f";
+    if (celsius.value < 25)   return "#f7971e";
+    if (celsius.value < 32)   return "#f12711";
+    return "#c31432";
+  });
+
+  function setTemperature(value) {
     celsius.value = value;
   }
 
@@ -66,86 +67,142 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../runtime/neo-flex-classic-theme.css');
-
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <style>.temp-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
         .temp-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            min-width: 200px;
+            background: #1c1c1e;
+            border-radius: 30px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            width: 340px;
+            overflow: hidden;
+        }
+        .weather-display {
+            padding: 40px 30px;
             text-align: center;
-            transition: all 0.3s;
+            transition: background 0.5s ease;
         }
-
-        .temp-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        .weather-emoji {
+            font-size: 80px;
+            margin-bottom: 15px;
         }
-
-        .temp-value {
-            font-size: 48px;
-            font-weight: bold;
-            margin: 10px 0;
+        .weather-status {
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
         }
-
+        .temp-main {
+            color: white;
+            font-size: 72px;
+            font-weight: 200;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        }
         .temp-unit {
-            font-size: 18px;
-            color: #7f8c8d;
-            font-weight: normal;
+            font-size: 36px;
+            opacity: 0.7;
         }
-
-        .slider {
+        .slider-section {
+            padding: 25px 30px;
+            background: #2c2c2e;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            color: #8e8e93;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .temp-slider {
             width: 100%;
             height: 8px;
-            border-radius: 5px;
-            background: linear-gradient(to right, #3498db, #2ecc71, #f39c12, #e74c3c);
+            border-radius: 4px;
+            background: linear-gradient(to right, #00b4db, #48b1bf, #56ab2f, #f7971e, #f12711, #c31432);
             outline: none;
             cursor: pointer;
+            -webkit-appearance: none;
         }
-
-        .emoji-display {
-            font-size: 120px;
-            margin: 20px 0;
+        .conversions {
+            display: flex;
+            padding: 20px;
+            gap: 10px;
+            background: #1c1c1e;
         }
-
-        .description {
+        .conversion-card {
+            flex: 1;
+            background: #2c2c2e;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        .conversion-value {
+            color: white;
             font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .conversion-label {
+            color: #8e8e93;
+            font-size: 13px;
+        }
+        .quick-temps {
+            display: flex;
+            padding: 0 20px 20px;
+            gap: 8px;
+        }
+        .quick-btn {
+            flex: 1;
+            background: #3a3a3c;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .quick-btn:active {
+            background: #4a4a4c;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
-          <div id='panel_2' class='neo-panel'>
-            <div class='neo-panel-header'>🌡️ Conversor de Temperatura</div>
-            <div class='neo-panel-body'>
-              <div id='vbox_3' class='neo-vbox h-align-center'>
-                <div id='vbox_4' class='neo-vbox h-align-center'>
-                  <span id='label_5' class='neo-label emoji-display'></span>
-                  <span id='label_6' class='neo-label description'></span>
-                </div>
-                <div id='vbox_7' class='neo-vbox' style='width: 100%'>
-                  <span id='label_8' class='neo-label'>Ajuste a temperatura (°C)</span>
-                  <input type='text' id='input_9' class='neo-textinput slider' placeholder='' />
-                </div>
-                <div id='hbox_10' class='neo-hbox h-align-center'>
-                  <div id='box_11' class='neo-box'>
-                    <span id='label_12' class='neo-label' style='color: #7f8c8d'>Celsius</span>
-                    <span id='label_13' class='neo-label temp-value'></span>
-                    <span id='label_14' class='neo-label temp-unit'>°C</span>
-                  </div>
-                  <div id='box_15' class='neo-box'>
-                    <span id='label_16' class='neo-label' style='color: #7f8c8d'>Fahrenheit</span>
-                    <span id='label_17' class='neo-label temp-value'></span>
-                    <span id='label_18' class='neo-label temp-unit'>°F</span>
-                  </div>
-                  <div id='box_19' class='neo-box'>
-                    <span id='label_20' class='neo-label' style='color: #7f8c8d'>Kelvin</span>
-                    <span id='label_21' class='neo-label temp-value'></span>
-                    <span id='label_22' class='neo-label temp-unit'>K</span>
-                  </div>
-                </div>
+        <div id='vbox_1' class='neo-vbox temp-container'>
+          <div id='vbox_2' class='neo-vbox temp-card'>
+            <div id='vbox_3' class='neo-vbox weather-display'>
+              <span id='label_4' class='neo-label weather-emoji'></span>
+              <span id='label_5' class='neo-label weather-status'></span>
+              <span id='label_6' class='neo-label temp-main'></span>
+            </div>
+            <div id='vbox_7' class='neo-vbox slider-section'>
+              <div id='hbox_8' class='neo-hbox slider-label'>
+                <span id='label_9' class='neo-label'>-20°C</span>
+                <span id='label_10' class='neo-label'>Adjust Temperature</span>
+                <span id='label_11' class='neo-label'>50°C</span>
               </div>
+              <input type='text' id='input_12' class='neo-textinput temp-slider' placeholder='' />
+            </div>
+            <div id='hbox_13' class='neo-hbox conversions'>
+              <div id='vbox_14' class='neo-vbox conversion-card'>
+                <span id='label_15' class='neo-label conversion-value'></span>
+                <span id='label_16' class='neo-label conversion-label'>Celsius</span>
+              </div>
+              <div id='vbox_17' class='neo-vbox conversion-card'>
+                <span id='label_18' class='neo-label conversion-value'></span>
+                <span id='label_19' class='neo-label conversion-label'>Fahrenheit</span>
+              </div>
+              <div id='vbox_20' class='neo-vbox conversion-card'>
+                <span id='label_21' class='neo-label conversion-value'></span>
+                <span id='label_22' class='neo-label conversion-label'>Kelvin</span>
+              </div>
+            </div>
+            <div id='hbox_23' class='neo-hbox quick-temps'>
+              <button id='btn_24' class='neo-button quick-btn'>-10°</button>
+              <button id='btn_25' class='neo-button quick-btn'>0°</button>
+              <button id='btn_26' class='neo-button quick-btn'>20°</button>
+              <button id='btn_27' class='neo-button quick-btn'>37°</button>
             </div>
           </div>
         </div>
@@ -157,48 +214,40 @@
     }
 
     attachEventHandlers() {
+      const el_btn_24 = this.shadowRoot.getElementById('btn_24');
+      if (el_btn_24) el_btn_24.addEventListener('click', () => setTemperature(-10));
+      const el_btn_25 = this.shadowRoot.getElementById('btn_25');
+      if (el_btn_25) el_btn_25.addEventListener('click', () => setTemperature(0));
+      const el_btn_26 = this.shadowRoot.getElementById('btn_26');
+      if (el_btn_26) el_btn_26.addEventListener('click', () => setTemperature(20));
+      const el_btn_27 = this.shadowRoot.getElementById('btn_27');
+      if (el_btn_27) el_btn_27.addEventListener('click', () => setTemperature(37));
     }
 
     setupReactivity() {
       createEffect(() => {
+        const el = this.shadowRoot.getElementById('vbox_3');
+        if (el) el.style.backgroundColor = gradientColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_4');
+        if (el) el.textContent = weatherEmoji.value;
+      });
+      createEffect(() => {
         const el = this.shadowRoot.getElementById('label_5');
-        if (el) el.textContent = temperatureEmoji.value;
+        if (el) el.textContent = weatherText.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_6');
-        if (el) el.style.color = temperatureColor.value;
+        const el = this.shadowRoot.getElementById('label_15');
+        if (el) el.textContent = celsius.value + '°';
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_6');
-        if (el) el.textContent = description.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('input_9');
-        if (el) el.value = celsius.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_13');
-        if (el) el.style.color = temperatureColor.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_13');
-        if (el) el.textContent = Math.round(celsius.value * 10) / 10;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_17');
-        if (el) el.style.color = temperatureColor.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_17');
-        if (el) el.textContent = Math.round(fahrenheit.value * 10) / 10;
+        const el = this.shadowRoot.getElementById('label_18');
+        if (el) el.textContent = fahrenheit.value + '°';
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_21');
-        if (el) el.style.color = temperatureColor.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_21');
-        if (el) el.textContent = Math.round(kelvin.value * 10) / 10;
+        if (el) el.textContent = kelvin.value;
       });
     }
   }

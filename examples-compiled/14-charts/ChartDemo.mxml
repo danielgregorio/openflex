@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Charts Demo - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var salesData: Array = [
+            {month: 'Jan', sales: 4500, lastYear: 3800},
+            {month: 'Feb', sales: 5200, lastYear: 4200},
+            {month: 'Mar', sales: 4800, lastYear: 4500},
+            {month: 'Apr', sales: 6100, lastYear: 5000},
+            {month: 'May', sales: 5800, lastYear: 5200},
+            {month: 'Jun', sales: 7200, lastYear: 5800}
+        ];
+
+        @reactive var marketShare: Array = [
+            {name: 'Product A', value: 35},
+            {name: 'Product B', value: 28},
+            {name: 'Product C', value: 22},
+            {name: 'Others', value: 15}
+        ];
+
+        @reactive var performanceData: Array = [
+            {team: 'Sales', score: 92},
+            {team: 'Marketing', score: 78},
+            {team: 'Support', score: 85},
+            {team: 'Engineering', score: 95},
+            {team: 'HR', score: 70}
+        ];
+
+        @reactive var trendData: Array = [
+            {month: 'Jan', visitors: 12000},
+            {month: 'Feb', visitors: 15000},
+            {month: 'Mar', visitors: 18000},
+            {month: 'Apr', visitors: 22000},
+            {month: 'May', visitors: 28000},
+            {month: 'Jun', visitors: 35000}
+        ];
+
+        function refreshData(): void {
+            salesData = salesData.map(d => ({
+                ...d,
+                sales: Math.max(1000, d.sales + Math.floor(Math.random() * 1000 - 500)),
+                lastYear: Math.max(1000, d.lastYear + Math.floor(Math.random() * 500 - 250))
+            }));
+
+            marketShare = marketShare.map(d => ({
+                ...d,
+                value: Math.max(5, d.value + Math.floor(Math.random() * 10 - 5))
+            }));
+        }
+
+        @computed var totalSales: Number {
+            return salesData.reduce((sum, d) => sum + d.sales, 0);
+        }
+
+        @computed var avgScore: Number {
+            return Math.round(performanceData.reduce((sum, d) => sum + d.score, 0) / performanceData.length);
+        }
+
+        @computed var totalVisitors: Number {
+            return trendData.reduce((sum, d) => sum + d.visitors, 0);
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./chart-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Charts Dashboard" styleClass="title" />
+                <Label text="Apache ECharts integration with reactive data" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Stats -->
+            <HBox styleClass="stats">
+                <VBox styleClass="stat">
+                    <Label text="${totalSales.toLocaleString()}" styleClass="stat-value" color="#34c759" />
+                    <Label text="Total Sales" styleClass="stat-label" />
+                </VBox>
+                <VBox styleClass="stat">
+                    <Label text="{avgScore}%" styleClass="stat-value" color="#5856d6" />
+                    <Label text="Avg Performance" styleClass="stat-label" />
+                </VBox>
+                <VBox styleClass="stat">
+                    <Label text="{(totalVisitors / 1000).toFixed(0)}K" styleClass="stat-value" color="#ff9500" />
+                    <Label text="Total Visitors" styleClass="stat-label" />
+                </VBox>
+            </HBox>
+
+            <!-- Controls -->
+            <HBox styleClass="controls">
+                <Button label="Refresh Data" click="{refreshData}" styleClass="btn" />
+            </HBox>
+
+            <!-- Charts Grid -->
+            <VBox styleClass="chart-grid">
+                <!-- Column Chart -->
+                <VBox styleClass="chart-card">
+                    <VBox styleClass="chart-header">
+                        <Label text="Sales Comparison" styleClass="chart-title" />
+                        <Label text="Current year vs last year" styleClass="chart-subtitle" />
+                    </VBox>
+                    <VBox styleClass="chart-container">
+                        <ColumnChart dataProvider="{salesData}" width="100%" height="250">
+                            <horizontalAxis>
+                                <CategoryAxis categoryField="month" />
+                            </horizontalAxis>
+                            <verticalAxis>
+                                <LinearAxis minimum="0" />
+                            </verticalAxis>
+                            <series>
+                                <ColumnSeries yField="sales" displayName="2024" />
+                                <ColumnSeries yField="lastYear" displayName="2023" />
+                            </series>
+                        </ColumnChart>
+                    </VBox>
+                </VBox>
+
+                <!-- Line Chart -->
+                <VBox styleClass="chart-card">
+                    <VBox styleClass="chart-header">
+                        <Label text="Sales Trend" styleClass="chart-title" />
+                        <Label text="Monthly trend analysis" styleClass="chart-subtitle" />
+                    </VBox>
+                    <VBox styleClass="chart-container">
+                        <LineChart dataProvider="{salesData}" width="100%" height="250">
+                            <horizontalAxis>
+                                <CategoryAxis categoryField="month" />
+                            </horizontalAxis>
+                            <verticalAxis>
+                                <LinearAxis minimum="0" />
+                            </verticalAxis>
+                            <series>
+                                <LineSeries yField="sales" displayName="Sales 2024" />
+                                <LineSeries yField="lastYear" displayName="Sales 2023" />
+                            </series>
+                        </LineChart>
+                    </VBox>
+                </VBox>
+
+                <!-- Pie Chart -->
+                <VBox styleClass="chart-card">
+                    <VBox styleClass="chart-header">
+                        <Label text="Market Share" styleClass="chart-title" />
+                        <Label text="Product distribution" styleClass="chart-subtitle" />
+                    </VBox>
+                    <VBox styleClass="chart-container">
+                        <PieChart dataProvider="{marketShare}" width="100%" height="250">
+                            <series>
+                                <PieSeries field="value" nameField="name" displayName="Share" />
+                            </series>
+                        </PieChart>
+                    </VBox>
+                </VBox>
+
+                <!-- Bar Chart -->
+                <VBox styleClass="chart-card">
+                    <VBox styleClass="chart-header">
+                        <Label text="Team Performance" styleClass="chart-title" />
+                        <Label text="Score by department" styleClass="chart-subtitle" />
+                    </VBox>
+                    <VBox styleClass="chart-container">
+                        <BarChart dataProvider="{performanceData}" width="100%" height="250">
+                            <horizontalAxis>
+                                <CategoryAxis categoryField="team" />
+                            </horizontalAxis>
+                            <verticalAxis>
+                                <LinearAxis minimum="0" maximum="100" />
+                            </verticalAxis>
+                            <series>
+                                <ColumnSeries yField="score" displayName="Score" />
+                            </series>
+                        </BarChart>
+                    </VBox>
+                </VBox>
+
+                <!-- Area Chart -->
+                <VBox styleClass="chart-card">
+                    <VBox styleClass="chart-header">
+                        <Label text="Website Visitors" styleClass="chart-title" />
+                        <Label text="Monthly growth" styleClass="chart-subtitle" />
+                    </VBox>
+                    <VBox styleClass="chart-container">
+                        <AreaChart dataProvider="{trendData}" width="100%" height="250">
+                            <horizontalAxis>
+                                <CategoryAxis categoryField="month" />
+                            </horizontalAxis>
+                            <verticalAxis>
+                                <LinearAxis minimum="0" />
+                            </verticalAxis>
+                            <series>
+                                <AreaSeries yField="visitors" displayName="Visitors" />
+                            </series>
+                        </AreaChart>
+                    </VBox>
+                </VBox>
+
+                <!-- Doughnut Chart -->
+                <VBox styleClass="chart-card">
+                    <VBox styleClass="chart-header">
+                        <Label text="Product Distribution" styleClass="chart-title" />
+                        <Label text="Revenue breakdown" styleClass="chart-subtitle" />
+                    </VBox>
+                    <VBox styleClass="chart-container">
+                        <DoughnutChart dataProvider="{marketShare}" width="100%" height="250">
+                            <series>
+                                <PieSeries field="value" nameField="name" displayName="Distribution" />
+                            </series>
+                        </DoughnutChart>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </VBox>
+    </VBox>
+
+</Application>

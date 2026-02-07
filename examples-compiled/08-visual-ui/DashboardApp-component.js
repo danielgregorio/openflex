@@ -11,46 +11,104 @@
     ? window.OpenFlexRuntime
     : require('./runtime/openflex-runtime.js');
 
-  const users = new Signal(1247);
+  const revenue = new Signal(48250);
 
-  const revenue = new Signal(45678);
+  const users = new Signal(2847);
 
-  const orders = new Signal(823);
+  const orders = new Signal(384);
 
-  const growth = new Signal(12.5);
+  const conversion = new Signal(3.24);
 
-  const conversion = new Signal(3.2);
+  const revenueChange = new Signal(12.5);
 
-  const usersFormatted = new Computed(() => {
-    return users.value.toLocaleString('pt-BR');
-  });
+  const usersChange = new Signal(8.2);
+
+  const ordersChange = new Signal(-2.4);
+
+  const conversionChange = new Signal(0.8);
 
   const revenueFormatted = new Computed(() => {
-    return "R$ " + revenue.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    return "$" + revenue.value.toLocaleString();
+  });
+
+  const usersFormatted = new Computed(() => {
+    return users.value.toLocaleString();
   });
 
   const ordersFormatted = new Computed(() => {
-    return orders.value.toLocaleString('pt-BR');
-  });
-
-  const growthFormatted = new Computed(() => {
-    return (growth.value >= 0 ? '+' : '') + growth.value.toFixed(1) + '%';
-  });
-
-  const growthColor = new Computed(() => {
-    return (growth.value >= 0 ? '#10b981' : '#ef4444');
+    return orders.value.toLocaleString();
   });
 
   const conversionFormatted = new Computed(() => {
-    return conversion.value.toFixed(1) + '%';
+    return conversion.value.toFixed(2) + "%";
   });
 
-  function simulateUpdate() {
-    users.value += Math.floor(Math.random() * 50 - 10);
-    revenue.value += Math.floor(Math.random() * 5000 - 1000);
-    orders.value += Math.floor(Math.random() * 20 - 5);
-    growth.value = Math.random() * 30 - 10;
-    conversion.value = 2.5 + Math.random() * 2;
+  const revenueChangeText = new Computed(() => {
+    return formatChange(revenueChange.value);
+  });
+
+  const usersChangeText = new Computed(() => {
+    return formatChange(usersChange.value);
+  });
+
+  const ordersChangeText = new Computed(() => {
+    return formatChange(ordersChange.value);
+  });
+
+  const conversionChangeText = new Computed(() => {
+    return formatChange(conversionChange.value);
+  });
+
+  const revenueChangeColor = new Computed(() => {
+    return getChangeColor(revenueChange.value);
+  });
+
+  const usersChangeColor = new Computed(() => {
+    return getChangeColor(usersChange.value);
+  });
+
+  const ordersChangeColor = new Computed(() => {
+    return getChangeColor(ordersChange.value);
+  });
+
+  const conversionChangeColor = new Computed(() => {
+    return getChangeColor(conversionChange.value);
+  });
+
+  const revenueChangeClass = new Computed(() => {
+    return (revenueChange.value >= 0 ? 'card-change' : 'card-change change-negative');
+  });
+
+  const usersChangeClass = new Computed(() => {
+    return (usersChange.value >= 0 ? 'card-change' : 'card-change change-negative');
+  });
+
+  const ordersChangeClass = new Computed(() => {
+    return (ordersChange.value >= 0 ? 'card-change' : 'card-change change-negative');
+  });
+
+  const conversionChangeClass = new Computed(() => {
+    return (conversionChange.value >= 0 ? 'card-change' : 'card-change change-negative');
+  });
+
+  function formatChange(value) {
+    const prefix = (value >= 0 ? "+" : "");
+    return prefix + value.toFixed(1) + "%";
+  }
+
+  function getChangeColor(value) {
+    return (value >= 0 ? "#34c759" : "#ff3b30");
+  }
+
+  function refreshData() {
+    revenue.value = Math.floor(40000 + Math.random() * 20000);
+    users.value = Math.floor(2000 + Math.random() * 2000);
+    orders.value = Math.floor(300 + Math.random() * 200);
+    conversion.value = 2 + Math.random() * 3;
+    revenueChange.value = -5 + Math.random() * 20;
+    usersChange.value = -5 + Math.random() * 20;
+    ordersChange.value = -5 + Math.random() * 10;
+    conversionChange.value = -2 + Math.random() * 4;
   }
 
 
@@ -68,104 +126,115 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../runtime/neo-flex-classic-theme.css');
-
-        @import url('dashboard-styles.css');</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='./dashboard-app.css'>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox app-container' style='width: 100%; height: 100%; gap: 0px'>
-          <div id='vbox_2' class='neo-vbox' style='width: 100%; gap: 40px; max-width: 1600px; margin: 0 auto;'>
-            <div id='hbox_3' class='neo-hbox h-align-space-between v-align-center' style='width: 100%'>
-              <div id='vbox_4' class='neo-vbox' style='gap: 8px'>
-                <span id='label_5' class='neo-label dashboard-title'>📊 Dashboard Executivo</span>
-                <span id='label_6' class='neo-label dashboard-subtitle'>Visão geral das métricas principais</span>
+        <div id='vbox_1' class='neo-vbox dashboard-container'>
+          <div id='vbox_2' class='neo-vbox dashboard-wrapper'>
+            <div id='hbox_3' class='neo-hbox dashboard-header'>
+              <div id='vbox_4' class='neo-vbox'>
+                <span id='label_5' class='neo-label header-title'>Dashboard</span>
+                <span id='label_6' class='neo-label header-subtitle'>Overview of your business metrics</span>
               </div>
-              <button id='btn_7' class='neo-button update-btn'>🔄 Atualizar Dados</button>
+              <button id='btn_7' class='neo-button refresh-btn'>Refresh</button>
             </div>
-            <div id='hbox_8' class='neo-hbox' style='width: 100%; gap: 24px'>
-              <div id='panel_9' class='neo-panel stat-panel'>
-                <div class='neo-panel-body'>
-                  <div id='vbox_10' class='neo-vbox' style='gap: 0px'>
-                    <span id='label_11' class='neo-label stat-icon'>👥</span>
-                    <span id='label_12' class='neo-label stat-label'>Usuários Ativos</span>
-                    <span id='label_13' class='neo-label stat-value'></span>
-                    <span id='label_14' class='neo-label stat-change positive'>+15% vs mês anterior</span>
+            <div id='hbox_8' class='neo-hbox cards-grid'>
+              <div id='vbox_9' class='neo-vbox metric-card'>
+                <div id='hbox_10' class='neo-hbox card-header'>
+                  <div id='box_11' class='neo-box'>
+                    <span id='label_12' class='neo-label'>💰</span>
                   </div>
+                  <span id='label_13' class='neo-label'></span>
                 </div>
+                <span id='label_14' class='neo-label card-value'></span>
+                <span id='label_15' class='neo-label card-label'>Total Revenue</span>
               </div>
-              <div id='panel_15' class='neo-panel stat-panel'>
-                <div class='neo-panel-body'>
-                  <div id='vbox_16' class='neo-vbox' style='gap: 0px'>
-                    <span id='label_17' class='neo-label stat-icon'>💰</span>
-                    <span id='label_18' class='neo-label stat-label'>Receita Total</span>
-                    <span id='label_19' class='neo-label stat-value'></span>
-                    <span id='label_20' class='neo-label stat-change positive'></span>
+              <div id='vbox_16' class='neo-vbox metric-card'>
+                <div id='hbox_17' class='neo-hbox card-header'>
+                  <div id='box_18' class='neo-box'>
+                    <span id='label_19' class='neo-label'>👥</span>
                   </div>
+                  <span id='label_20' class='neo-label'></span>
                 </div>
+                <span id='label_21' class='neo-label card-value'></span>
+                <span id='label_22' class='neo-label card-label'>Active Users</span>
               </div>
-              <div id='panel_21' class='neo-panel stat-panel'>
-                <div class='neo-panel-body'>
-                  <div id='vbox_22' class='neo-vbox' style='gap: 0px'>
-                    <span id='label_23' class='neo-label stat-icon'>🛒</span>
-                    <span id='label_24' class='neo-label stat-label'>Pedidos</span>
-                    <span id='label_25' class='neo-label stat-value'></span>
-                    <span id='label_26' class='neo-label stat-change positive'>+8% vs mês anterior</span>
+              <div id='vbox_23' class='neo-vbox metric-card'>
+                <div id='hbox_24' class='neo-hbox card-header'>
+                  <div id='box_25' class='neo-box'>
+                    <span id='label_26' class='neo-label'>📦</span>
                   </div>
+                  <span id='label_27' class='neo-label'></span>
                 </div>
+                <span id='label_28' class='neo-label card-value'></span>
+                <span id='label_29' class='neo-label card-label'>Total Orders</span>
               </div>
-              <div id='panel_27' class='neo-panel stat-panel'>
-                <div class='neo-panel-body'>
-                  <div id='vbox_28' class='neo-vbox' style='gap: 0px'>
-                    <span id='label_29' class='neo-label stat-icon'>📈</span>
-                    <span id='label_30' class='neo-label stat-label'>Taxa de Conversão</span>
-                    <span id='label_31' class='neo-label stat-value'></span>
-                    <span id='label_32' class='neo-label stat-change positive'>+0.5% vs mês anterior</span>
+              <div id='vbox_30' class='neo-vbox metric-card'>
+                <div id='hbox_31' class='neo-hbox card-header'>
+                  <div id='box_32' class='neo-box'>
+                    <span id='label_33' class='neo-label'>📈</span>
                   </div>
+                  <span id='label_34' class='neo-label'></span>
+                </div>
+                <span id='label_35' class='neo-label card-value'></span>
+                <span id='label_36' class='neo-label card-label'>Conversion Rate</span>
+              </div>
+            </div>
+            <div id='vbox_37' class='neo-vbox chart-section'>
+              <span id='label_38' class='neo-label section-title'>Revenue Overview</span>
+              <div id='hbox_39' class='neo-hbox chart-placeholder'>
+                <div id='box_40' class='neo-box' style='height: 40%'>
+                </div>
+                <div id='box_41' class='neo-box' style='height: 60%'>
+                </div>
+                <div id='box_42' class='neo-box' style='height: 45%'>
+                </div>
+                <div id='box_43' class='neo-box' style='height: 80%'>
+                </div>
+                <div id='box_44' class='neo-box' style='height: 65%'>
+                </div>
+                <div id='box_45' class='neo-box' style='height: 90%'>
+                </div>
+                <div id='box_46' class='neo-box' style='height: 75%'>
+                </div>
+                <div id='box_47' class='neo-box' style='height: 85%'>
+                </div>
+                <div id='box_48' class='neo-box' style='height: 70%'>
+                </div>
+                <div id='box_49' class='neo-box' style='height: 95%'>
+                </div>
+                <div id='box_50' class='neo-box' style='height: 88%'>
+                </div>
+                <div id='box_51' class='neo-box' style='height: 100%'>
                 </div>
               </div>
             </div>
-            <div id='hbox_33' class='neo-hbox' style='width: 100%; gap: 24px'>
-              <div id='panel_34' class='neo-panel chart-panel'>
-                <div class='neo-panel-body'>
-                  <div id='vbox_35' class='neo-vbox' style='width: 100%; gap: 0px'>
-                    <span id='label_36' class='neo-label section-title'>📊 Vendas dos Últimos 12 Meses</span>
-                    <div id='box_37' class='neo-box'>
-                      <span id='label_38' class='neo-label'>Gráfico interativo seria renderizado aqui</span>
-                    </div>
+            <div id='vbox_52' class='neo-vbox activity-section'>
+              <span id='label_53' class='neo-label section-title'>Recent Activity</span>
+              <div id='vbox_54' class='neo-vbox'>
+                <div id='hbox_55' class='neo-hbox activity-item'>
+                  <div id='box_56' class='neo-box'>
                   </div>
+                  <span id='label_57' class='neo-label activity-text'>New order #1234 received</span>
+                  <span id='label_58' class='neo-label activity-time'>2m ago</span>
                 </div>
-              </div>
-              <div id='panel_39' class='neo-panel goals-panel'>
-                <div class='neo-panel-body'>
-                  <div id='vbox_40' class='neo-vbox' style='width: 100%; gap: 0px'>
-                    <span id='label_41' class='neo-label section-title'>🎯 Metas do Mês</span>
-                    <div id='vbox_42' class='neo-vbox goal-item' style='gap: 0px'>
-                      <span id='label_43' class='neo-label goal-name'>Vendas</span>
-                      <span id='label_44' class='neo-label goal-percentage warning'>92%</span>
-                      <div id='box_45' class='neo-box'>
-                        <div id='box_46' class='neo-box' style='width: 92%'>
-                        </div>
-                      </div>
-                      <span id='label_47' class='neo-label goal-details'>R$ 46.000 de R$ 50.000</span>
-                    </div>
-                    <div id='vbox_48' class='neo-vbox goal-item' style='gap: 0px'>
-                      <span id='label_49' class='neo-label goal-name'>Novos Usuários</span>
-                      <span id='label_50' class='neo-label goal-percentage success'>104%</span>
-                      <div id='box_51' class='neo-box'>
-                        <div id='box_52' class='neo-box' style='width: 100%'>
-                        </div>
-                      </div>
-                      <span id='label_53' class='neo-label goal-details'>1.300 de 1.250 usuários</span>
-                    </div>
-                    <div id='vbox_54' class='neo-vbox goal-item' style='gap: 0px'>
-                      <span id='label_55' class='neo-label goal-name'>Conversão</span>
-                      <span id='label_56' class='neo-label goal-percentage warning'>89%</span>
-                      <div id='box_57' class='neo-box'>
-                        <div id='box_58' class='neo-box' style='width: 89%'>
-                        </div>
-                      </div>
-                      <span id='label_59' class='neo-label goal-details'>3.2% de 3.6% meta</span>
-                    </div>
+                <div id='hbox_59' class='neo-hbox activity-item'>
+                  <div id='box_60' class='neo-box'>
                   </div>
+                  <span id='label_61' class='neo-label activity-text'>User john@email.com signed up</span>
+                  <span id='label_62' class='neo-label activity-time'>15m ago</span>
+                </div>
+                <div id='hbox_63' class='neo-hbox activity-item'>
+                  <div id='box_64' class='neo-box'>
+                  </div>
+                  <span id='label_65' class='neo-label activity-text'>Payment of $299 processed</span>
+                  <span id='label_66' class='neo-label activity-time'>1h ago</span>
+                </div>
+                <div id='hbox_67' class='neo-hbox activity-item'>
+                  <div id='box_68' class='neo-box'>
+                  </div>
+                  <span id='label_69' class='neo-label activity-text'>New review submitted (5 stars)</span>
+                  <span id='label_70' class='neo-label activity-time'>2h ago</span>
                 </div>
               </div>
             </div>
@@ -180,32 +249,72 @@
 
     attachEventHandlers() {
       const el_btn_7 = this.shadowRoot.getElementById('btn_7');
-      if (el_btn_7) el_btn_7.addEventListener('click', () => simulateUpdate());
+      if (el_btn_7) el_btn_7.addEventListener('click', () => refreshData());
     }
 
     setupReactivity() {
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_13');
-        if (el) el.textContent = usersFormatted.value;
+        if (el) el.className = revenueChangeClass.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_19');
+        const el = this.shadowRoot.getElementById('label_13');
+        if (el) el.style.color = revenueChangeColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_13');
+        if (el) el.textContent = revenueChangeText.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_14');
         if (el) el.textContent = revenueFormatted.value;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_20');
-        if (el) el.style.color = growthColor.value;
+        if (el) el.className = usersChangeClass.value;
       });
       createEffect(() => {
         const el = this.shadowRoot.getElementById('label_20');
-        if (el) el.textContent = growthFormatted.value;
+        if (el) el.style.color = usersChangeColor.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_25');
+        const el = this.shadowRoot.getElementById('label_20');
+        if (el) el.textContent = usersChangeText.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_21');
+        if (el) el.textContent = usersFormatted.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_27');
+        if (el) el.className = ordersChangeClass.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_27');
+        if (el) el.style.color = ordersChangeColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_27');
+        if (el) el.textContent = ordersChangeText.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_28');
         if (el) el.textContent = ordersFormatted.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_31');
+        const el = this.shadowRoot.getElementById('label_34');
+        if (el) el.className = conversionChangeClass.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_34');
+        if (el) el.style.color = conversionChangeColor.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_34');
+        if (el) el.textContent = conversionChangeText.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_35');
         if (el) el.textContent = conversionFormatted.value;
       });
     }

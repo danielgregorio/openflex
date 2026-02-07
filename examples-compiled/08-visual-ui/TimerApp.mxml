@@ -2,128 +2,103 @@
 <Application
     xmlns:fx="http://openflex.dev/core"
     xmlns="http://openflex.dev/neo"
-    title="Cronômetro - OpenFlex Neo">
+    title="Stopwatch - OpenFlex Neo">
 
     <fx:Script><![CDATA[
-        @reactive var seconds: Number = 0;
+        @reactive var milliseconds: Number = 0;
         @reactive var isRunning: Boolean = false;
         @reactive var intervalId: Number = 0;
+        @reactive var laps: Array = [];
 
         @computed var displayTime: String {
-            const hrs = Math.floor(seconds / 3600);
-            const mins = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            const ms = Math.floor((milliseconds % 1000) / 10);
 
             const pad = (n) => String(n).padStart(2, '0');
-            return pad(hrs) + ":" + pad(mins) + ":" + pad(secs);
+            return pad(mins) + ":" + pad(secs) + "." + pad(ms);
         }
 
-        @computed var buttonLabel: String {
-            return isRunning ? "⏸️ Pausar" : "▶️ Iniciar";
+        @computed var hasTime: Boolean {
+            return milliseconds > 0;
         }
 
-        function toggleTimer(): void {
-            if (isRunning) {
-                clearInterval(intervalId);
-                isRunning = false;
-            } else {
+        @computed var canReset: Boolean {
+            return hasTime && !isRunning;
+        }
+
+        function start(): void {
+            if (!isRunning) {
                 intervalId = setInterval(() => {
-                    seconds++;
-                }, 1000);
+                    milliseconds += 10;
+                }, 10);
                 isRunning = true;
             }
         }
 
-        function reset(): void {
+        function stop(): void {
             if (isRunning) {
                 clearInterval(intervalId);
                 isRunning = false;
             }
-            seconds = 0;
         }
 
-        function addMinute(): void {
-            seconds += 60;
+        function reset(): void {
+            stop();
+            milliseconds = 0;
+            laps = [];
+        }
+
+        function lap(): void {
+            if (isRunning && milliseconds > 0) {
+                laps = [displayTime, ...laps];
+            }
+        }
+
+        function handleLeftButton(): void {
+            if (canReset) {
+                reset();
+            } else {
+                lap();
+            }
+        }
+
+        function handleRightButton(): void {
+            if (isRunning) {
+                stop();
+            } else {
+                start();
+            }
         }
     ]]></fx:Script>
 
     <fx:Style>
-        @import url('../runtime/neo-flex-classic-theme.css');
-
-        .timer-display {
-            font-size: 96px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-        }
-
-        .timer-panel {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 40px;
-            font-size: 18px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-            padding: 15px 40px;
-            font-size: 18px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-
-        .btn-add {
-            background: #3498db;
-            color: white;
-            padding: 12px 30px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
+        @import url('./timer-app.css');
     </fx:Style>
 
-    <VBox gap="{20}" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%"
-          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <VBox styleClass="timer-container">
+        <VBox styleClass="timer">
+            <Label text="{displayTime}" styleClass="display" />
 
-        <Box styleClass="timer-panel">
-            <VBox gap="{30}" horizontalAlign="center">
-                <Label text="⏱️ Cronômetro" fontSize="{32}" fontWeight="bold" color="#2c3e50" />
+            <HBox styleClass="btn-row">
+                <Button label="{canReset ? 'Reset' : 'Lap'}"
+                        click="{handleLeftButton}"
+                        styleClass="timer-btn {canReset ? 'btn-reset' : 'btn-lap'}" />
+                <Button label="{isRunning ? 'Stop' : 'Start'}"
+                        click="{handleRightButton}"
+                        styleClass="timer-btn {isRunning ? 'btn-stop' : 'btn-start'}" />
+            </HBox>
 
-                <Label text="{displayTime}" styleClass="timer-display" />
-
-                <HBox gap="{15}" horizontalAlign="center">
-                    <Button label="{buttonLabel}" click="{toggleTimer}" styleClass="btn-primary" />
-                    <Button label="🔄 Resetar" click="{reset}" styleClass="btn-secondary" />
-                </HBox>
-
-                <Button label="➕ Adicionar 1 Minuto" click="{addMinute}" styleClass="btn-add" />
-
-                <Label text="{seconds + ' segundos totais'}" fontSize="{14}" color="#7f8c8d" />
+            <VBox styleClass="lap-list" visible="{laps.length > 0}">
+                <Repeater dataProvider="{laps}">
+                    <HBox styleClass="lap-item">
+                        <Label text="{'Lap ' + (laps.length - index)}" styleClass="lap-number" />
+                        <Label text="{item}" />
+                    </HBox>
+                </Repeater>
             </VBox>
-        </Box>
-
+        </VBox>
     </VBox>
 
 </Application>

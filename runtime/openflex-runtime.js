@@ -136,11 +136,13 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // Global exports for browser
 if (typeof window !== 'undefined') {
-  window.OpenFlex = {
+  window.OpenFlexRuntime = {
     Signal,
     Computed,
     createEffect,
     batch,
     untrack
   };
+  // Alias for backwards compatibility
+  window.OpenFlex = window.OpenFlexRuntime;
 }

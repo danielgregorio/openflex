@@ -1,122 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Application xmlns:fx="http://openflex.dev/core"
-             title="Selection Demo">
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Selection Demo - OpenFlex Neo">
 
     <fx:Script><![CDATA[
         @reactive var fruits: Array = [
-            {label: "Apple", color: "Red"},
-            {label: "Banana", color: "Yellow"},
-            {label: "Cherry", color: "Red"},
-            {label: "Date", color: "Brown"},
-            {label: "Elderberry", color: "Purple"}
+            {label: 'Apple', emoji: '🍎', color: 'Red'},
+            {label: 'Banana', emoji: '🍌', color: 'Yellow'},
+            {label: 'Cherry', emoji: '🍒', color: 'Red'},
+            {label: 'Grape', emoji: '🍇', color: 'Purple'},
+            {label: 'Orange', emoji: '🍊', color: 'Orange'}
         ];
 
         @reactive var employees: Array = [
-            {name: "Alice", department: "Engineering", salary: 75000},
-            {name: "Bob", department: "Marketing", salary: 65000},
-            {name: "Carol", department: "Engineering", salary: 80000},
-            {name: "Dave", department: "Sales", salary: 70000}
+            {name: 'Sarah Chen', role: 'Engineer', salary: 95000, status: 'active'},
+            {name: 'Marcus Johnson', role: 'Designer', salary: 82000, status: 'active'},
+            {name: 'Emily Davis', role: 'Manager', salary: 110000, status: 'away'},
+            {name: 'Alex Rivera', role: 'Marketing', salary: 75000, status: 'active'}
         ];
 
         @reactive var selectedFruit: Number = -1;
         @reactive var selectedEmployee: Number = -1;
-
-        @reactive var lastAction: String = "No action yet";
+        @reactive var lastAction: String = 'Click an item to select';
 
         function onFruitChange(event): void {
-            lastAction = "Fruit changed to: " + fruits[event.index].label;
-        }
-
-        function onFruitClick(event): void {
-            lastAction = "Clicked fruit: " + event.item.label + " (index " + event.index + ")";
+            lastAction = 'Selected fruit: ' + fruits[event.index].label;
         }
 
         function onEmployeeChange(event): void {
-            lastAction = "Employee changed to: " + employees[event.index].name;
-        }
-
-        function onEmployeeClick(event): void {
-            lastAction = "Clicked employee: " + event.item.name;
+            lastAction = 'Selected employee: ' + employees[event.index].name;
         }
 
         function onEmployeeDoubleClick(event): void {
-            lastAction = "Double-clicked: " + event.item.name + " - Salary: $" + event.item.salary;
+            lastAction = 'Double-clicked: ' + event.item.name + ' - Salary: $' + event.item.salary.toLocaleString();
         }
 
-        @computed var selectedFruitName: String {
-            if (selectedFruit >= 0 && selectedFruit < fruits.length) {
-                return fruits[selectedFruit].label;
-            }
-            return "(none)";
+        function selectFruit(index): void {
+            selectedFruit = index;
+            lastAction = 'Selected fruit: ' + fruits[index].label;
         }
 
-        @computed var selectedEmployeeName: String {
-            if (selectedEmployee >= 0 && selectedEmployee < employees.length) {
-                return employees[selectedEmployee].name;
+        function selectEmployee(index): void {
+            selectedEmployee = index;
+            lastAction = 'Selected employee: ' + employees[index].name;
+        }
+
+        function getSelectedClass(currentIndex, selectedIndex): String {
+            return currentIndex === selectedIndex ? 'item-selected' : '';
+        }
+
+        function formatSalary(amount): String {
+            return '$' + amount.toLocaleString();
+        }
+
+        function getStatusClass(status): String {
+            return status === 'active' ? 'badge-green' : 'badge-orange';
+        }
+
+        @computed var selectedFruitInfo: String {
+            if (selectedFruit >= 0) {
+                var f = fruits[selectedFruit];
+                return f.emoji + ' ' + f.label + ' (' + f.color + ')';
             }
-            return "(none)";
+            return 'None selected';
+        }
+
+        @computed var selectedEmployeeInfo: String {
+            if (selectedEmployee >= 0) {
+                var e = employees[selectedEmployee];
+                return e.name + ' - ' + e.role;
+            }
+            return 'None selected';
         }
     ]]></fx:Script>
 
     <fx:Style>
-        .demo-layout {
-            display: flex;
-            gap: 20px;
-            padding: 10px;
-        }
-        .demo-column {
-            flex: 1;
-        }
-        .neo-list {
-            min-height: 150px;
-        }
-        .neo-datagrid {
-            min-height: 150px;
-        }
-        .status-bar {
-            background: #f0f0f0;
-            border: 1px solid #999;
-            padding: 8px;
-            margin-top: 10px;
-            font-family: monospace;
-        }
-        .selection-info {
-            color: #0066cc;
-            font-weight: bold;
-        }
+        @import url('./selection-demo.css');
     </fx:Style>
 
-    <Panel title="Selection Demo - List and DataGrid">
-        <VBox>
-            <Label text="Click items to select. The selection is tracked reactively." />
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Selection Demo" styleClass="title" />
+                <Label text="Click items to select. Double-click employees to see salary." styleClass="subtitle" />
+            </VBox>
 
-            <HBox styleClass="demo-layout">
-                <VBox styleClass="demo-column">
-                    <Label text="Fruits List" fontWeight="bold" />
-                    <List dataProvider="{fruits}" labelField="label"
-                          selectedIndex="{selectedFruit}"
-                          change="onFruitChange"
-                          itemClick="onFruitClick" />
-                    <Label text="Selected: {selectedFruitName}" styleClass="selection-info" />
+            <!-- Grid -->
+            <HBox styleClass="grid">
+                <!-- Fruits List -->
+                <VBox styleClass="card">
+                    <VBox styleClass="card-header">
+                        <Label text="Fruits List" styleClass="card-title" />
+                        <Label text="Single selection mode" styleClass="card-subtitle" />
+                    </VBox>
+                    <VBox styleClass="list-items">
+                        <Repeater dataProvider="{fruits}">
+                            <HBox styleClass="fruit-item {index === selectedFruit ? 'item-selected' : ''}"
+                                  click="{() => selectFruit(index)}">
+                                <Label text="{item.emoji}" styleClass="fruit-emoji" />
+                                <VBox styleClass="fruit-info">
+                                    <Label text="{item.label}" styleClass="fruit-name" />
+                                    <Label text="{item.color}" styleClass="fruit-color" />
+                                </VBox>
+                                <Label text="✓" styleClass="check-icon" />
+                            </HBox>
+                        </Repeater>
+                    </VBox>
+                    <HBox styleClass="selection-info">
+                        <Label text="Selected:" styleClass="selection-label" />
+                        <Label text="{selectedFruitInfo}" styleClass="selection-value" />
+                    </HBox>
                 </VBox>
 
-                <VBox styleClass="demo-column">
-                    <Label text="Employees DataGrid" fontWeight="bold" />
-                    <Label text="(Double-click to see salary)" fontSize="10" />
-                    <DataGrid dataProvider="{employees}"
-                              selectedIndex="{selectedEmployee}"
-                              change="onEmployeeChange"
-                              itemClick="onEmployeeClick"
-                              itemDoubleClick="onEmployeeDoubleClick">
-                        <DataGridColumn headerText="Name" dataField="name" width="120" />
-                        <DataGridColumn headerText="Department" dataField="department" width="120" />
-                    </DataGrid>
-                    <Label text="Selected: {selectedEmployeeName}" styleClass="selection-info" />
+                <!-- Employees DataGrid -->
+                <VBox styleClass="card">
+                    <VBox styleClass="card-header">
+                        <Label text="Employees DataGrid" styleClass="card-title" />
+                        <Label text="Double-click for details" styleClass="card-subtitle" />
+                    </VBox>
+                    <VBox styleClass="datagrid">
+                        <HBox styleClass="datagrid-header">
+                            <Label text="Name" styleClass="datagrid-header-cell" />
+                            <Label text="Role" styleClass="datagrid-header-cell" />
+                            <Label text="Status" styleClass="datagrid-header-cell" />
+                        </HBox>
+                        <Repeater dataProvider="{employees}">
+                            <HBox styleClass="datagrid-row {index === selectedEmployee ? 'item-selected' : ''}"
+                                  click="{() => selectEmployee(index)}">
+                                <Label text="{item.name}" styleClass="datagrid-cell cell-name" />
+                                <Label text="{item.role}" styleClass="datagrid-cell" />
+                                <Label text="{item.status === 'active' ? 'Active' : 'Away'}"
+                                       styleClass="datagrid-cell badge {item.status === 'active' ? 'badge-green' : 'badge-orange'}" />
+                            </HBox>
+                        </Repeater>
+                    </VBox>
+                    <HBox styleClass="selection-info">
+                        <Label text="Selected:" styleClass="selection-label" />
+                        <Label text="{selectedEmployeeInfo}" styleClass="selection-value" />
+                    </HBox>
                 </VBox>
             </HBox>
 
-            <Label text="Last Action:" fontWeight="bold" />
-            <Label text="{lastAction}" styleClass="status-bar" />
+            <!-- Status Bar -->
+            <HBox styleClass="status-bar">
+                <Label text="📋" styleClass="status-icon" />
+                <Label text="Last Action:" styleClass="status-label" />
+                <Label text="{lastAction}" styleClass="status-text" />
+            </HBox>
         </VBox>
-    </Panel>
+    </VBox>
+
 </Application>

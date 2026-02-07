@@ -2,174 +2,67 @@
 <Application
     xmlns:fx="http://openflex.dev/core"
     xmlns="http://openflex.dev/neo"
-    title="Contador Visual Reativo - OpenFlex Neo">
+    title="Counter - OpenFlex Neo">
 
     <fx:Script><![CDATA[
-        // Reatividade built-in - sem imports necessários!
         @reactive var count: Number = 0;
-        @reactive var history: Array = [];
-
-        // Valores computados (automaticamente reativos)
-        @computed var isPositive: Boolean {
-            return count > 0;
-        }
-
-        @computed var isNegative: Boolean {
-            return count < 0;
-        }
 
         @computed var countColor: String {
-            if (count > 0) return "#27ae60";
-            if (count < 0) return "#e74c3c";
-            return "#3498db";
+            if (count > 0) return "#34c759";
+            if (count < 0) return "#ff3b30";
+            return "#ffffff";
         }
 
-        // Ações
+        @computed var statusIcon: String {
+            if (count > 0) return "+";
+            if (count < 0) return "";
+            return "";
+        }
+
         function increment(): void {
             count++;
-            addToHistory("Incrementado");
         }
 
         function decrement(): void {
             count--;
-            addToHistory("Decrementado");
         }
 
         function reset(): void {
             count = 0;
-            history = [];
-            addToHistory("Reset");
         }
 
-        function addToHistory(action: String): void {
-            const timestamp = new Date().toLocaleTimeString();
-            history = [...history, {
-                action: action,
-                count: count,
-                time: timestamp
-            }];
+        function add10(): void {
+            count += 10;
+        }
+
+        function subtract10(): void {
+            count -= 10;
         }
     ]]></fx:Script>
 
     <fx:Style>
-        @import url('../runtime/neo-flex-classic-theme.css');
-
-        .counter-display {
-            font-size: 72px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .positive { color: #27ae60; }
-        .negative { color: #e74c3c; }
-        .zero { color: #3498db; }
-        
-        .btn-increment {
-            background: #27ae60;
-            color: white;
-            font-size: 18px;
-            padding: 15px 30px;
-            border-radius: 8px;
-        }
-        
-        .btn-decrement {
-            background: #e74c3c;
-            color: white;
-            font-size: 18px;
-            padding: 15px 30px;
-            border-radius: 8px;
-        }
-        
-        .btn-reset {
-            background: #95a5a6;
-            color: white;
-            font-size: 18px;
-            padding: 15px 30px;
-            border-radius: 8px;
-        }
-        
-        .history-item {
-            padding: 12px;
-            background: #ecf0f1;
-            border-radius: 6px;
-            margin-bottom: 8px;
-        }
+        @import url('./counter-app.css');
     </fx:Style>
 
-    <!-- Layout com componentes Neo -->
-    <VBox gap="{20}" horizontalAlign="center" verticalAlign="middle" 
-          width="100%" height="100%" 
-          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <VBox styleClass="counter-container">
+        <VBox styleClass="counter">
+            <Label text="{statusIcon + count}" styleClass="display" color="{countColor}" />
 
-        <Panel title="🔢 Contador Reativo" width="{600}" padding="{30}">
-            <VBox gap="{30}">
-                
-                <!-- Display do contador -->
-                <VBox gap="{10}" horizontalAlign="center">
-                    <Label text="{count}" 
-                           styleClass="counter-display {isPositive ? 'positive' : (isNegative ? 'negative' : 'zero')}" 
-                           fontSize="{72}" />
-                    
-                    <Label text="{'Status: ' + (isPositive ? '⬆️ Positivo' : (isNegative ? '⬇️ Negativo' : '⚪ Zero'))}" 
-                           fontSize="{14}" 
-                           color="#7f8c8d" />
-                </VBox>
-                
-                <!-- Botões de controle -->
-                <HBox gap="{10}" horizontalAlign="center">
-                    <Button label="➖ Decrementar" 
-                            click="{decrement}" 
-                            styleClass="btn-decrement" />
-                    
-                    <Button label="🔄 Reset" 
-                            click="{reset}" 
-                            styleClass="btn-reset" />
-                    
-                    <Button label="➕ Incrementar" 
-                            click="{increment}" 
-                            styleClass="btn-increment" />
-                </HBox>
-                
-                <!-- Separador -->
-                <Box height="{2}" width="100%" backgroundColor="#ecf0f1" />
-                
-                <!-- Histórico -->
-                <VBox gap="{10}">
-                    <Label text="📜 Histórico de Ações" 
-                           fontSize="{18}" 
-                           fontWeight="bold" 
-                           color="#2c3e50" />
-                    
-                    <VBox gap="{8}" maxHeight="{200}" overflow="auto">
-                        <Label text="{history.length === 0 ? 'Nenhuma ação ainda' : ''}" 
-                               color="#95a5a6" 
-                               fontStyle="italic"
-                               visible="{history.length === 0}" />
-                        
-                        <!-- Lista de histórico (renderização condicional) -->
-                        <Repeater dataProvider="{history.slice().reverse()}">
-                            <Box styleClass="history-item">
-                                <HBox horizontalAlign="space-between">
-                                    <Label text="{'⚡ ' + item.action + ': ' + item.count}" 
-                                           fontWeight="bold" />
-                                    <Label text="{item.time}" 
-                                           fontSize="{12}" 
-                                           color="#7f8c8d" />
-                                </HBox>
-                            </Box>
-                        </Repeater>
-                    </VBox>
-                </VBox>
-                
-                <!-- Footer -->
-                <Label text="✨ Construído com OpenFlex Neo + MXML" 
-                       fontSize="{12}" 
-                       color="#95a5a6" 
-                       textAlign="center" />
-                
-            </VBox>
-        </Panel>
-        
+            <!-- Row 1: -10, Reset, +10 -->
+            <HBox styleClass="btn-row">
+                <Button label="-10" click="{subtract10}" styleClass="counter-btn btn-gray" />
+                <Button label="AC" click="{reset}" styleClass="counter-btn btn-orange" />
+                <Button label="+10" click="{add10}" styleClass="counter-btn btn-gray" />
+            </HBox>
+
+            <!-- Row 2: Decrement, Increment -->
+            <HBox styleClass="btn-row">
+                <Button label="-" click="{decrement}" styleClass="counter-btn btn-wide btn-red" />
+                <Button label="+" click="{increment}" styleClass="counter-btn btn-wide btn-green" />
+            </HBox>
+
+            <Label text="Tap buttons to change value" styleClass="status-label" />
+        </VBox>
     </VBox>
 
 </Application>

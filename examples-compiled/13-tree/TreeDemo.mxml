@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    xmlns:fx="http://openflex.dev/core"
+    xmlns="http://openflex.dev/neo"
+    title="Tree Component - OpenFlex Neo">
+
+    <fx:Script><![CDATA[
+        @reactive var fileSystem: Array = [
+            {
+                name: 'Documents',
+                icon: '📁',
+                children: [
+                    {
+                        name: 'Work',
+                        icon: '📁',
+                        children: [
+                            {name: 'Report.docx', icon: '📄', size: '2.5 MB'},
+                            {name: 'Presentation.pptx', icon: '📊', size: '5.1 MB'},
+                            {name: 'Budget.xlsx', icon: '📈', size: '1.2 MB'}
+                        ]
+                    },
+                    {
+                        name: 'Personal',
+                        icon: '📁',
+                        children: [
+                            {name: 'Photos', icon: '📁', children: [
+                                {name: 'vacation.jpg', icon: '🖼️', size: '3.2 MB'},
+                                {name: 'family.jpg', icon: '🖼️', size: '2.8 MB'}
+                            ]},
+                            {name: 'Notes.txt', icon: '📝', size: '12 KB'}
+                        ]
+                    }
+                ]
+            },
+            {
+                name: 'Downloads',
+                icon: '📥',
+                children: [
+                    {name: 'installer.exe', icon: '⚙️', size: '45 MB'},
+                    {name: 'music.mp3', icon: '🎵', size: '8.5 MB'},
+                    {name: 'video.mp4', icon: '🎬', size: '250 MB'}
+                ]
+            },
+            {
+                name: 'Projects',
+                icon: '💻',
+                children: [
+                    {
+                        name: 'OpenFlex',
+                        icon: '🚀',
+                        children: [
+                            {name: 'src', icon: '📁', children: [
+                                {name: 'compiler.py', icon: '🐍', size: '45 KB'},
+                                {name: 'runtime.js', icon: '📜', size: '12 KB'}
+                            ]},
+                            {name: 'README.md', icon: '📖', size: '5 KB'},
+                            {name: 'package.json', icon: '📦', size: '1 KB'}
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        @reactive var categories: Array = [
+            {
+                label: 'Electronics',
+                icon: '🔌',
+                children: [
+                    {label: 'Computers', icon: '💻', children: [
+                        {label: 'Laptops', icon: '💻'},
+                        {label: 'Desktops', icon: '🖥️'},
+                        {label: 'Tablets', icon: '📱'}
+                    ]},
+                    {label: 'Phones', icon: '📱', children: [
+                        {label: 'Smartphones', icon: '📱'},
+                        {label: 'Accessories', icon: '🎧'}
+                    ]},
+                    {label: 'Audio', icon: '🎵', children: [
+                        {label: 'Headphones', icon: '🎧'},
+                        {label: 'Speakers', icon: '🔊'}
+                    ]}
+                ]
+            },
+            {
+                label: 'Clothing',
+                icon: '👔',
+                children: [
+                    {label: 'Men', icon: '👔', children: [
+                        {label: 'Shirts', icon: '👕'},
+                        {label: 'Pants', icon: '👖'},
+                        {label: 'Shoes', icon: '👟'}
+                    ]},
+                    {label: 'Women', icon: '👗', children: [
+                        {label: 'Dresses', icon: '👗'},
+                        {label: 'Tops', icon: '👚'},
+                        {label: 'Shoes', icon: '👠'}
+                    ]}
+                ]
+            },
+            {
+                label: 'Home & Garden',
+                icon: '🏠',
+                children: [
+                    {label: 'Furniture', icon: '🪑'},
+                    {label: 'Decor', icon: '🖼️'},
+                    {label: 'Kitchen', icon: '🍳'}
+                ]
+            }
+        ];
+
+        @reactive var selectedFile: String = '';
+        @reactive var selectedCategory: String = '';
+        @reactive var lastAction: String = 'Click on a tree node to see actions';
+
+        function onFileSelect(event): void {
+            selectedFile = event.item.name;
+            lastAction = 'Selected: ' + event.item.name;
+        }
+
+        function onNodeToggle(item, isOpen): void {
+            lastAction = (isOpen ? 'Opened: ' : 'Closed: ') + item.name;
+        }
+
+        function onCategorySelect(event): void {
+            selectedCategory = event.item.label;
+            lastAction = 'Category: ' + event.item.label;
+        }
+    ]]></fx:Script>
+
+    <fx:Style>
+        @import url('./tree-demo.css');
+    </fx:Style>
+
+    <VBox styleClass="app">
+        <VBox styleClass="wrapper">
+            <!-- Header -->
+            <VBox styleClass="header">
+                <Label text="Tree Component" styleClass="title" />
+                <Label text="Hierarchical data with expand/collapse" styleClass="subtitle" />
+            </VBox>
+
+            <!-- Info Banner -->
+            <HBox styleClass="info-banner">
+                <Label text="🌳" styleClass="info-icon" />
+                <Label text="The Tree component displays hierarchical data with nested folders and expand/collapse functionality." styleClass="info-text" />
+            </HBox>
+
+            <!-- Grid -->
+            <HBox styleClass="grid">
+                <!-- File System Tree -->
+                <VBox styleClass="card">
+                    <VBox styleClass="card-header">
+                        <Label text="File System" styleClass="card-title" />
+                        <Label text="With icons and file sizes" styleClass="card-subtitle" />
+                    </VBox>
+                    <VBox styleClass="tree-container">
+                        <Tree dataProvider="{fileSystem}"
+                              labelField="name"
+                              childrenField="children"
+                              iconField="icon"
+                              change="onFileSelect"
+                              defaultOpen="false" />
+                    </VBox>
+                    <HBox styleClass="selection-info">
+                        <Label text="Selected:" styleClass="selection-label" />
+                        <Label text="{selectedFile || 'None'}" styleClass="selection-value" />
+                    </HBox>
+                </VBox>
+
+                <!-- Categories Tree -->
+                <VBox styleClass="card">
+                    <VBox styleClass="card-header">
+                        <Label text="Categories" styleClass="card-title" />
+                        <Label text="Auto-expanded navigation" styleClass="card-subtitle" />
+                    </VBox>
+                    <VBox styleClass="tree-container">
+                        <Tree dataProvider="{categories}"
+                              labelField="label"
+                              childrenField="children"
+                              iconField="icon"
+                              change="onCategorySelect"
+                              defaultOpen="true" />
+                    </VBox>
+                    <HBox styleClass="selection-info">
+                        <Label text="Selected:" styleClass="selection-label" />
+                        <Label text="{selectedCategory || 'None'}" styleClass="selection-value" />
+                    </HBox>
+                </VBox>
+            </HBox>
+
+            <!-- Status Bar -->
+            <HBox styleClass="status-bar">
+                <Label text="📋" styleClass="status-icon" />
+                <Label text="{lastAction}" styleClass="status-text" />
+            </HBox>
+        </VBox>
+    </VBox>
+
+</Application>

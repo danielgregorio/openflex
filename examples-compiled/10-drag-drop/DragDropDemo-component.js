@@ -11,48 +11,157 @@
     ? window.OpenFlexRuntime
     : require('./runtime/openflex-runtime.js');
 
-  const leftItems = new Signal([{ label: "Apple" }, { label: "Banana" }, { label: "Cherry" }, { label: "Date" }, { label: "Elderberry" }]);
+  const leftItems = new Signal([]);
 
-  const rightItems = new Signal([{ label: "Fig" }, { label: "Grape" }, { label: "Honeydew" }]);
+  const rightItems = new Signal([]);
 
-  const leftCount = new Signal(5);
+  const selectedLeftIndex = new Signal(-1);
 
-  const rightCount = new Signal(3);
+  const selectedRightIndex = new Signal(-1);
 
-  function handleDropRight(event) {
-    let draggedItem = event.dragSource.dataForFormat("items");
-    let sourceIndex = event.dragSource.dataForFormat("index");
-    let insertIndex = event.insertIndex;
-    let newLeft = leftItems.value.slice();
-    newLeft.splice(sourceIndex, 1);
-    let newRight = rightItems.value.slice();
-    newRight.splice(insertIndex, 0, draggedItem);
-    leftItems.value = newLeft;
-    rightItems.value = newRight;
-    leftCount.value = newLeft.length;
-    rightCount.value = newRight.length;
+  const dragMessage = new Signal('Drag items or use arrows to move');
+
+  async function loadExternalData() {
+    try {
+      const response = await fetch('./drag-drop-demo-data.json');
+      const data = await response.json();
+      leftItems.value = data.leftItems;
+      rightItems.value = data.rightItems;
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
   }
 
-  function handleDropLeft(event) {
-    let draggedItem = event.dragSource.dataForFormat("items");
-    let sourceIndex = event.dragSource.dataForFormat("index");
-    let insertIndex = event.insertIndex;
-    let newRight = rightItems.value.slice();
-    newRight.splice(sourceIndex, 1);
-    let newLeft = leftItems.value.slice();
-    newLeft.splice(insertIndex, 0, draggedItem);
-    rightItems.value = newRight;
-    leftItems.value = newLeft;
-    leftCount.value = newLeft.length;
-    rightCount.value = newRight.length;
+  const leftCount = new Computed(() => {
+    return leftItems.value.length;
+  });
+
+  const rightCount = new Computed(() => {
+    return rightItems.value.length;
+  });
+
+  const totalCount = new Computed(() => {
+    return leftItems.value.length + rightItems.value.length;
+  });
+
+  function selectLeft(index) {
+    selectedLeftIndex.value = index;
+    selectedRightIndex.value = -1;
+    dragMessage.value = 'Selected: ' + leftItems.value[index].label + ' - Click → to move right';
   }
 
+  function selectRight(index) {
+    selectedRightIndex.value = index;
+    selectedLeftIndex.value = -1;
+    dragMessage.value = 'Selected: ' + rightItems.value[index].label + ' - Click ← to move left';
+  }
 
-  // OpenFlex DnD Runtime
-  const { DragManager, DragSource, NeoFlexDragEvent, setupDragSource, setupDropTarget } =
-    (typeof window !== 'undefined' && window.OpenFlexDnD)
-    ? window.OpenFlexDnD
-    : require('./runtime/openflex-dnd.js');
+  function moveToRight() {
+    if (selectedLeftIndex.value < 0) {
+      dragMessage.value = 'Select an item from the left list first';
+      return;
+    }
+    let item = leftItems.value[selectedLeftIndex.value];
+    let newLeft = leftItems.value.filter((_, i) => i !== selectedLeftIndex.value);
+    let newRight = [...rightItems.value, item];
+    leftItems.value = newLeft;
+    rightItems.value = newRight;
+    dragMessage.value = 'Moved ' + item.label + ' to Basket B';
+    selectedLeftIndex.value = -1;
+  }
+
+  function moveToLeft() {
+    if (selectedRightIndex.value < 0) {
+      dragMessage.value = 'Select an item from the right list first';
+      return;
+    }
+    let item = rightItems.value[selectedRightIndex.value];
+    let newRight = rightItems.value.filter((_, i) => i !== selectedRightIndex.value);
+    let newLeft = [...leftItems.value, item];
+    rightItems.value = newRight;
+    leftItems.value = newLeft;
+    dragMessage.value = 'Moved ' + item.label + ' to Basket A';
+    selectedRightIndex.value = -1;
+  }
+
+  // Drag and Drop state
+  let draggedItem = null;
+  let draggedFromList = null;
+  let draggedIndex = -1;
+
+  function handleDragStart(e, item, index, fromList) {
+    draggedItem = item;
+    draggedFromList = fromList;
+    draggedIndex = index;
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', JSON.stringify({ item, index, fromList }));
+    dragMessage.value = 'Dragging ' + item.label + '...';
+  }
+
+  function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+    draggedItem = null;
+    draggedFromList = null;
+    draggedIndex = -1;
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }
+
+  function handleDragEnter(e, listId) {
+    e.preventDefault();
+    const listEl = e.currentTarget;
+    listEl.classList.add('drag-over');
+  }
+
+  function handleDragLeave(e) {
+    const listEl = e.currentTarget;
+    if (!listEl.contains(e.relatedTarget)) {
+      listEl.classList.remove('drag-over');
+    }
+  }
+
+  function handleDropOnLeft(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+
+    if (!draggedItem || draggedFromList === 'left') {
+      dragMessage.value = 'Item is already in this basket';
+      return;
+    }
+
+    // Remove from right, add to left
+    let newRight = rightItems.value.filter((_, i) => i !== draggedIndex);
+    let newLeft = [...leftItems.value, draggedItem];
+    rightItems.value = newRight;
+    leftItems.value = newLeft;
+    dragMessage.value = 'Dropped ' + draggedItem.label + ' into Basket A';
+    selectedLeftIndex.value = -1;
+    selectedRightIndex.value = -1;
+  }
+
+  function handleDropOnRight(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+
+    if (!draggedItem || draggedFromList === 'right') {
+      dragMessage.value = 'Item is already in this basket';
+      return;
+    }
+
+    // Remove from left, add to right
+    let newLeft = leftItems.value.filter((_, i) => i !== draggedIndex);
+    let newRight = [...rightItems.value, draggedItem];
+    leftItems.value = newLeft;
+    rightItems.value = newRight;
+    dragMessage.value = 'Dropped ' + draggedItem.label + ' into Basket B';
+    selectedLeftIndex.value = -1;
+    selectedRightIndex.value = -1;
+  }
+
 
   // Application Component
   class AppComponent extends HTMLElement {
@@ -63,43 +172,68 @@
 
     connectedCallback() {
       this.render();
-      this.setupReactivity();
+      loadExternalData().then(() => {
+        this.setupReactivity();
+      });
     }
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>.demo-layout {
-            display: flex;
-            gap: 20px;
-            padding: 10px;
-        }
-        .list-container {
-            flex: 1;
-        }
-        .neo-list {
-            min-height: 200px;
-            max-height: 400px;
-        }</style>
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <link rel='stylesheet' href='../runtime/openflex-ios-theme.css'>
+        <link rel='stylesheet' href='./drag-drop-demo.css'>
       <div id='app_0' class='neo-application'>
-        <div id='panel_1' class='neo-panel'>
-          <div class='neo-panel-header'>Drag and Drop Demo - Move Fruits Between Lists</div>
-          <div class='neo-panel-body'>
-            <div id='vbox_2' class='neo-vbox'>
-              <span id='label_3' class='neo-label'>Drag items between the two lists. Items will move on drop.</span>
-              <div id='hbox_4' class='neo-hbox demo-layout'>
-                <div id='vbox_5' class='neo-vbox list-container'>
-                  <span id='label_6' class='neo-label'></span>
-                  <div id='list_7' class='neo-list'>
-                    <!-- List items will be dynamically generated -->
-                  </div>
+        <div id='vbox_1' class='neo-vbox app'>
+          <div id='vbox_2' class='neo-vbox wrapper'>
+            <div id='vbox_3' class='neo-vbox header'>
+              <span id='label_4' class='neo-label title'>Drag and Drop</span>
+              <span id='label_5' class='neo-label subtitle'>Drag fruits or use arrow buttons</span>
+            </div>
+            <div id='hbox_6' class='neo-hbox stats'>
+              <div id='vbox_7' class='neo-vbox stat'>
+                <span id='label_8' class='neo-label stat-value' style='color: #5856d6'></span>
+                <span id='label_9' class='neo-label stat-label'>Basket A</span>
+              </div>
+              <div id='vbox_10' class='neo-vbox stat'>
+                <span id='label_11' class='neo-label stat-value' style='color: #34c759'></span>
+                <span id='label_12' class='neo-label stat-label'>Basket B</span>
+              </div>
+              <div id='vbox_13' class='neo-vbox stat'>
+                <span id='label_14' class='neo-label stat-value'></span>
+                <span id='label_15' class='neo-label stat-label'>Total Items</span>
+              </div>
+            </div>
+            <div id='hbox_16' class='neo-hbox lists-container'>
+              <div id='vbox_17' class='neo-vbox list-card'>
+                <div id='hbox_18' class='neo-hbox list-header'>
+                  <span id='label_19' class='neo-label list-title'>Basket A</span>
+                  <span id='label_20' class='neo-label list-count'></span>
                 </div>
-                <div id='vbox_8' class='neo-vbox list-container'>
-                  <span id='label_9' class='neo-label'></span>
-                  <div id='list_10' class='neo-list'>
-                    <!-- List items will be dynamically generated -->
+                <div id='vbox_21' class='neo-vbox list-items'>
+                  <div id='repeater_22' class='neo-repeater'>
+                    <!-- Repeater content will be dynamically generated -->
                   </div>
                 </div>
               </div>
+              <div id='vbox_23' class='neo-vbox arrows'>
+                <button id='btn_24' class='neo-button arrow-btn arrow-left'>←</button>
+                <button id='btn_25' class='neo-button arrow-btn arrow-right'>→</button>
+              </div>
+              <div id='vbox_26' class='neo-vbox list-card'>
+                <div id='hbox_27' class='neo-hbox list-header'>
+                  <span id='label_28' class='neo-label list-title'>Basket B</span>
+                  <span id='label_29' class='neo-label list-count' style='background: #34c759;'></span>
+                </div>
+                <div id='vbox_30' class='neo-vbox list-items'>
+                  <div id='repeater_31' class='neo-repeater'>
+                    <!-- Repeater content will be dynamically generated -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id='hbox_32' class='neo-hbox message-bar'>
+              <span id='label_33' class='neo-label message-icon'>💡</span>
+              <span id='label_34' class='neo-label message-text'></span>
             </div>
           </div>
         </div>
@@ -111,56 +245,96 @@
     }
 
     attachEventHandlers() {
+      const el_btn_24 = this.shadowRoot.getElementById('btn_24');
+      if (el_btn_24) el_btn_24.addEventListener('click', () => moveToLeft());
+      const el_btn_25 = this.shadowRoot.getElementById('btn_25');
+      if (el_btn_25) el_btn_25.addEventListener('click', () => moveToRight());
+
+      // Setup drop zones
+      const leftList = this.shadowRoot.getElementById('vbox_21');
+      const rightList = this.shadowRoot.getElementById('vbox_30');
+
+      if (leftList) {
+        leftList.addEventListener('dragover', handleDragOver);
+        leftList.addEventListener('dragenter', (e) => handleDragEnter(e, 'left'));
+        leftList.addEventListener('dragleave', handleDragLeave);
+        leftList.addEventListener('drop', handleDropOnLeft);
+      }
+
+      if (rightList) {
+        rightList.addEventListener('dragover', handleDragOver);
+        rightList.addEventListener('dragenter', (e) => handleDragEnter(e, 'right'));
+        rightList.addEventListener('dragleave', handleDragLeave);
+        rightList.addEventListener('drop', handleDropOnRight);
+      }
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_6');
-        if (el) el.textContent = `Left List (${leftCount.value} items)`;
+        const el = this.shadowRoot.getElementById('label_8');
+        if (el) el.textContent = leftCount.value;
       });
-      // List: list_7
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('list_7');
+        const el = this.shadowRoot.getElementById('label_11');
+        if (el) el.textContent = rightCount.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_14');
+        if (el) el.textContent = totalCount.value;
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_20');
+        if (el) el.textContent = leftCount.value;
+      });
+      // Repeater: repeater_22
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('repeater_22');
         if (!el) return;
-      
-        // Limpar conteúdo anterior
+
+        // Limpar conteudo anterior
         el.innerHTML = '';
-      
+
         // Renderizar itens do array
         const items = leftItems.value || [];
         items.forEach((item, index) => {
           const itemEl = document.createElement('div');
-          itemEl.className = 'neo-list-item';
-          itemEl.textContent = item.label || item || '';
-          itemEl.dataset.index = index;
-          setupDragSource(itemEl, { item: item, index: index, action: 'move' });
+          itemEl.className = `neo-hbox fruit-item ${index === selectedLeftIndex.value ? 'selected' : ''}`;
+          itemEl.draggable = true;
+          itemEl.innerHTML = `<span class="neo-label fruit-emoji">${item.emoji}</span><span class="neo-label fruit-name">${item.label}</span>`;
+          itemEl.addEventListener('click', () => selectLeft(index));
+          itemEl.addEventListener('dragstart', (e) => handleDragStart(e, item, index, 'left'));
+          itemEl.addEventListener('dragend', handleDragEnd);
           el.appendChild(itemEl);
         });
-        setupDropTarget(el, { childSelector: '.neo-list-item', onDragDrop: (e) => handleDropLeft(e) });
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_9');
-        if (el) el.textContent = `Right List (${rightCount.value} items)`;
+        const el = this.shadowRoot.getElementById('label_29');
+        if (el) el.textContent = rightCount.value;
       });
-      // List: list_10
+      // Repeater: repeater_31
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('list_10');
+        const el = this.shadowRoot.getElementById('repeater_31');
         if (!el) return;
-      
-        // Limpar conteúdo anterior
+
+        // Limpar conteudo anterior
         el.innerHTML = '';
-      
+
         // Renderizar itens do array
         const items = rightItems.value || [];
         items.forEach((item, index) => {
           const itemEl = document.createElement('div');
-          itemEl.className = 'neo-list-item';
-          itemEl.textContent = item.label || item || '';
-          itemEl.dataset.index = index;
-          setupDragSource(itemEl, { item: item, index: index, action: 'move' });
+          itemEl.className = `neo-hbox fruit-item ${index === selectedRightIndex.value ? 'selected' : ''}`;
+          itemEl.draggable = true;
+          itemEl.innerHTML = `<span class="neo-label fruit-emoji">${item.emoji}</span><span class="neo-label fruit-name">${item.label}</span>`;
+          itemEl.addEventListener('click', () => selectRight(index));
+          itemEl.addEventListener('dragstart', (e) => handleDragStart(e, item, index, 'right'));
+          itemEl.addEventListener('dragend', handleDragEnd);
           el.appendChild(itemEl);
         });
-        setupDropTarget(el, { childSelector: '.neo-list-item', onDragDrop: (e) => handleDropRight(e) });
+      });
+      createEffect(() => {
+        const el = this.shadowRoot.getElementById('label_34');
+        if (el) el.textContent = dragMessage.value;
       });
     }
   }

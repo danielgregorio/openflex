@@ -2,7 +2,7 @@
 <Application
     xmlns:fx="http://openflex.dev/core"
     xmlns="http://openflex.dev/neo"
-    title="Calculadora - OpenFlex Neo">
+    title="Calculator - OpenFlex Neo">
 
     <fx:Script><![CDATA[
         @reactive var display: String = "0";
@@ -44,12 +44,15 @@
             } else if (operation === "*") {
                 result = previousValue * current;
             } else if (operation === "/") {
-                result = previousValue / current;
+                result = current !== 0 ? previousValue / current : 0;
+            } else {
+                result = current;
             }
 
             display = String(result);
             previousValue = result;
             newNumber = true;
+            operation = "";
         }
 
         function clear(): void {
@@ -58,6 +61,16 @@
             previousValue = 0;
             operation = "";
             newNumber = true;
+        }
+
+        function toggleSign(): void {
+            if (display !== "0") {
+                display = display.startsWith("-") ? display.substring(1) : "-" + display;
+            }
+        }
+
+        function percentage(): void {
+            display = String(parseFloat(display) / 100);
         }
 
         function pressDecimal(): void {
@@ -71,109 +84,52 @@
     ]]></fx:Script>
 
     <fx:Style>
-        @import url('../runtime/neo-flex-classic-theme.css');
-
-        .calculator {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .display {
-            background: #2c3e50;
-            color: #ecf0f1;
-            font-size: 48px;
-            font-weight: bold;
-            text-align: right;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            word-break: break-all;
-        }
-
-        .btn-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        .calc-btn {
-            padding: 25px;
-            font-size: 24px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #ecf0f1;
-            color: #2c3e50;
-        }
-
-        .calc-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .calc-btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-operator {
-            background: #3498db;
-            color: white;
-        }
-
-        .btn-equals {
-            background: #27ae60;
-            color: white;
-            grid-column: span 2;
-        }
-
-        .btn-clear {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-zero {
-            grid-column: span 2;
-        }
+        @import url('./calculator-app.css');
     </fx:Style>
 
-    <VBox gap="{20}" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%">
-        <Panel title="🧮 Calculadora" styleClass="calculator" width="{400}">
-            <VBox gap="{0}">
-                <Label text="{display}" styleClass="display" />
+    <VBox styleClass="calc-container">
+        <VBox styleClass="calculator">
+            <Label text="{display}" styleClass="display" />
 
-                <Box styleClass="btn-grid">
-                    <Button label="C" click="{clear}" styleClass="calc-btn btn-clear" />
-                    <Button label="÷" click="{() => pressOperator('/')}" styleClass="calc-btn btn-operator" />
-                    <Button label="×" click="{() => pressOperator('*')}" styleClass="calc-btn btn-operator" />
-                    <Button label="-" click="{() => pressOperator('-')}" styleClass="calc-btn btn-operator" />
+            <!-- Row 1: AC, +/-, %, ÷ -->
+            <HBox styleClass="btn-row">
+                <Button label="AC" click="{clear}" styleClass="calc-btn btn-gray" />
+                <Button label="+/-" click="{toggleSign}" styleClass="calc-btn btn-gray" />
+                <Button label="%" click="{percentage}" styleClass="calc-btn btn-gray" />
+                <Button label="÷" click="{() => pressOperator('/')}" styleClass="calc-btn btn-orange" />
+            </HBox>
 
-                    <Button label="7" click="{() => pressNumber('7')}" styleClass="calc-btn" />
-                    <Button label="8" click="{() => pressNumber('8')}" styleClass="calc-btn" />
-                    <Button label="9" click="{() => pressNumber('9')}" styleClass="calc-btn" />
-                    <Button label="+" click="{() => pressOperator('+')}" styleClass="calc-btn btn-operator" />
+            <!-- Row 2: 7, 8, 9, × -->
+            <HBox styleClass="btn-row">
+                <Button label="7" click="{() => pressNumber('7')}" styleClass="calc-btn" />
+                <Button label="8" click="{() => pressNumber('8')}" styleClass="calc-btn" />
+                <Button label="9" click="{() => pressNumber('9')}" styleClass="calc-btn" />
+                <Button label="×" click="{() => pressOperator('*')}" styleClass="calc-btn btn-orange" />
+            </HBox>
 
-                    <Button label="4" click="{() => pressNumber('4')}" styleClass="calc-btn" />
-                    <Button label="5" click="{() => pressNumber('5')}" styleClass="calc-btn" />
-                    <Button label="6" click="{() => pressNumber('6')}" styleClass="calc-btn" />
-                    <Button label="=" click="{calculate}" styleClass="calc-btn btn-equals" />
+            <!-- Row 3: 4, 5, 6, - -->
+            <HBox styleClass="btn-row">
+                <Button label="4" click="{() => pressNumber('4')}" styleClass="calc-btn" />
+                <Button label="5" click="{() => pressNumber('5')}" styleClass="calc-btn" />
+                <Button label="6" click="{() => pressNumber('6')}" styleClass="calc-btn" />
+                <Button label="-" click="{() => pressOperator('-')}" styleClass="calc-btn btn-orange" />
+            </HBox>
 
-                    <Button label="1" click="{() => pressNumber('1')}" styleClass="calc-btn" />
-                    <Button label="2" click="{() => pressNumber('2')}" styleClass="calc-btn" />
-                    <Button label="3" click="{() => pressNumber('3')}" styleClass="calc-btn" />
+            <!-- Row 4: 1, 2, 3, + -->
+            <HBox styleClass="btn-row">
+                <Button label="1" click="{() => pressNumber('1')}" styleClass="calc-btn" />
+                <Button label="2" click="{() => pressNumber('2')}" styleClass="calc-btn" />
+                <Button label="3" click="{() => pressNumber('3')}" styleClass="calc-btn" />
+                <Button label="+" click="{() => pressOperator('+')}" styleClass="calc-btn btn-orange" />
+            </HBox>
 
-                    <Button label="0" click="{() => pressNumber('0')}" styleClass="calc-btn btn-zero" />
-                    <Button label="." click="{pressDecimal}" styleClass="calc-btn" />
-                </Box>
-            </VBox>
-        </Panel>
+            <!-- Row 5: 0 (wide), ., = -->
+            <HBox styleClass="btn-row">
+                <Button label="0" click="{() => pressNumber('0')}" styleClass="calc-btn btn-zero" />
+                <Button label="." click="{pressDecimal}" styleClass="calc-btn" />
+                <Button label="=" click="{calculate}" styleClass="calc-btn btn-orange" />
+            </HBox>
+        </VBox>
     </VBox>
 
 </Application>

@@ -13,41 +13,36 @@
 
   const count = new Signal(0);
 
-  const history = new Signal([]);
-
-  const isPositive = new Computed(() => {
-    return count.value > 0;
-  });
-
-  const isNegative = new Computed(() => {
-    return count.value < 0;
-  });
-
   const countColor = new Computed(() => {
-    if (count.value > 0)   return "#27ae60";
-    if (count.value < 0)   return "#e74c3c";
-    return "#3498db";
+    if (count.value > 0)   return "#34c759";
+    if (count.value < 0)   return "#ff3b30";
+    return "#ffffff";
+  });
+
+  const statusIcon = new Computed(() => {
+    if (count.value > 0)   return "+";
+    if (count.value < 0)   return "";
+    return "";
   });
 
   function increment() {
     count.value++;
-    addToHistory("Incrementado");
   }
 
   function decrement() {
     count.value--;
-    addToHistory("Decrementado");
   }
 
   function reset() {
     count.value = 0;
-    history.value = [];
-    addToHistory("Reset");
   }
 
-  function addToHistory(action) {
-    const timestamp = new Date().toLocaleTimeString();
-    history.value = [...history.value, { action: action, count: count.value, time: timestamp }];
+  function add10() {
+    count.value += 10;
+  }
+
+  function subtract10() {
+    count.value -= 10;
   }
 
 
@@ -65,77 +60,100 @@
 
     render() {
       this.shadowRoot.innerHTML = `
-        <style>@import url('../runtime/neo-flex-classic-theme.css');
-
-        .counter-display {
-            font-size: 72px;
-            font-weight: bold;
-            transition: all 0.3s ease;
+        <link rel='stylesheet' href='../runtime/neo-flex-classic-theme.css'>
+        <style>.counter-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
-        
-        .positive { color: #27ae60; }
-        .negative { color: #e74c3c; }
-        .zero { color: #3498db; }
-        
-        .btn-increment {
-            background: #27ae60;
+        .counter {
+            background: #1c1c1e;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            width: 320px;
+        }
+        .display {
+            background: #1c1c1e;
             color: white;
-            font-size: 18px;
-            padding: 15px 30px;
-            border-radius: 8px;
+            font-size: 80px;
+            font-weight: 200;
+            text-align: center;
+            padding: 20px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            margin-bottom: 20px;
         }
-        
-        .btn-decrement {
-            background: #e74c3c;
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            justify-content: center;
+        }
+        .counter-btn {
+            width: 65px;
+            height: 65px;
+            font-size: 28px;
+            font-weight: 500;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.1s;
+            background: #333;
             color: white;
-            font-size: 18px;
-            padding: 15px 30px;
-            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
-        .btn-reset {
-            background: #95a5a6;
+        .counter-btn:active {
+            opacity: 0.7;
+            transform: scale(0.95);
+        }
+        .btn-green {
+            background: #34c759;
             color: white;
-            font-size: 18px;
-            padding: 15px 30px;
-            border-radius: 8px;
         }
-        
-        .history-item {
-            padding: 12px;
-            background: #ecf0f1;
-            border-radius: 6px;
-            margin-bottom: 8px;
+        .btn-red {
+            background: #ff3b30;
+            color: white;
+        }
+        .btn-orange {
+            background: #ff9f0a;
+            color: white;
+        }
+        .btn-gray {
+            background: #636366;
+            color: white;
+        }
+        .btn-wide {
+            width: 142px;
+            border-radius: 35px;
+        }
+        .status-label {
+            text-align: center;
+            font-size: 14px;
+            color: #8e8e93;
+            margin-top: 10px;
         }</style>
       <div id='app_0' class='neo-application'>
-        <div id='vbox_1' class='neo-vbox h-align-center v-align-middle' style='width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'>
-          <div id='panel_2' class='neo-panel'>
-            <div class='neo-panel-header'>🔢 Contador Reativo</div>
-            <div class='neo-panel-body'>
-              <div id='vbox_3' class='neo-vbox'>
-                <div id='vbox_4' class='neo-vbox h-align-center'>
-                  <span id='label_5' class='neo-label'></span>
-                  <span id='label_6' class='neo-label' style='color: #7f8c8d'></span>
-                </div>
-                <div id='hbox_7' class='neo-hbox h-align-center'>
-                  <button id='btn_8' class='neo-button btn-decrement'>➖ Decrementar</button>
-                  <button id='btn_9' class='neo-button btn-reset'>🔄 Reset</button>
-                  <button id='btn_10' class='neo-button btn-increment'>➕ Incrementar</button>
-                </div>
-                <div id='box_11' class='neo-box' style='width: 100%'>
-                </div>
-                <div id='vbox_12' class='neo-vbox'>
-                  <span id='label_13' class='neo-label' style='color: #2c3e50'>📜 Histórico de Ações</span>
-                  <div id='vbox_14' class='neo-vbox'>
-                    <span id='label_15' class='neo-label' style='color: #95a5a6'></span>
-                    <div id='repeater_16' class='neo-repeater'>
-                      <!-- Repeater content will be dynamically generated -->
-                    </div>
-                  </div>
-                </div>
-                <span id='label_17' class='neo-label' style='color: #95a5a6'>✨ Construído com OpenFlex Neo + MXML</span>
-              </div>
+        <div id='vbox_1' class='neo-vbox counter-container'>
+          <div id='vbox_2' class='neo-vbox counter'>
+            <span id='label_3' class='neo-label display'></span>
+            <div id='hbox_4' class='neo-hbox btn-row'>
+              <button id='btn_5' class='neo-button counter-btn btn-gray'>-10</button>
+              <button id='btn_6' class='neo-button counter-btn btn-orange'>AC</button>
+              <button id='btn_7' class='neo-button counter-btn btn-gray'>+10</button>
             </div>
+            <div id='hbox_8' class='neo-hbox btn-row'>
+              <button id='btn_9' class='neo-button counter-btn btn-wide btn-red'>-</button>
+              <button id='btn_10' class='neo-button counter-btn btn-wide btn-green'>+</button>
+            </div>
+            <span id='label_11' class='neo-label status-label'>Tap buttons to change value</span>
           </div>
         </div>
       </div>
@@ -146,51 +164,26 @@
     }
 
     attachEventHandlers() {
-      const el_btn_8 = this.shadowRoot.getElementById('btn_8');
-      if (el_btn_8) el_btn_8.addEventListener('click', () => decrement());
+      const el_btn_5 = this.shadowRoot.getElementById('btn_5');
+      if (el_btn_5) el_btn_5.addEventListener('click', () => subtract10());
+      const el_btn_6 = this.shadowRoot.getElementById('btn_6');
+      if (el_btn_6) el_btn_6.addEventListener('click', () => reset());
+      const el_btn_7 = this.shadowRoot.getElementById('btn_7');
+      if (el_btn_7) el_btn_7.addEventListener('click', () => add10());
       const el_btn_9 = this.shadowRoot.getElementById('btn_9');
-      if (el_btn_9) el_btn_9.addEventListener('click', () => reset());
+      if (el_btn_9) el_btn_9.addEventListener('click', () => decrement());
       const el_btn_10 = this.shadowRoot.getElementById('btn_10');
       if (el_btn_10) el_btn_10.addEventListener('click', () => increment());
     }
 
     setupReactivity() {
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_5');
-        if (el) el.className = `counter-display ${isPositive.value ? 'positive' : (isNegative.value ? 'negative' : 'zero')}`;
+        const el = this.shadowRoot.getElementById('label_3');
+        if (el) el.style.color = countColor.value;
       });
       createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_5');
-        if (el) el.textContent = count.value;
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_6');
-        if (el) el.textContent = 'Status: ' + (isPositive.value ? '⬆️ Positivo' : (isNegative.value ? '⬇️ Negativo' : '⚪ Zero'));
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_15');
-        if (el) el.style.display = (history.value.length === 0) ? 'block' : 'none';
-      });
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('label_15');
-        if (el) el.textContent = history.value.length === 0 ? 'Nenhuma ação ainda' : '';
-      });
-      // Repeater: repeater_16
-      createEffect(() => {
-        const el = this.shadowRoot.getElementById('repeater_16');
-        if (!el) return;
-      
-        // Limpar conteúdo anterior
-        el.innerHTML = '';
-      
-        // Renderizar itens do array
-        const items = history.value.slice().reverse() || [];
-        items.forEach((item, index) => {
-          const itemEl = document.createElement('div');
-          itemEl.className = 'repeater-item';
-          itemEl.textContent = item.text || JSON.stringify(item);
-          el.appendChild(itemEl);
-        });
+        const el = this.shadowRoot.getElementById('label_3');
+        if (el) el.textContent = statusIcon.value + count.value;
       });
     }
   }
