@@ -1,5 +1,4 @@
 /* Counter App Styles */
-@import url('../runtime/openflex-ios-theme.css');
 
 .counter-container {
     display: flex;

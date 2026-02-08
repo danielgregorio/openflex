@@ -1,5 +1,4 @@
 /* Calculator App Styles */
-@import url('../runtime/openflex-ios-theme.css');
 
 .calc-container {
     display: flex;

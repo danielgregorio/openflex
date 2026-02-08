@@ -1,5 +1,4 @@
 /* Temperature App Styles */
-@import url('../runtime/openflex-ios-theme.css');
 
 .temp-container {
     display: flex;

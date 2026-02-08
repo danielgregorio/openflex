@@ -1,5 +1,4 @@
 /* Chart Demo Styles */
-@import url('../runtime/openflex-ios-theme.css');
 
 .app { min-height: 100vh; padding: 30px; background: #000; }
 .wrapper { max-width: 1200px; margin: 0 auto; }
